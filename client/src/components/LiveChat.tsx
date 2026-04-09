@@ -1012,7 +1012,13 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         const date = new Date(lastTransfer.timestamp).toLocaleDateString('en-IE', {
           day: '2-digit',
           month: 'short',
-          year: 'numeric'
+          year: 'numeric',
+          timeZone: 'Europe/Dublin'
+        });
+        const time = new Date(lastTransfer.timestamp).toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'Europe/Dublin'
         });
         const reference = lastTransfer.reference || 'N/A';
         
@@ -1038,7 +1044,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           else if (sortPrefix.startsWith('60-83')) recipientBank = 'Santander';
         }
         
-        transferContext = `LAST TRANSFER: ${currency} ${amount} to ${recipient} on ${date} (Ref: ${reference}). Status: Completed. 
+        transferContext = `LAST TRANSFER: ${currency} ${amount} to ${recipient} on ${date} at ${time} (Ref: ${reference}). Status: Completed. 
 RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNumber}, Sort Code: ${recipientSortCode}`;
       }
 
