@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getAppDate } from "../utils/appTime";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -134,7 +135,7 @@ export default function InternalTransfer() {
     setTransferReference(reference);
 
     const transferAmount = parseFloat(formData.amount);
-    const timestamp = new Date().toISOString();
+    const timestamp = getAppDate().toISOString();
 
     // Create debit transaction for source account
     const debitTransaction = {
@@ -235,7 +236,7 @@ export default function InternalTransfer() {
       console.log('User email:', userProfile?.email);
       
       if (userProfile && userProfile.email) {
-        const timestamp = new Date().toLocaleString('en-GB', {
+        const timestamp = getAppDate().toLocaleString('en-GB', {
           dateStyle: 'short',
           timeStyle: 'short',
           timeZone: 'Europe/Dublin'

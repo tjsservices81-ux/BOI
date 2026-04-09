@@ -1,6 +1,7 @@
 // Transfer utilities
 import { UserDataManager } from './userDataManager';
 import { sendTransferNotification } from './notifications';
+import { getAppDate } from './appTime';
 
 export interface Account {
   id: string;
@@ -230,7 +231,7 @@ export const processTransfer = (
     paymentMethod: `${transferType === 'IBAN' ? 'SEPA' : transferType} Transfer`,
     reference,
     recipientName,
-    timestamp: new Date().toISOString(),
+    timestamp: getAppDate().toISOString(),
     ...(transferType === 'UK' && exchangeRate && {
       exchangeRate,
       convertedAmount: (amount * exchangeRate).toFixed(2),
@@ -347,7 +348,7 @@ export const processTransfer = (
     console.log('User email:', userProfile?.email);
     
     if (userProfile && userProfile.email) {
-      const timestamp = new Date().toLocaleString('en-GB', {
+      const timestamp = getAppDate().toLocaleString('en-GB', {
         dateStyle: 'short',
         timeStyle: 'short',
         timeZone: 'Europe/Dublin'

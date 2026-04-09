@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Globe, X } from "lucide-react";
+import { getAppDate } from "../utils/appTime";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -334,7 +335,7 @@ export default function IbanTransfer() {
                     recipientName: formData.recipientName,
                     recipientIban: formData.iban,
                     recipientBic: formData.bicCode,
-                    timestamp: new Date().toISOString(),
+                    timestamp: getAppDate().toISOString(),
                     isInternalTransfer: true
                   };
                   UserDataManager.setUserData('bankTransactions', [...currentTransactions, newTransaction]);
@@ -346,7 +347,7 @@ export default function IbanTransfer() {
                     bicCode: formData.bicCode,
                     transferType: 'SEPA Transfer',
                     reference: formData.reference || '',
-                    timestamp: new Date().toISOString()
+                    timestamp: getAppDate().toISOString()
                   };
                   UserDataManager.addRecentPayee(payee);
                   
@@ -384,7 +385,7 @@ export default function IbanTransfer() {
                     bicCode: formData.bicCode,
                     transferType: 'SEPA Transfer',
                     reference: formData.reference || '',
-                    timestamp: new Date().toISOString()
+                    timestamp: getAppDate().toISOString()
                   };
                   UserDataManager.addRecentPayee(payee);
                   

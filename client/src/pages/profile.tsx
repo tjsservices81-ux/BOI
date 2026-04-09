@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall, HardDrive } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall, HardDrive, Clock } from "lucide-react";
+import { setCustomAppDate, hasCustomAppDate, getCustomAppDateISO } from "@/utils/appTime";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -55,6 +56,25 @@ export default function Profile() {
     const saved = localStorage.getItem('showTransferConfirmation');
     return saved !== null ? JSON.parse(saved) : true;
   });
+
+  const toLocalDateTimeInputs = (iso: string | null) => {
+    if (!iso) {
+      const now = new Date();
+      return {
+        date: now.toLocaleDateString('en-CA'),
+        time: now.toTimeString().slice(0, 5),
+      };
+    }
+    const d = new Date(iso);
+    return {
+      date: d.toLocaleDateString('en-CA'),
+      time: d.toTimeString().slice(0, 5),
+    };
+  };
+  const savedISO = getCustomAppDateISO();
+  const [customDateEnabled, setCustomDateEnabled] = useState(() => hasCustomAppDate());
+  const [customDateInput, setCustomDateInput] = useState(() => toLocalDateTimeInputs(savedISO).date);
+  const [customTimeInput, setCustomTimeInput] = useState(() => toLocalDateTimeInputs(savedISO).time);
   const [recipientEmailEnabled, setRecipientEmailEnabled] = useState(() => {
     const saved = localStorage.getItem('recipientEmailEnabled');
     return saved !== null ? JSON.parse(saved) : false;
@@ -2090,6 +2110,99 @@ export default function Profile() {
                 <p className="text-gray-700 text-xs italic text-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   What Goods an app without an id? • Stay in contact for app updates
                 </p>
+              </div>
+
+              {/* Date & Time Override Section */}
+              <div className="mb-6 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-5 border-2 border-teal-200 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
+                    <Clock className="w-4 h-4 text-white" />
+                  </div>
+                  <p className="font-bold text-teal-900 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date & Time Override</p>
+                </div>
+                <p className="text-teal-700 text-xs mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Set a custom date and time to use on all transfer documents, confirmation PDFs, and live chat messages instead of the real current time.
+                </p>
+
+                {/* Toggle */}
+                <button
+                  onClick={() => {
+                    const next = !customDateEnabled;
+                    setCustomDateEnabled(next);
+                    if (next) {
+                      const d = new Date(`${customDateInput}T${customTimeInput}`);
+                      setCustomAppDate(d);
+                    } else {
+                      setCustomAppDate(null);
+                    }
+                  }}
+                  className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md mb-3"
+                >
+                  <div className="flex-1 text-left">
+                    <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Use Custom Date & Time
+                    </p>
+                    <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {customDateEnabled ? `Active — ${customDateInput} at ${customTimeInput}` : 'Off — using real current time'}
+                    </p>
+                  </div>
+                  <div className={`w-11 h-6 rounded-full transition-colors ${customDateEnabled ? 'bg-teal-500' : 'bg-gray-300'}`}>
+                    <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${customDateEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+                </button>
+
+                {/* Date & Time Inputs */}
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-teal-800 mb-1 px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date</p>
+                      <input
+                        type="date"
+                        value={customDateInput}
+                        onChange={(e) => {
+                          setCustomDateInput(e.target.value);
+                          if (customDateEnabled && e.target.value) {
+                            const d = new Date(`${e.target.value}T${customTimeInput}`);
+                            setCustomAppDate(d);
+                          }
+                        }}
+                        className="w-full p-2.5 rounded-xl border-2 border-teal-200 bg-white text-sm text-gray-800 focus:outline-none focus:border-teal-400"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-teal-800 mb-1 px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Time</p>
+                      <input
+                        type="time"
+                        value={customTimeInput}
+                        onChange={(e) => {
+                          setCustomTimeInput(e.target.value);
+                          if (customDateEnabled && e.target.value) {
+                            const d = new Date(`${customDateInput}T${e.target.value}`);
+                            setCustomAppDate(d);
+                          }
+                        }}
+                        className="w-full p-2.5 rounded-xl border-2 border-teal-200 bg-white text-sm text-gray-800 focus:outline-none focus:border-teal-400"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      />
+                    </div>
+                  </div>
+                  {customDateEnabled && (
+                    <button
+                      onClick={() => {
+                        setCustomDateEnabled(false);
+                        setCustomAppDate(null);
+                        const now = new Date();
+                        setCustomDateInput(now.toLocaleDateString('en-CA'));
+                        setCustomTimeInput(now.toTimeString().slice(0, 5));
+                      }}
+                      className="w-full p-2.5 rounded-xl border-2 border-red-200 bg-red-50 text-red-700 text-sm font-semibold active:scale-95 transition-all"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      Clear — Switch Back to Real Time
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Currency & Settings Section */}

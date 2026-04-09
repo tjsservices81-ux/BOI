@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2 } from "lucide-react";
+import { getAppDate } from "../utils/appTime";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserDataManager } from "../utils/userDataManager";
 import { getUserCurrency, getCurrencySymbol } from "../utils/currencyUtils";
@@ -207,7 +208,7 @@ export default function Payments() {
       accountInfo: accountInfo,
       transferType: newPayeeData.transferType,
       bicCode: newPayeeData.bicCode.trim() || undefined,
-      timestamp: new Date().toISOString()
+      timestamp: getAppDate().toISOString()
     };
 
     UserDataManager.addRecentPayee(payee);

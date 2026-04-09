@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { getAppDate } from "../utils/appTime";
 import { X, Send, MessageCircle, User } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { getUserCurrency, type Currency } from "../utils/currencyUtils";
@@ -238,7 +239,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           id: Date.now().toString(),
           text: getCheckInMessage(chatState.agentName),
           isUser: false,
-          timestamp: new Date(),
+          timestamp: getAppDate(),
           agentName: chatState.agentName
         };
 
@@ -344,7 +345,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             id: `queue_${Date.now()}`,
             text: queueMessages[0],
             isUser: false,
-            timestamp: new Date(),
+            timestamp: getAppDate(),
             agentName: 'Support System',
             isAutomated: true
           }]
@@ -358,7 +359,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               id: `queue_pos_${Date.now()}`,
               text: queueMessages[1],
               isUser: false,
-              timestamp: new Date(),
+              timestamp: getAppDate(),
               agentName: 'Support System',
               isAutomated: true
             }]
@@ -373,7 +374,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               id: `queue_connect_${Date.now()}`,
               text: queueMessages[2],
               isUser: false,
-              timestamp: new Date(),
+              timestamp: getAppDate(),
               agentName: 'Support System',
               isAutomated: true
             }]
@@ -420,7 +421,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                   id: Date.now().toString(),
                   text: welcomeText,
                   isUser: false,
-                  timestamp: new Date(),
+                  timestamp: getAppDate(),
                   agentName: chatState.agentName,
                   isAutomated: false
                 };
@@ -1129,7 +1130,7 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
       id: Date.now().toString(),
       text: inputText.trim(),
       isUser: true,
-      timestamp: new Date()
+      timestamp: getAppDate()
     };
 
     // Capture current messages for AI context
@@ -1179,7 +1180,7 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
             id: (Date.now() + 1).toString(),
             text: responseData.text,
             isUser: false,
-            timestamp: new Date(),
+            timestamp: getAppDate(),
             agentName: chatState.agentName,
             isAutomated: false,
             pdfData: (responseData as any).pdfData,
@@ -1206,7 +1207,7 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
             id: (Date.now() + 1).toString(),
             text: "Sorry, I wasn't able to bring that up just now. Would you like me to try again or connect you with another agent?",
             isUser: false,
-            timestamp: new Date(),
+            timestamp: getAppDate(),
             agentName: chatState.agentName,
             isAutomated: false
           };

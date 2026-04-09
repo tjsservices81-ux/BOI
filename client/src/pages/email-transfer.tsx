@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, CreditCard, User, Mail, Send } from "lucide-react";
+import { getAppDate } from "../utils/appTime";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -176,7 +177,7 @@ export default function EmailTransfer() {
                   accountInfo: formData.recipientEmail,
                   transferType: 'Email Transfer',
                   reference: formData.reference || '',
-                  timestamp: new Date().toISOString()
+                  timestamp: getAppDate().toISOString()
                 };
                 UserDataManager.addRecentPayee(payee);
                 

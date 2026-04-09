@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Building2, Building, Plus, X } from "lucide-react";
+import { getAppDate } from "../utils/appTime";
 
 // Timeout-protected fetch helper to prevent stuck animations
 const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs: number = 15000): Promise<Response> => {
@@ -486,7 +487,7 @@ export default function UkTransfer() {
                     recipientName: formData.recipientName,
                     recipientAccountNumber: formData.accountNumber,
                     recipientSortCode: formData.sortCode,
-                    timestamp: new Date().toISOString(),
+                    timestamp: getAppDate().toISOString(),
                     isInternalTransfer: true
                   };
                   UserDataManager.setUserData('bankTransactions', [...currentTransactions, newTransaction]);
@@ -497,7 +498,7 @@ export default function UkTransfer() {
                     accountInfo: `${formatSortCode(formData.sortCode)} ${formData.accountNumber}`,
                     transferType: 'UK Transfer',
                     reference: formData.reference || '',
-                    timestamp: new Date().toISOString()
+                    timestamp: getAppDate().toISOString()
                   };
                   UserDataManager.addRecentPayee(payee);
                   
@@ -534,7 +535,7 @@ export default function UkTransfer() {
                     accountInfo: `${formatSortCode(formData.sortCode)} ${formData.accountNumber}`,
                     transferType: 'UK Transfer',
                     reference: formData.reference || '',
-                    timestamp: new Date().toISOString()
+                    timestamp: getAppDate().toISOString()
                   };
                   UserDataManager.addRecentPayee(payee);
                   
