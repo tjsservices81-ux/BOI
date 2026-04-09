@@ -2134,6 +2134,10 @@ export default function Profile() {
                       setCustomAppDate(d);
                     } else {
                       setCustomAppDate(null);
+                      // Snap inputs back to real device time so user can see what real time is
+                      const now = new Date();
+                      setCustomDateInput(now.toLocaleDateString('en-CA'));
+                      setCustomTimeInput(now.toTimeString().slice(0, 5));
                     }
                   }}
                   className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md mb-3"
