@@ -43,14 +43,7 @@ export default function Dashboard() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Local state for account balances that can be updated by transfers
-  // Lazy initializer: load from localStorage immediately so first render never shows zero/empty
-  const [accounts, setAccounts] = useState<Account[]>(() => {
-    const stored = UserDataManager.getUserData('bankAccounts', []);
-    if (stored && Array.isArray(stored) && stored.length > 0) {
-      return sortAccountsForDisplay(stored);
-    }
-    return [];
-  });
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency, setUserCurrency] = useState<Currency>(() => getUserCurrency());
   
@@ -146,24 +139,13 @@ export default function Dashboard() {
           // Check for locally-processed transfers not yet synced to server
           const pendingSyncs = getPendingBalanceSyncs();
 
-          // Build a map of locally-stored balances — always more up-to-date than server
-          // during the brief window after a transfer before the server sync completes
-          const localAccounts: any[] = UserDataManager.getUserData('bankAccounts', []);
-          const localBalanceMap: Record<string, string> = {};
-          if (Array.isArray(localAccounts)) {
-            localAccounts.forEach((acc: any) => {
-              if (acc?.id) localBalanceMap[String(acc.id)] = acc.balance;
-            });
-          }
-
           // Format accounts for display (mask account numbers, ensure proper structure)
           const formattedAccounts = serverAccounts.map((acc: any) => {
             const accountId = String(acc.id);
-            // Priority: pending sync balance > local stored balance > server balance
-            // This prevents the server returning a stale balance from overwriting
-            // a transfer the user just made (race condition window)
-            const protectedBalance = pendingSyncs[accountId] ?? localBalanceMap[accountId] ?? (acc.balance || '0.00');
-            if (pendingSyncs[accountId] || (localBalanceMap[accountId] && localBalanceMap[accountId] !== acc.balance)) {
+            // If there's a pending local balance sync for this account, use the local balance
+            // so the server doesn't overwrite a transfer the user just made while offline
+            const protectedBalance = pendingSyncs[accountId] ?? (acc.balance || '0.00');
+            if (pendingSyncs[accountId]) {
               console.log(`🔒 Protecting local balance for account ${accountId}: ${protectedBalance} (server had ${acc.balance})`);
             }
             return {

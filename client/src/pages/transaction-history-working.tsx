@@ -21,29 +21,8 @@ export default function TransactionHistoryWorking() {
   const routeHook = useRoute("/transactions/:accountId");
   const [match, params] = routeHook || [false, {}];
   const [transactions, setTransactions] = useState<any[]>([]);
-  // Lazy initializers: read account ID from URL and load from localStorage immediately
-  // so the balance and account info are available on first render with no zero-flash
-  const [balance, setBalance] = useState<string>(() => {
-    const pathMatch = window.location.pathname.match(/\/transactions\/(\d+)/);
-    if (pathMatch) {
-      const stored = UserDataManager.getUserData('bankAccounts', []);
-      if (Array.isArray(stored)) {
-        const account = stored.find((acc: any) => String(acc.id) === pathMatch[1]);
-        if (account) return account.balance || '0.00';
-      }
-    }
-    return '0.00';
-  });
-  const [accountInfo, setAccountInfo] = useState<any>(() => {
-    const pathMatch = window.location.pathname.match(/\/transactions\/(\d+)/);
-    if (pathMatch) {
-      const stored = UserDataManager.getUserData('bankAccounts', []);
-      if (Array.isArray(stored)) {
-        return stored.find((acc: any) => String(acc.id) === pathMatch[1]) || null;
-      }
-    }
-    return null;
-  });
+  const [balance, setBalance] = useState<string>('0.00');
+  const [accountInfo, setAccountInfo] = useState<any>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
