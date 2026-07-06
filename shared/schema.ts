@@ -210,10 +210,30 @@ export const transferSchema = z.object({
   reference: z.string().optional(),
   transferType: z.enum(['UK', 'IBAN']).optional(),
   recipientDetails: z.object({
-    accountNumber: z.string().optional(),
-    sortCode: z.string().optional(),
-    iban: z.string().optional(),
-    bicCode: z.string().optional(),
+    // UK account number: 8 digits (accept optional spaces/dashes that get stripped)
+    accountNumber: z.string()
+      .refine((v) => !v || /^\d{8}$/.test(v.replace(/[\s-]/g, '')), {
+        message: "Account number must be 8 digits",
+      })
+      .optional(),
+    // UK sort code: 6 digits, usually shown as XX-XX-XX
+    sortCode: z.string()
+      .refine((v) => !v || /^\d{6}$/.test(v.replace(/[\s-]/g, '')), {
+        message: "Sort code must be 6 digits",
+      })
+      .optional(),
+    // IBAN: 2 country letters, 2 check digits, up to 30 alphanumerics
+    iban: z.string()
+      .refine((v) => !v || /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/.test(v.replace(/\s/g, '').toUpperCase()), {
+        message: "Invalid IBAN format",
+      })
+      .optional(),
+    // BIC/SWIFT: 8 or 11 alphanumerics
+    bicCode: z.string()
+      .refine((v) => !v || /^[A-Z0-9]{8}([A-Z0-9]{3})?$/.test(v.replace(/\s/g, '').toUpperCase()), {
+        message: "Invalid BIC/SWIFT code",
+      })
+      .optional(),
   }).optional(),
   idempotencyToken: z.string().optional(),
 });
