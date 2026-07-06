@@ -1164,52 +1164,14 @@ img {
   }
 }
 
-/* Splash screen specific styling */
-.splash-fullscreen {
-  --status-bar-color: #126987;
-}
-
-/* iOS Safari status bar integration for splash.
-   This paints the safe-area-inset-top strip with the app's real theme color
-   (matching the persistent `theme-color` meta tag, which we never change
-   dynamically) so it never clashes with the real iOS status bar chrome. */
-@supports (-webkit-appearance: none) {
-  .splash-fullscreen::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: env(safe-area-inset-top, 44px);
-    background-color: #126987;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    z-index: 9999;
-    pointer-events: none;
-  }
-}
-
-/* iOS PWA status bar color override */
+/* Splash screen specific styling.
+   The splash is intentionally the ONLY place splash blue (#000DFF) appears:
+   the splash container and the page background behind it are blue while it
+   shows, and App.tsx switches the page background to the app teal (#126987)
+   the moment the splash finishes. No extra painted status-bar strips - the
+   real iOS status bar sits above the page in "default" mode and takes its
+   look from the page/theme color on its own. */
 @media (display-mode: standalone) {
-  .splash-fullscreen {
-    /* Remove padding-top - extend splash behind safe area */
-    background: transparent !important;
-  }
-
-  .splash-fullscreen::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: env(safe-area-inset-top, 0);
-    background-color: #126987;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    z-index: 9999;
-    pointer-events: none;
-  }
-
   .splash-fullscreen .full-height {
     background: transparent;
   }

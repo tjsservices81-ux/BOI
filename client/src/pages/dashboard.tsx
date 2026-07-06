@@ -47,12 +47,6 @@ export default function Dashboard() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency, setUserCurrency] = useState<Currency>(() => getUserCurrency());
   
-  useEffect(() => {
-    // Ensure theme-color is correct for the main app
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
-  }, []);
-
   // Touch-safe interaction state
   const [loadingAccountId, setLoadingAccountId] = useState<number | null>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);

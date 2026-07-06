@@ -204,6 +204,11 @@
     </style>
     
     <script>
+      // Record when the boot loader appeared so the React splash can shorten
+      // its own duration by however long this loader was already visible -
+      // the two together should feel like ONE ~5 second splash, not two.
+      window.__bootStartTime = Date.now();
+
       // Keep body background blue during load for the splash screen visual
       // but do NOT change theme-color — on iOS 26 Liquid Glass the status bar
       // reads theme-color and gets stuck on the blue if we change it here.
@@ -612,10 +617,21 @@
       }
 
       function hideLoadingScreen() {
-        const loader = document.getElementById('loading-screen');
-        if (loader) {
-          loader.style.display = 'none';
-        }
+        // Do NOT hide the loader here. Access can be confirmed long before
+        // React has loaded (especially on dev), and hiding it early exposed
+        // a bare blue screen and then the React splash - which looked like
+        // the splash playing twice. The React app now owns removing the
+        // loader (splash screen on cold start, App init on warm start), so
+        // the boot loader and the React splash blend into ONE splash.
+        window.__accessOk = true;
+
+        // Safety net: if React somehow never mounts, don't spin forever.
+        setTimeout(function () {
+          const loader = document.getElementById('loading-screen');
+          if (loader && !window.__reactTookOver) {
+            loader.style.display = 'none';
+          }
+        }, 20000);
       }
 
       // Periodic access validation to check for revocation

@@ -67,12 +67,6 @@ export default function Login() {
   const login = authHook?.login || (() => {});
   const [isLoading, setIsLoading] = useState(false);
   
-  useEffect(() => {
-    // Ensure theme-color is set for main app screens
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
-  }, []);
-
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
   const [validatedUsers, setValidatedUsers] = useState<any>({});

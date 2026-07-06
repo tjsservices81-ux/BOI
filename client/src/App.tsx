@@ -381,6 +381,29 @@ function AppRoutes() {
     }
   }, [splashShown]);
 
+  // On warm starts (or direct loads of /login etc.) the splash screen never
+  // mounts, so it can't remove the static boot loader from index.html -
+  // remove it here the moment the app is initialized. On cold starts the
+  // splash screen removes it first and this is a harmless no-op.
+  useEffect(() => {
+    if (isInitialized) {
+      (window as any).__reactTookOver = true;
+      const bootLoader = document.getElementById('loading-screen');
+      if (bootLoader) bootLoader.remove();
+
+      // If the splash screen is NOT on screen (warm start, or a reload that
+      // landed directly on /login or /dashboard), hand the page background
+      // to the app teal now - the splash-driven handoff below never runs on
+      // those paths, and leaving the body blue kept the status bar blue.
+      // (The splash adds the 'splash-fullscreen' class while it's mounted.)
+      if (!document.body.classList.contains('splash-fullscreen')) {
+        document.body.style.backgroundColor = '#126987';
+        document.documentElement.style.backgroundColor = '#126987';
+        document.body.removeAttribute('data-initial-bg');
+      }
+    }
+  }, [isInitialized]);
+
   // Listen for splash completion and mark it properly
   useEffect(() => {
     const handleSplashComplete = () => {

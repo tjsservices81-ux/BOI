@@ -31,9 +31,22 @@ export default function Splash() {
     // the splash's own background is fully opaque and covers the safe area,
     // so the real status bar never actually needs to change color for this.
     document.body.classList.add('splash-fullscreen');
-    document.documentElement.style.setProperty('--status-bar-color', '#000DFF');
 
-    // Navigate to login after splash duration (5 seconds total)
+    // Take over from the static boot loader in index.html. It shows the
+    // exact same artwork, so removing it the moment this component is on
+    // screen is a seamless swap - the user perceives one single splash.
+    (window as any).__reactTookOver = true;
+    const bootLoader = document.getElementById('loading-screen');
+    if (bootLoader) bootLoader.remove();
+
+    // One splash total: shorten this screen's duration by however long the
+    // boot loader was already visible, so boot loader + React splash always
+    // add up to roughly 5 seconds instead of stacking two full splashes.
+    const bootStart = (window as any).__bootStartTime as number | undefined;
+    const elapsed = bootStart ? Date.now() - bootStart : 0;
+    const remaining = Math.min(5000, Math.max(1500, 5000 - elapsed));
+
+    // Navigate to login after the remaining splash duration
     const finalTimer = setTimeout(() => {
       setIsVisible(false);
       // Mark splash as completed in localStorage for proper state tracking
@@ -45,13 +58,17 @@ export default function Splash() {
         // Always navigate to login after splash for cold starts
         navigate('/login');
       }, 400); // Slightly longer fade for smoother color shift
-    }, 5000); // 5 seconds total
+    }, remaining);
 
-    // Cleanup timer and remove splash class
+    // Cleanup timer and remove splash class. Also hand the page background
+    // to the app teal here: splash blue must never outlive the splash, and
+    // on iOS the status bar takes its color from the page background.
     return () => {
       clearTimeout(finalTimer);
       document.body.classList.remove('splash-fullscreen');
-      document.documentElement.style.removeProperty('--status-bar-color');
+      document.body.style.backgroundColor = '#126987';
+      document.documentElement.style.backgroundColor = '#126987';
+      document.body.removeAttribute('data-initial-bg');
     };
   }, [navigate]);
 
