@@ -15,50 +15,22 @@ export default function Splash() {
     });
     
     // Add splash-specific full screen class for iOS PWA
+    // Note: this intentionally does NOT touch the global `theme-color` or
+    // `apple-mobile-web-app-status-bar-style` meta tags. Under iOS's
+    // translucent/glass status bar, changing those here and forgetting to
+    // reset every one of them on every exit path leaves the real status bar
+    // stuck on the splash color/style after the splash screen is gone -
+    // the splash's own background is fully opaque and covers the safe area,
+    // so the real status bar never actually needs to change color for this.
     document.body.classList.add('splash-fullscreen');
     document.documentElement.style.setProperty('--status-bar-color', '#000DFF');
-    
-    // Comprehensive theme color update for splash screen
-    const updateThemeColor = () => {
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
-      if (themeColorMeta) {
-        themeColorMeta.content = '#000DFF';
-      }
-      
-      // Create or update additional iOS-specific status bar configuration
-      const iosStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]') as HTMLMetaElement;
-      if (iosStatusMeta) {
-        iosStatusMeta.content = 'default';
-      }
-      
-      // Force PWA status bar color update
-      if ('setAppBadge' in navigator) {
-        // PWA-specific color updates
-        document.body.style.backgroundColor = '#000DFF';
-        setTimeout(() => {
-          document.body.style.backgroundColor = '';
-        }, 100);
-      }
-    };
-    
-    // Update immediately and with delays for iOS PWA
-    updateThemeColor();
-    setTimeout(updateThemeColor, 50);
-    setTimeout(updateThemeColor, 200);
-    setTimeout(updateThemeColor, 1000);
-    
-    // Navigate to login after splash duration (8 seconds total)
+
+    // Navigate to login after splash duration (5 seconds total)
     const finalTimer = setTimeout(() => {
       setIsVisible(false);
       // Mark splash as completed in localStorage for proper state tracking
       localStorage.setItem('splash_completed', 'true');
-      
-      // Force status bar transition BEFORE navigation
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
-      
+
       // Dispatch event to notify App.tsx that splash is complete
       window.dispatchEvent(new CustomEvent('splashComplete'));
       setTimeout(() => {
@@ -72,9 +44,6 @@ export default function Splash() {
       clearTimeout(finalTimer);
       document.body.classList.remove('splash-fullscreen');
       document.documentElement.style.removeProperty('--status-bar-color');
-      // Restore theme-color for main app
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
     };
   }, [navigate]);
 

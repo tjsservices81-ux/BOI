@@ -1166,17 +1166,14 @@ img {
 
 /* Splash screen specific styling */
 .splash-fullscreen {
-  /* Pure blue status bar for splash screen only */
-  --splash-theme-color: #000DFF;
-  --status-bar-color: #000DFF;
+  --status-bar-color: #126987;
 }
 
-/* iOS Safari status bar integration for splash */
+/* iOS Safari status bar integration for splash.
+   This paints the safe-area-inset-top strip with the app's real theme color
+   (matching the persistent `theme-color` meta tag, which we never change
+   dynamically) so it never clashes with the real iOS status bar chrome. */
 @supports (-webkit-appearance: none) {
-  .splash-fullscreen {
-    background-color: #000DFF !important;
-  }
-  
   .splash-fullscreen::before {
     content: '';
     position: fixed;
@@ -1184,7 +1181,9 @@ img {
     left: 0;
     right: 0;
     height: env(safe-area-inset-top, 44px);
-    background-color: #000DFF;
+    background-color: #126987;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     z-index: 9999;
     pointer-events: none;
   }
@@ -1196,7 +1195,7 @@ img {
     /* Remove padding-top - extend splash behind safe area */
     background: transparent !important;
   }
-  
+
   .splash-fullscreen::before {
     content: '';
     position: fixed;
@@ -1204,15 +1203,17 @@ img {
     left: 0;
     right: 0;
     height: env(safe-area-inset-top, 0);
-    background-color: #000DFF;
+    background-color: #126987;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     z-index: 9999;
     pointer-events: none;
   }
-  
+
   .splash-fullscreen .full-height {
     background: transparent;
   }
-  
+
   .splash-fullscreen .splash-container {
     /* Keep original background image and blue fallback */
     background-color: #000DFF;
