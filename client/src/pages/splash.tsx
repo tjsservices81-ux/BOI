@@ -32,6 +32,12 @@ export default function Splash() {
     // so the real status bar never actually needs to change color for this.
     document.body.classList.add('splash-fullscreen');
 
+    // While the splash is shown, paint the body blue so iOS tints the status
+    // bar blue to match the splash. The cleanup below reverts it to the app
+    // teal, so blue is confined to the splash exactly as intended.
+    document.body.style.backgroundColor = '#000DFF';
+    document.documentElement.style.backgroundColor = '#000DFF';
+
     // Take over from the static boot loader in index.html. It shows the
     // exact same artwork, so removing it the moment this component is on
     // screen is a seamless swap - the user perceives one single splash.

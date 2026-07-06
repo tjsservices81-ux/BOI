@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useRoute } from "wouter";
 import { ChevronLeft, ChevronRight, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X, FileText, Search, Info, Home, ArrowRightLeft, Landmark, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -451,34 +451,60 @@ export default function TransactionHistoryWorking() {
     }
   };
 
+  // Re-read the authoritative balance for this account from the database and
+  // reflect it locally. Only the balance is touched - the account header
+  // (name, masked number, sort code) is left as-is so it never bounces.
+  const reconcileBalanceFromServer = useCallback(async () => {
+    try {
+      const res = await fetch('/api/accounts', { credentials: 'include' });
+      if (!res.ok) return;
+      const dbAccounts = await res.json();
+      if (!Array.isArray(dbAccounts) || dbAccounts.length === 0) return;
+      const serverAccount = dbAccounts.find((a: any) => String(a.id) === String(accountId));
+      if (!serverAccount) return;
+      const pendingSyncs = getPendingBalanceSyncs();
+      const authoritativeBalance = pendingSyncs[String(accountId)] ?? (serverAccount.balance || '0.00');
+      setBalance(authoritativeBalance);
+      setAccountInfo((prev: any) => (prev ? { ...prev, balance: authoritativeBalance } : prev));
+      const cached = UserDataManager.getUserData('bankAccounts', []) || [];
+      if (Array.isArray(cached)) {
+        UserDataManager.setUserData('bankAccounts', cached.map((a: any) =>
+          String(a.id) === String(accountId) ? { ...a, balance: authoritativeBalance } : a
+        ));
+      }
+    } catch {
+      // offline - keep showing the cached balance
+    }
+  }, [accountId]);
+
   const handleDeleteTransaction = async () => {
     if (!selectedTransaction) return;
-    
+
     try {
-      // Call backend API to delete transaction and update balance on server
+      // Delete on the server FIRST - this atomically removes the transaction
+      // and adjusts the balance in the database (the source of truth).
       const response = await fetch(`/api/transactions/${selectedTransaction.id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
-      
+
       if (!response.ok) {
         console.error('Failed to delete transaction on server');
         return;
       }
-      
+
       const result = await response.json();
       const serverNewBalance = result.newBalance;
-      
-      // Update local state with server-confirmed balance
+
+      // Mirror the server-confirmed balance locally (the DB was already updated)
       setBalance(serverNewBalance);
-      
-      // Update accounts in localStorage with the server-confirmed balance
+
       const accounts = UserDataManager.getUserAccounts();
-      const updatedAccounts = accounts.map((acc: Account) => 
+      const updatedAccounts = accounts.map((acc: Account) =>
         acc.id === accountId ? { ...acc, balance: serverNewBalance } : acc
       );
       UserDataManager.setUserData('bankAccounts', updatedAccounts);
-      
+
       // Mark transaction as deleted in local transactions cache
       const allTransactions = UserDataManager.getUserData('bankTransactions', []);
       const enhancedTransactions = allTransactions.map((tx: any) => {
@@ -488,14 +514,14 @@ export default function TransactionHistoryWorking() {
         return tx;
       });
       UserDataManager.setUserData('bankTransactions', enhancedTransactions);
-      
+
       // Update displayed transactions
       const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
       setTransactions(accountTransactions);
-      
+
       setSelectedTransaction(null);
       setShowDeleteConfirm(false);
-      
+
       // Dispatch events to update other components with server-confirmed balance
       window.dispatchEvent(new CustomEvent('transactionDeleted', {
         detail: { transactionId: selectedTransaction?.id, newBalance: serverNewBalance }
@@ -504,7 +530,11 @@ export default function TransactionHistoryWorking() {
         detail: { accountId, newBalance: serverNewBalance, accounts: updatedAccounts }
       }));
       window.dispatchEvent(new CustomEvent('transactionUpdate'));
-      
+
+      // Finally, re-read the balance straight from the database so what's shown
+      // is provably the persisted DB value, not just the returned number.
+      reconcileBalanceFromServer();
+
       console.log(`🗑️ Transaction ${selectedTransaction.id} deleted, balance updated to ${serverNewBalance}`);
     } catch (error) {
       console.error('Error deleting transaction:', error);
@@ -588,35 +618,9 @@ export default function TransactionHistoryWorking() {
       
       // Reconcile the balance against the database (source of truth). The
       // cached value was shown instantly above; this replaces it with the
-      // server's value, unless there's an unsynced offline transfer for this
-      // account (those pending entries expire after a couple of minutes).
-      fetch('/api/accounts', { credentials: 'include' })
-        .then(response => {
-          if (response.ok) return response.json();
-          throw new Error('Failed to fetch accounts');
-        })
-        .then((dbAccounts) => {
-          if (!Array.isArray(dbAccounts) || dbAccounts.length === 0) return;
-          const pendingSyncs = getPendingBalanceSyncs();
-          const serverAccount = dbAccounts.find((a: any) => String(a.id) === String(accountId));
-          if (!serverAccount) return;
-          const authoritativeBalance = pendingSyncs[String(accountId)] ?? (serverAccount.balance || '0.00');
-          setBalance(authoritativeBalance);
-          setAccountInfo((prev: any) => ({ ...(prev || {}), ...serverAccount, balance: authoritativeBalance }));
-
-          // Keep the cached copy in step so other screens read the same value
-          const cached = UserDataManager.getUserData('bankAccounts', []) || [];
-          if (Array.isArray(cached)) {
-            const merged = cached.map((a: any) =>
-              String(a.id) === String(accountId) ? { ...a, balance: authoritativeBalance } : a
-            );
-            UserDataManager.setUserData('bankAccounts', merged);
-          }
-        })
-        .catch(error => {
-          // Offline / unreachable - keep the cached balance shown above
-          console.log('Balance reconcile skipped:', error.message);
-        });
+      // server's value. The account header stays local (not touched here), so
+      // the masked account number never bounces to the server's long number.
+      reconcileBalanceFromServer();
 
       // THEN sync transactions from database in the background (non-blocking)
       fetch(`/api/transactions/${accountId}`, { credentials: 'include' })

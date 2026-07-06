@@ -133,7 +133,12 @@
     
     <title>Bank of Ireland</title>
   </head>
-  <body style="background-color: #000DFF !important;" data-initial-bg="true">
+  <!-- Body base color is the app teal. iOS tints the standalone status bar
+       from the <body> background, so the base must be teal - NOT the splash
+       blue - otherwise the status bar stays blue on every screen. The blue
+       splash look comes from the full-screen #loading-screen div below and
+       the splash screen itself, which set blue explicitly while shown. -->
+  <body style="background-color: #126987;" data-initial-bg="true">
     <div id="loading-screen" style="
       position:fixed;
       top:0;
@@ -209,13 +214,13 @@
       // the two together should feel like ONE ~5 second splash, not two.
       window.__bootStartTime = Date.now();
 
-      // Keep body background blue during load for the splash screen visual
-      // but do NOT change theme-color — on iOS 26 Liquid Glass the status bar
-      // reads theme-color and gets stuck on the blue if we change it here.
-      // App.tsx resets these to the app teal (#126987) once the splash is
-      // done, so the glass status bar stops reflecting splash blue.
-      document.body.style.backgroundColor = '#000DFF';
-      document.documentElement.style.backgroundColor = '#000DFF';
+      // Base page background is the app teal so iOS tints the standalone
+      // status bar teal on every real screen. The blue boot/splash visual is
+      // drawn by the full-screen #loading-screen div and the splash screen,
+      // which sit on top - we do NOT paint the body blue here, or the status
+      // bar would stay blue after the splash. theme-color is left untouched
+      // (pinned teal in the meta tag) because iOS 26 caches it and gets stuck.
+      document.documentElement.style.backgroundColor = '#126987';
 
       // Security measures to prevent sharing and copying
       document.addEventListener('DOMContentLoaded', function() {
