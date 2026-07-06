@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getAppDate } from "../utils/appTime";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,6 +38,7 @@ export default function InternalTransfer() {
   const [selectedFromAccount, setSelectedFromAccount] = useState<any>(null);
   const [selectedToAccount, setSelectedToAccount] = useState<any>(null);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  const isSubmittingRef = useRef(false);
 
   const form = useForm<InternalTransferData>({
     resolver: zodResolver(internalTransferSchema),
@@ -103,18 +104,22 @@ export default function InternalTransfer() {
   };
 
   const confirmTransfer = () => {
-    console.log('confirmTransfer called', { 
-      formData, 
+    console.log('confirmTransfer called', {
+      formData,
       step,
-      accounts: accounts.length 
+      accounts: accounts.length
     });
-    
+
+    if (isSubmittingRef.current) return; // prevent double-submit from a double-click/tap
+    isSubmittingRef.current = true;
+
     if (!formData) {
       console.log('Missing formData');
       alert('Missing form data');
+      isSubmittingRef.current = false;
       return;
     }
-    
+
     // Find accounts from form data
     const fromAccount = accounts.find(acc => acc.id.toString() === formData.fromAccount);
     const toAccount = accounts.find(acc => acc.id.toString() === formData.toAccount);
@@ -122,12 +127,14 @@ export default function InternalTransfer() {
     if (!fromAccount) {
       console.log('Could not find source account with ID:', formData.fromAccount);
       alert('Could not find source account');
+      isSubmittingRef.current = false;
       return;
     }
-    
+
     if (!toAccount) {
       console.log('Could not find destination account with ID:', formData.toAccount);
       alert('Could not find destination account');
+      isSubmittingRef.current = false;
       return;
     }
 
@@ -369,7 +376,7 @@ export default function InternalTransfer() {
     return (
       <div className="h-screen overflow-hidden flex flex-col bg-white page-slide-in-right">
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
-          <button onClick={() => setStep('form')} className="flex items-center text-white">
+          <button onClick={() => { isSubmittingRef.current = false; setStep('form'); }} className="flex items-center text-white">
             <ChevronLeft className="w-5 h-5 mr-2" />
             <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
           </button>
@@ -468,7 +475,7 @@ export default function InternalTransfer() {
     return (
       <div className="h-screen flex flex-col bg-white page-fade-in">
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
-          <button onClick={() => setStep('form')} className="flex items-center text-white">
+          <button onClick={() => { isSubmittingRef.current = false; setStep('form'); }} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Failed</span>
           </button>
@@ -497,7 +504,7 @@ export default function InternalTransfer() {
                 Back to Dashboard
               </button>
               <button 
-                onClick={() => setStep('form')}
+                onClick={() => { isSubmittingRef.current = false; setStep('form'); }}
                 className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >

@@ -109,6 +109,28 @@ function clearTransferInProgress(key: string): void {
   }
 }
 
+// Per-account lock: the idempotency key above only catches two *identical*
+// requests racing each other (same amount/recipient). Two genuinely
+// different concurrent transfers from the same account (different
+// recipients or amounts) would both read the same starting balance, both
+// pass the funds check, and both write - this lock serializes ALL transfer
+// processing for a given account, closing that read-then-write race.
+const accountsWithTransferInProgress = new Map<number, number>();
+const ACCOUNT_LOCK_TTL = 15 * 1000; // safety valve in case a lock is ever left stuck
+
+function lockAccountForTransfer(accountId: number): boolean {
+  const lockedAt = accountsWithTransferInProgress.get(accountId);
+  if (lockedAt !== undefined && Date.now() - lockedAt < ACCOUNT_LOCK_TTL) {
+    return false;
+  }
+  accountsWithTransferInProgress.set(accountId, Date.now());
+  return true;
+}
+
+function unlockAccountForTransfer(accountId: number): void {
+  accountsWithTransferInProgress.delete(accountId);
+}
+
 // ============================================================================
 
 // Extend express-session types
@@ -1499,15 +1521,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(409).json({ message: "Transfer already being processed. Please wait." });
       }
 
+      // Serialize ALL transfers from this account, not just identical ones -
+      // the idempotency key above only catches two identical requests racing
+      // each other, not two different concurrent transfers from the same
+      // account that would otherwise both read the same starting balance.
+      if (!lockAccountForTransfer(transferData.fromAccountId)) {
+        clearTransferInProgress(idempotencyKey);
+        console.log('🔒 Account already has a transfer in progress, blocking concurrent request');
+        return res.status(409).json({ message: "Another transfer for this account is already being processed. Please wait." });
+      }
+
       // Use try/finally to GUARANTEE in-progress marker is always cleared
       let transferSucceeded = false;
+      let insufficientFunds = false;
       let createdTransaction: any = null;
       let successResult: any = null;
-      
+      let freshBalance = currentBalance;
+
       try {
+        // Re-read the balance now that we hold the account lock - the
+        // earlier read (used only for the fast-fail check above) could be
+        // stale if another transfer for this account completed in between.
+        const freshAccount = await storage.getAccountById(transferData.fromAccountId);
+        freshBalance = parseFloat(freshAccount?.balance ?? account.balance);
+        if (amount > freshBalance) {
+          insufficientFunds = true;
+          throw new Error("INSUFFICIENT_FUNDS");
+        }
+
         // Generate reference AFTER idempotency check
         const transactionReference = transferData.reference || `TXN${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-        const newBalance = (currentBalance - amount).toFixed(2);
+        const newBalance = (freshBalance - amount).toFixed(2);
 
         // Step 1: Create transaction (no retry - not idempotent)
         console.log('💳 Creating debit transaction...');
@@ -1573,25 +1617,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (createdTransaction) {
           console.log('🔄 Attempting to restore original balance...');
           try {
-            await storage.updateAccountBalance(transferData.fromAccountId, currentBalance.toFixed(2));
+            await storage.updateAccountBalance(transferData.fromAccountId, freshBalance.toFixed(2));
           } catch (restoreError) {
             console.error('⚠️ Failed to restore balance:', restoreError);
           }
         }
       } finally {
-        // ALWAYS clear in-progress marker - this guarantees transfer never gets stuck
+        // ALWAYS clear in-progress marker and account lock - this guarantees
+        // a transfer never gets stuck and the account is never left locked
         if (!transferSucceeded) {
           clearTransferInProgress(idempotencyKey);
         }
+        unlockAccountForTransfer(transferData.fromAccountId);
       }
-      
+
       // Return response outside try/finally
       if (transferSucceeded) {
         return res.json(successResult);
+      } else if (insufficientFunds) {
+        return res.status(400).json({ message: "Insufficient funds" });
       } else {
         return res.status(500).json({ message: "Transfer failed. Please try again." });
       }
-      
+
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
@@ -1692,50 +1740,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Account access revoked" });
       }
       
-      const { 
-        fromAccountId, 
-        toAccountId, 
-        amount, 
-        reference, 
+      const {
+        reference,
         recipientName,
         transferType // 'uk' or 'sepa'
       } = req.body;
-      
+
       // Validate required fields
-      if (!fromAccountId || !toAccountId || !amount) {
+      if (!req.body.fromAccountId || !req.body.toAccountId || !req.body.amount) {
         return res.status(400).json({ message: "Missing required fields" });
       }
-      
+
+      // Coerce IDs to numbers once, up front, and use only these from here
+      // on - comparing the raw (possibly mixed string/number) request body
+      // values for the same-account check let a request like
+      // { fromAccountId: 5, toAccountId: "5" } slip past it (5 === "5" is
+      // false) while both still resolved to account 5 once parsed.
+      const fromAccountId = parseInt(req.body.fromAccountId);
+      const toAccountId = parseInt(req.body.toAccountId);
+      const amount = req.body.amount;
+
+      if (!Number.isFinite(fromAccountId) || !Number.isFinite(toAccountId)) {
+        return res.status(400).json({ message: "Invalid account" });
+      }
+
       // Validate amount is a positive number
       const numericAmount = parseFloat(amount);
       if (isNaN(numericAmount) || numericAmount <= 0) {
         return res.status(400).json({ message: "Invalid amount - must be a positive number" });
       }
-      
+
       // Prevent transfers to same account
       if (fromAccountId === toAccountId) {
         return res.status(400).json({ message: "Cannot transfer to the same account" });
       }
-      
+
       // Get sender's account
-      const senderAccount = await storage.getAccountById(parseInt(fromAccountId));
+      const senderAccount = await storage.getAccountById(fromAccountId);
       if (!senderAccount) {
         return res.status(404).json({ message: "Sender account not found" });
       }
-      
+
       // Verify sender owns the account
       if (senderAccount.userId !== sessionUser.id) {
         return res.status(403).json({ message: "You don't own this account" });
       }
-      
+
       // Check sufficient funds
       const senderBalance = parseFloat(senderAccount.balance);
       if (numericAmount > senderBalance) {
         return res.status(400).json({ message: "Insufficient funds" });
       }
-      
+
       // Get recipient's account
-      const recipientAccount = await storage.getAccountById(parseInt(toAccountId));
+      const recipientAccount = await storage.getAccountById(toAccountId);
       if (!recipientAccount) {
         return res.status(404).json({ message: "Recipient account not found" });
       }
@@ -1771,28 +1829,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('🔒 Internal transfer already in progress, blocking concurrent request');
         return res.status(409).json({ message: "Transfer already being processed. Please wait." });
       }
-      
+
+      // Serialize ALL transfers touching either account, not just identical
+      // requests - lock both accounts (in a fixed order to avoid deadlocking
+      // against a simultaneous transfer running the other direction between
+      // the same two accounts) before doing any read used for the actual
+      // balance math.
+      const lockOrder = [fromAccountId, toAccountId].sort((a, b) => a - b);
+      let locksHeld = 0;
+      for (const id of lockOrder) {
+        if (!lockAccountForTransfer(id)) break;
+        locksHeld++;
+      }
+      if (locksHeld < lockOrder.length) {
+        lockOrder.slice(0, locksHeld).forEach(unlockAccountForTransfer);
+        clearTransferInProgress(idempotencyKey);
+        console.log('🔒 One of the accounts already has a transfer in progress, blocking concurrent request');
+        return res.status(409).json({ message: "One of these accounts already has a transfer in progress. Please wait." });
+      }
+
       // Use try/finally to GUARANTEE in-progress marker is always cleared
       let transferSucceeded = false;
+      let insufficientFunds = false;
       let debitTransaction: any = null;
       let creditTransaction: any = null;
       let successResult: any = null;
-      
-      // Calculate values needed for restoration
-      const recipientBalance = parseFloat(recipientAccount.balance);
-      
+      let freshSenderBalance = senderBalance;
+      let freshRecipientBalance = parseFloat(recipientAccount.balance);
+
       try {
+        // Re-read both balances now that we hold both locks - the earlier
+        // reads (used only for the fast-fail checks above) could be stale.
+        const [freshSenderAccount, freshRecipientAccount] = await Promise.all([
+          storage.getAccountById(fromAccountId),
+          storage.getAccountById(toAccountId)
+        ]);
+        freshSenderBalance = parseFloat(freshSenderAccount?.balance ?? senderAccount.balance);
+        freshRecipientBalance = parseFloat(freshRecipientAccount?.balance ?? recipientAccount.balance);
+        if (numericAmount > freshSenderBalance) {
+          insufficientFunds = true;
+          throw new Error("INSUFFICIENT_FUNDS");
+        }
+
         // Generate reference AFTER idempotency check
         const transactionRef = reference || `INT${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
         const paymentMethod = transferType === 'sepa' ? 'SEPA Transfer' : 'UK Transfer';
-        
+
         // Get sender info for transactions
         const senderUser = await storage.getUserById(senderAccount.userId);
         const senderName = senderUser?.name || 'Unknown';
-        
+
         // Calculate new balances
-        const newSenderBalance = (senderBalance - numericAmount).toFixed(2);
-        const newRecipientBalance = (recipientBalance + numericAmount).toFixed(2);
+        const newSenderBalance = (freshSenderBalance - numericAmount).toFixed(2);
+        const newRecipientBalance = (freshRecipientBalance + numericAmount).toFixed(2);
 
         // Step 1: Create debit transaction (no retry - not idempotent)
         console.log('💳 Creating debit transaction (sender)...');
@@ -1865,22 +1954,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (debitTransaction || creditTransaction) {
           console.log('🔄 Attempting to restore balances...');
           try {
-            await storage.updateAccountBalance(fromAccountId, senderBalance.toFixed(2));
-            await storage.updateAccountBalance(toAccountId, recipientBalance.toFixed(2));
+            await storage.updateAccountBalance(fromAccountId, freshSenderBalance.toFixed(2));
+            await storage.updateAccountBalance(toAccountId, freshRecipientBalance.toFixed(2));
           } catch (restoreError) {
             console.error('⚠️ Failed to restore balances:', restoreError);
           }
         }
       } finally {
-        // ALWAYS clear in-progress marker - this guarantees transfer never gets stuck
+        // ALWAYS clear in-progress marker and account locks - this
+        // guarantees a transfer never gets stuck and the accounts are never
+        // left locked
         if (!transferSucceeded) {
           clearTransferInProgress(idempotencyKey);
         }
+        lockOrder.forEach(unlockAccountForTransfer);
       }
-      
+
       // Return response outside try/finally
       if (transferSucceeded) {
         return res.json(successResult);
+      } else if (insufficientFunds) {
+        return res.status(400).json({ message: "Insufficient funds" });
       } else {
         return res.status(500).json({ message: "Transfer failed. Please try again." });
       }

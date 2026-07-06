@@ -210,9 +210,14 @@ export const processTransfer = (
     return false;
   }
   
+  if (!Number.isFinite(amount) || amount <= 0) {
+    console.error('Invalid transfer amount:', amount);
+    return false;
+  }
+
   const currentBalance = parseFloat(selectedAccount.balance);
   console.log('Current balance:', currentBalance, 'Transfer amount:', amount);
-  
+
   if (amount > currentBalance) {
     console.error('Insufficient funds');
     console.error('Transfer failed');

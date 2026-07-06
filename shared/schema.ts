@@ -200,7 +200,13 @@ export const loginSchema = z.object({
 export const transferSchema = z.object({
   fromAccountId: z.number(),
   toAccount: z.string().min(1, "Recipient is required"),
-  amount: z.string().min(1, "Amount is required"),
+  amount: z.string().min(1, "Amount is required").refine(
+    (v) => {
+      const n = parseFloat(v);
+      return Number.isFinite(n) && n > 0;
+    },
+    { message: "Amount must be a positive number" }
+  ),
   reference: z.string().optional(),
   transferType: z.enum(['UK', 'IBAN']).optional(),
   recipientDetails: z.object({

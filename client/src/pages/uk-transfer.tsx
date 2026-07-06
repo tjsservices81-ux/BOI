@@ -87,7 +87,10 @@ const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
   accountNumber: z.string().regex(/^[0-9]{8}$/, "Account number must be 8 digits"),
   sortCode: z.string().regex(/^[0-9]{6}$/, "Sort code must be 6 digits"),
-  amount: z.string().min(1, "Amount is required"),
+  amount: z.string().min(1, "Amount is required").refine(
+    (v) => { const n = parseFloat(v); return Number.isFinite(n) && n > 0; },
+    { message: "Please enter a valid amount" }
+  ),
   reference: z.string().min(1, "Reference is required"),
   fromAccount: z.string().min(1, "Please select an account"),
   recipientEmail: z.string().email("Invalid email").optional().or(z.literal(''))
@@ -175,7 +178,9 @@ const identifyBankFromSortCode = (sortCode: string): string => {
 export default function UkTransfer() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
-  const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'cancelled'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'cancelled' | 'failed'>('form');
+  const [failureMessage, setFailureMessage] = useState<string>('Something went wrong processing your transfer. Please try again.');
+  const isSubmittingRef = useRef(false);
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
@@ -377,17 +382,20 @@ export default function UkTransfer() {
 
   const executeTransfer = async () => {
     if (!formData) return;
-    
+    if (isSubmittingRef.current) return; // prevent double-submit from a double-click/tap
+    isSubmittingRef.current = true;
+
     // Check if user has sufficient funds before processing
     const selectedAccount = accounts.find(acc => acc.id.toString() === formData.fromAccount);
     const transferAmount = parseFloat(formData.amount);
-    
+
     if (!selectedAccount || selectedAccount.balance < transferAmount) {
       // Show insufficient funds error immediately
+      isSubmittingRef.current = false;
       setStep('cancelled');
       return;
     }
-    
+
     // Start processing animation
     setStep('success');
     setShowReference(false);
@@ -507,9 +515,13 @@ export default function UkTransfer() {
                   window.dispatchEvent(new CustomEvent('balanceUpdate'));
                   window.dispatchEvent(new CustomEvent('accountsUpdate', { detail: { accounts: updatedAccounts } }));
                   
+                  isSubmittingRef.current = false;
                   setShowReference(true);
                 } else {
                   console.error('Internal transfer failed:', internalResult.message);
+                  isSubmittingRef.current = false;
+                  setFailureMessage(internalResult.message || 'Your transfer could not be completed. Please try again.');
+                  setStep('failed');
                 }
               } else {
                 // External transfer - use standard transfer processing
@@ -538,18 +550,27 @@ export default function UkTransfer() {
                     timestamp: getAppDate().toISOString()
                   };
                   UserDataManager.addRecentPayee(payee);
-                  
+
                   // Dispatch events to update all components
                   window.dispatchEvent(new CustomEvent('transactionUpdate'));
                   window.dispatchEvent(new CustomEvent('balanceUpdate'));
-                  
+
+                  isSubmittingRef.current = false;
                   setShowReference(true);
+                } else {
+                  isSubmittingRef.current = false;
+                  setFailureMessage('Your transfer could not be completed. Please try again.');
+                  setStep('failed');
                 }
               }
             } catch (error) {
               console.error('Transfer processing failed:', error);
-              // Still show reference to prevent UI from getting stuck
-              setShowReference(true);
+              // A real failure (network error, timeout, etc.) - never claim
+              // success when we don't actually know the transfer went
+              // through; show a clear failure state instead.
+              isSubmittingRef.current = false;
+              setFailureMessage('We could not confirm your transfer - please check your connection and try again.');
+              setStep('failed');
             }
           }, 0);
           
@@ -902,6 +923,54 @@ export default function UkTransfer() {
                   }
                   setStep('form');
                 }}
+                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'failed') {
+    return (
+      <div className="h-screen overflow-hidden flex flex-col page-fade-in" style={{
+        backgroundColor: '#f9fafb'
+      }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+          <button onClick={() => setStep('form')} className="flex items-center text-white">
+            <ChevronLeft className="w-6 h-6 mr-2" />
+            <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Failed</span>
+          </button>
+        </div>
+
+        <div className="px-4 py-6 flex-1 flex items-center justify-center">
+          <div className="text-center max-w-sm mx-auto">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-red-600" />
+            </div>
+
+            <h1 className="text-xl font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Transfer Failed
+            </h1>
+
+            <p className="text-gray-600 mb-6 text-sm leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              {failureMessage}
+            </p>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Back to Dashboard
+              </button>
+              <button
+                onClick={() => setStep('form')}
                 className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >

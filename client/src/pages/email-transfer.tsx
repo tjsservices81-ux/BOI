@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, CreditCard, User, Mail, Send } from "lucide-react";
 import { getAppDate } from "../utils/appTime";
@@ -12,7 +12,10 @@ import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } fro
 const emailTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
   recipientEmail: z.string().email("Valid email is required"),
-  amount: z.string().min(1, "Amount is required"),
+  amount: z.string().min(1, "Amount is required").refine(
+    (v) => { const n = parseFloat(v); return Number.isFinite(n) && n > 0; },
+    { message: "Please enter a valid amount" }
+  ),
   reference: z.string().min(1, "Reference is required"),
   fromAccount: z.string().min(1, "Please select an account")
 });
@@ -30,7 +33,9 @@ interface Account {
 export default function EmailTransfer() {
   const [, navigate] = useLocation();
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'cancelled'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'cancelled' | 'failed'>('form');
+  const [failureMessage, setFailureMessage] = useState<string>('Something went wrong processing your transfer. Please try again.');
+  const isSubmittingRef = useRef(false);
   const [transferReference, setTransferReference] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
@@ -118,15 +123,18 @@ export default function EmailTransfer() {
 
   const executeTransfer = async () => {
     if (!formData) return;
-    
+    if (isSubmittingRef.current) return; // prevent double-submit from a double-click/tap
+    isSubmittingRef.current = true;
+
     const selectedAccount = accounts.find(acc => acc.id.toString() === formData.fromAccount);
     const transferAmount = parseFloat(formData.amount);
-    
+
     if (!selectedAccount || parseFloat(selectedAccount.balance) < transferAmount) {
+      isSubmittingRef.current = false;
       setStep('cancelled');
       return;
     }
-    
+
     const ref = generateReference();
     setTransferReference(ref);
     
@@ -180,14 +188,25 @@ export default function EmailTransfer() {
                   timestamp: getAppDate().toISOString()
                 };
                 UserDataManager.addRecentPayee(payee);
-                
+
                 window.dispatchEvent(new CustomEvent('transactionUpdate'));
                 window.dispatchEvent(new CustomEvent('balanceUpdate'));
-                
+
+                isSubmittingRef.current = false;
                 setShowReference(true);
+              } else {
+                isSubmittingRef.current = false;
+                setFailureMessage('Your transfer could not be completed. Please try again.');
+                setStep('failed');
               }
             } catch (error) {
               console.error('Email Transfer processing failed:', error);
+              // A real failure (network error, timeout, etc.) - never leave
+              // the user stuck on an endless spinner, and never claim
+              // success when we don't actually know the transfer went through.
+              isSubmittingRef.current = false;
+              setFailureMessage('We could not confirm your transfer - please check your connection and try again.');
+              setStep('failed');
             }
           })();
           
@@ -411,6 +430,65 @@ export default function EmailTransfer() {
                 Back to Dashboard
               </button>
               <button 
+                onClick={() => setStep('form')}
+                className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                data-testid="button-try-again"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'failed') {
+    return (
+      <div className="h-screen overflow-hidden flex flex-col page-fade-in" style={{ backgroundColor: '#f9fafb' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
+          <button onClick={() => navigate('/dashboard')} className="text-white" data-testid="button-back">
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <h1 className="text-white font-semibold text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Email Transfer
+          </h1>
+          <div className="w-6"></div>
+        </div>
+
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          padding: '1rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div className="bg-white rounded-xl p-6 shadow-sm text-center max-w-sm w-full">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-red-600 text-2xl">✕</span>
+            </div>
+
+            <h1 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Transfer Failed
+            </h1>
+
+            <p className="text-gray-600 mb-6 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              {failureMessage}
+            </p>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                data-testid="button-back-dashboard"
+              >
+                Back to Dashboard
+              </button>
+              <button
                 onClick={() => setStep('form')}
                 className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
