@@ -1650,66 +1650,77 @@ export default function Profile() {
     
     if (!selectedTransaction || !selectedAccountId) return;
 
-    // Check if this is a database transaction (has numeric ID from PostgreSQL)
-    const isDbTransaction = typeof selectedTransaction.id === 'number' && selectedTransaction.id > 0;
-    
-    if (isDbTransaction) {
-      // Try to delete from database API first
-      try {
-        const response = await fetch(`/api/transactions/${selectedTransaction.id}`, {
-          method: 'DELETE',
+    // Always try the database first - never guess from the ID's shape
+    // whether this is a "real" DB transaction. Locally-created transactions
+    // (from transfers made offline) also get a numeric `Date.now()` ID, so a
+    // shape-based guess would misroute real DB deletes into the local-only
+    // fallback below whenever the guess was wrong. Only fall back to local
+    // storage when the server *confirms* (404) the transaction isn't a DB
+    // record - never on a network error or server failure, which would
+    // otherwise silently diverge the client from the database.
+    try {
+      const response = await fetch(`/api/transactions/${selectedTransaction.id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('💳 Database transaction deleted:', result);
+
+        // Update local account balance from API response
+        if (result.newBalance) {
+          const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+          const updatedAccounts = userAccounts.map((acc: any) =>
+            acc.id === selectedTransaction.accountId
+              ? { ...acc, balance: result.newBalance }
+              : acc
+          );
+          UserDataManager.setUserData('bankAccounts', updatedAccounts);
+          setAccounts(updatedAccounts);
+
+          window.dispatchEvent(new CustomEvent('balanceUpdate', {
+            detail: {
+              accountId: selectedTransaction.accountId,
+              newBalance: result.newBalance,
+              accounts: updatedAccounts
+            }
+          }));
+        }
+
+        // Reload transactions from API
+        const txResponse = await fetch(`/api/transactions/${selectedAccountId}`, {
           credentials: 'include'
         });
-        
-        if (response.ok) {
-          const result = await response.json();
-          console.log('💳 Database transaction deleted:', result);
-          
-          // Update local account balance from API response
-          if (result.newBalance) {
-            const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
-            const updatedAccounts = userAccounts.map((acc: any) => 
-              acc.id === selectedTransaction.accountId 
-                ? { ...acc, balance: result.newBalance }
-                : acc
-            );
-            UserDataManager.setUserData('bankAccounts', updatedAccounts);
-            setAccounts(updatedAccounts);
-            
-            window.dispatchEvent(new CustomEvent('balanceUpdate', {
-              detail: { 
-                accountId: selectedTransaction.accountId, 
-                newBalance: result.newBalance,
-                accounts: updatedAccounts
-              }
-            }));
-          }
-          
-          // Reload transactions from API
-          const txResponse = await fetch(`/api/transactions/${selectedAccountId}`, {
-            credentials: 'include'
-          });
-          if (txResponse.ok) {
-            const dbTransactions = await txResponse.json();
-            setAccountTransactions(dbTransactions);
-          }
-          
-          // Reset modal state
-          setSelectedTransaction(null);
-          setShowDeleteConfirm(false);
-          setShowDeleteTransaction(false);
-          
-          window.dispatchEvent(new CustomEvent('forceRefresh'));
-          showDeveloperMessage('Transaction deleted successfully.');
-          return;
-        } else {
-          console.log('Database delete failed, trying local storage...');
+        if (txResponse.ok) {
+          const dbTransactions = await txResponse.json();
+          setAccountTransactions(dbTransactions);
         }
-      } catch (error) {
-        console.error('Error deleting from database:', error);
+
+        // Reset modal state
+        setSelectedTransaction(null);
+        setShowDeleteConfirm(false);
+        setShowDeleteTransaction(false);
+
+        window.dispatchEvent(new CustomEvent('forceRefresh'));
+        showDeveloperMessage('Transaction deleted successfully.');
+        return;
+      } else if (response.status !== 404) {
+        // A real failure (not "doesn't exist in the DB") - don't silently
+        // fall back to a local-only delete that would diverge from the DB.
+        console.error('Database delete failed with status', response.status);
+        showDeveloperMessage('Could not delete transaction - please try again.');
+        return;
       }
+      // 404: this transaction genuinely isn't a DB record - fall through to
+      // remove it from local storage only.
+      console.log('Transaction not found in database - removing from local storage only');
+    } catch (error) {
+      console.error('Error deleting from database:', error);
+      showDeveloperMessage('Could not delete transaction - check your connection and try again.');
+      return;
     }
-    
+
     // Fall back to local storage deletion (for non-database transactions)
     const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
     

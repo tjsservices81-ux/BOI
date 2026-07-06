@@ -158,10 +158,24 @@ export const flushPendingBalanceSyncs = (): void => {
   pending.forEach(({ accountId, balance }) => syncBalanceToServer(accountId, balance));
 };
 
+// Only trust a queued offline balance for this long before treating it as
+// stale. This exists purely to bridge the gap between "the sync request is
+// still in flight/hasn't been retried yet" and the next successful contact
+// with the server - it must not become a permanent override that can
+// silently clobber a correct, fresh server balance (e.g. after a later
+// transaction delete already produced a new, authoritative balance).
+const PENDING_SYNC_MAX_AGE_MS = 2 * 60 * 1000;
+
 export const getPendingBalanceSyncs = (): Record<string, string> => {
   const pending: PendingBalanceSync[] = JSON.parse(localStorage.getItem(PENDING_BALANCE_SYNCS_KEY) || '[]');
+  const now = Date.now();
+  const fresh = pending.filter(p => now - p.timestamp <= PENDING_SYNC_MAX_AGE_MS);
+  if (fresh.length !== pending.length) {
+    // Drop stale entries so they don't linger forever and can't override anything again
+    localStorage.setItem(PENDING_BALANCE_SYNCS_KEY, JSON.stringify(fresh));
+  }
   const map: Record<string, string> = {};
-  pending.forEach(p => { map[String(p.accountId)] = p.balance; });
+  fresh.forEach(p => { map[String(p.accountId)] = p.balance; });
   return map;
 };
 

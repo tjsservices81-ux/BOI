@@ -1197,7 +1197,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update balance if provided
       let newBalance = account.balance;
       if (balance !== undefined && balance !== null) {
-        newBalance = parseFloat(balance).toFixed(2);
+        const parsedBalance = parseFloat(balance);
+        if (!Number.isFinite(parsedBalance)) {
+          return res.status(400).json({ message: "Balance must be a finite number" });
+        }
+        newBalance = parsedBalance.toFixed(2);
         await storage.updateAccountBalance(accountId, newBalance);
         console.log(`💰 Balance updated via API: Account ID=${accountId}, New Balance=${newBalance}`);
       }
@@ -1428,22 +1432,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         newBalance = currentBalance + transactionAmount;
       }
       
-      // Delete the transaction
-      const deleted = await storage.deleteTransaction(transactionId);
-      
-      if (deleted) {
-        // Update account balance
-        await storage.updateAccountBalance(account.id, newBalance.toFixed(2));
-        
-        console.log(`🗑️ Transaction ${transactionId} deleted by user ${sessionUser.customerNumber}, balance adjusted to ${newBalance.toFixed(2)}`);
-        res.json({ 
-          success: true, 
-          message: "Transaction deleted successfully",
-          newBalance: newBalance.toFixed(2)
-        });
-      } else {
-        res.status(500).json({ message: "Failed to delete transaction" });
-      }
+      // Delete the transaction and adjust the balance as one atomic operation,
+      // so a failure partway through can't leave the ledger and balance disagreeing.
+      await storage.deleteTransactionAndUpdateBalance(transactionId, account.id, newBalance.toFixed(2));
+
+      console.log(`🗑️ Transaction ${transactionId} deleted by user ${sessionUser.customerNumber}, balance adjusted to ${newBalance.toFixed(2)}`);
+      res.json({
+        success: true,
+        message: "Transaction deleted successfully",
+        newBalance: newBalance.toFixed(2)
+      });
     } catch (error) {
       console.error('Error deleting transaction:', error);
       res.status(500).json({ message: "Failed to delete transaction" });
