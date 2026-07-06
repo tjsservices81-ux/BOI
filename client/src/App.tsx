@@ -212,15 +212,24 @@ function AppRoutes() {
               setSplashShown(true);
               localStorage.setItem('splash_completed', 'true');
             } else {
-              // No valid saved state - fallback to cold start behavior
+              // No valid saved state - fallback to FULL cold start behavior.
+              // cold_start_active must be set whenever the splash is going to
+              // show: it's what stops the "/" route from auto-redirecting an
+              // always-logged-in user to the dashboard the instant the splash
+              // completes (before the splash's own navigate('/login') fires),
+              // which caused a visible dashboard flash before login.
               setSplashShown(false);
               localStorage.removeItem('splash_completed');
+              localStorage.setItem('app_session_active', 'true');
+              localStorage.setItem('cold_start_active', 'true');
             }
           } catch (error) {
             console.error('Failed to restore warm start state:', error);
-            // Fallback to cold start behavior
+            // Fallback to FULL cold start behavior (see note above)
             setSplashShown(false);
             localStorage.removeItem('splash_completed');
+            localStorage.setItem('app_session_active', 'true');
+            localStorage.setItem('cold_start_active', 'true');
           }
           
         } else {
@@ -228,7 +237,8 @@ function AppRoutes() {
           setSplashShown(false);
           localStorage.removeItem('splash_completed');
           localStorage.setItem('app_session_active', 'true');
-          
+          localStorage.setItem('cold_start_active', 'true');
+
           // Try to restore user session
           try {
             const savedState = StateManager.restoreAppState(true);

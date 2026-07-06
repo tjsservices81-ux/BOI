@@ -6,6 +6,14 @@ export default function Splash() {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    // Whenever the splash is actually shown, the next screen MUST be the
+    // login screen - never an auto-redirect to the dashboard. Accounts stay
+    // logged in locally, so without this flag the "/" route would see
+    // user + splash_completed the instant the splash finishes and bounce to
+    // the dashboard for a moment before our delayed navigate('/login') runs.
+    // The flag is cleared by the login page on a successful login.
+    localStorage.setItem('cold_start_active', 'true');
+
     // Ensure complete state clearing during splash
     const keys = Object.keys(localStorage);
     keys.forEach(key => {
@@ -13,7 +21,7 @@ export default function Splash() {
         localStorage.removeItem(key);
       }
     });
-    
+
     // Add splash-specific full screen class for iOS PWA
     // Note: this intentionally does NOT touch the global `theme-color` or
     // `apple-mobile-web-app-status-bar-style` meta tags. Under iOS's
