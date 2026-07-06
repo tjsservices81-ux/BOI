@@ -3139,9 +3139,10 @@
         "phone": "154554",
         "address": null,
         "dateOfBirth": null,
-        "joinDate": "2026-07-06T17:09:02.809Z",
+        "joinDate": "Member since 2018",
         "dateCreated": "2026-07-06T17:09:02.809Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "EUR"
       }
     ]
   ],
