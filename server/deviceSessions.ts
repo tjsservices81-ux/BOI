@@ -175,9 +175,12 @@ export async function getUserSessions() {
     
     // 1. Get all users from PostgreSQL database (primary source)
     try {
-      const dbUsers = await db.select().from((await import('../shared/schema')).users);
+      // The user table in shared/schema is named `customers` - referencing a
+      // non-existent `users` export made this whole block throw on every call
+      // and silently fall through to the memory-storage fallback below.
+      const dbUsers = await db.select().from((await import('../shared/schema')).customers);
       console.log(`📊 Found ${dbUsers.length} users in PostgreSQL database`);
-      
+
       dbUsers.forEach(user => {
         userSessionsMap.set(user.customerNumber, {
           sessionId: `db_user_${user.id}`,
@@ -186,7 +189,7 @@ export async function getUserSessions() {
           dateOfBirth: user.dateOfBirth || 'Not provided',
           deviceInfo: 'Database User',
           ipAddress: 'N/A',
-          loginTime: user.dateCreated ? new Date(user.dateCreated).toISOString() : 'Not available',
+          loginTime: user.createdAt ? new Date(user.createdAt).toISOString() : 'Not available',
           customerNumber: user.customerNumber,
           isLoggedIn: false,
           userId: user.id,

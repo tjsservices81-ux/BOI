@@ -81,8 +81,6 @@ export interface IStorage {
   enableUser(userId: number): Promise<void>;
   getUsersWithDisabledStatus(): Promise<any[]>;
   
-  // Initialize sample data
-  initializeSampleData(): Promise<void>;
 }
 
 // Persistent storage implementation
@@ -105,6 +103,7 @@ class MemStorage implements IStorage {
   private currentStatementId: number = 1;
   private currentChatMessageId: number = 1;
   private currentChatResponseId: number = 1;
+  private currentChatSessionId: number = 1;
 
   private persistentManager: PersistentDataManager;
 
@@ -1066,7 +1065,9 @@ class MemStorage implements IStorage {
   async createPayee(insertPayee: InsertPayee): Promise<Payee> {
     const payee: Payee = {
       id: this.currentPayeeId++,
-      ...insertPayee
+      ...insertPayee,
+      iban: insertPayee.iban ?? null,
+      lastAmount: insertPayee.lastAmount ?? null
     };
     this.payees.set(payee.id, payee);
     return payee;
@@ -1088,6 +1089,8 @@ class MemStorage implements IStorage {
     const message: ChatMessage = {
       id: this.currentChatMessageId++,
       ...insertMessage,
+      agentName: insertMessage.agentName ?? null,
+      userId: insertMessage.userId ?? null,
       timestamp: insertMessage.timestamp || new Date()
     };
     this.chatMessages.set(message.id, message);
@@ -1100,7 +1103,11 @@ class MemStorage implements IStorage {
 
   async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
     const session: ChatSession = {
+      id: this.currentChatSessionId++,
       ...insertSession,
+      isActive: insertSession.isActive ?? true,
+      userId: insertSession.userId ?? null,
+      endedAt: insertSession.endedAt ?? null,
       startedAt: insertSession.startedAt || new Date()
     };
     this.chatSessions.set(session.sessionId, session);
@@ -1121,9 +1128,13 @@ class MemStorage implements IStorage {
   }
 
   async createChatResponse(insertResponse: InsertChatResponse): Promise<ChatResponse> {
+    const now = new Date();
     const response: ChatResponse = {
       id: this.currentChatResponseId++,
-      ...insertResponse
+      ...insertResponse,
+      isActive: insertResponse.isActive ?? true,
+      createdAt: insertResponse.createdAt ?? now,
+      updatedAt: insertResponse.updatedAt ?? now
     };
     this.chatResponses.set(response.id, response);
     return response;
@@ -1201,222 +1212,6 @@ class MemStorage implements IStorage {
     return await this.getAllUsers();
   }
 
-  // Initialize sample data for first-time setup ONLY
-  async initializeSampleData(): Promise<void> {
-    // Only initialize if no persistent data exists AND no users in memory
-    if (this.persistentManager.hasPersistedData() || this.users.size > 0) {
-      console.log("Data already exists, skipping sample data initialization");
-      return;
-    }
-
-    console.log("No existing users found, skipping sample data initialization to prevent data override");
-    return;
-
-    // Create sample users with the existing test accounts
-    const sampleUsers = [
-      {
-        customerNumber: "12345678",
-        pin: "1234",
-        name: "Shahah",
-        email: "shsjhs@gmail.com",
-        phone: "+353 1 234",
-        address: "Hello shehsjs",
-        dateOfBirth: "2025-06-01",
-        joinDate: "Member since 2022"
-      },
-      {
-        customerNumber: "BOI050171232",
-        pin: "000000",
-        name: "James Morrison",
-        email: "james.morrison@email.com",
-        phone: "+353 87 123 4567",
-        address: "15 Grafton Street, Dublin 2, Ireland",
-        dateOfBirth: "1985-03-15",
-        joinDate: "Member since 2020"
-      },
-      {
-        customerNumber: "BOI911163841",
-        pin: "000000",
-        name: "Harry",
-        email: "ppatstshshs@gmail.com",
-        phone: "65353584545",
-        address: "Dhhsjaus",
-        dateOfBirth: "2015-02-01",
-        joinDate: "Member since 2024"
-      },
-      {
-        customerNumber: "BOI738185556",
-        pin: "000000",
-        name: "James",
-        email: "hello@gmail.com",
-        phone: "+353 1 234 5678",
-        address: "Hello",
-        dateOfBirth: "2025-06-08",
-        joinDate: "Member since 2018"
-      },
-      {
-        customerNumber: "BOI070974442",
-        pin: "000000",
-        name: "James",
-        email: "hello@gmail.com",
-        phone: "+353 1 234 5678",
-        address: "Hello",
-        dateOfBirth: "2025-06-08",
-        joinDate: "Member since 2018"
-      },
-      {
-        customerNumber: "BOI424898838",
-        pin: "000000",
-        name: "Kevin",
-        email: "kevinm@gmail.com",
-        phone: "+447428064718",
-        address: "maugh",
-        dateOfBirth: "2009-10-01",
-        joinDate: "2022"
-      },
-      {
-        customerNumber: "BOI705915608",
-        pin: "000000",
-        name: "Mathew",
-        email: "dhhssksksj@gmail.com",
-        phone: "434664343434",
-        address: "2a",
-        dateOfBirth: "2007-06-14",
-        joinDate: "Member Since 2022"
-      },
-      {
-        customerNumber: "BOI514951178",
-        pin: "000000",
-        name: "Harry Flek",
-        email: "harryflek@gmail.com",
-        phone: "07428064718",
-        address: "",
-        dateOfBirth: "",
-        joinDate: "Member Since 2022"
-      },
-      {
-        customerNumber: "BOI794439650",
-        pin: "000000",
-        name: "James Wilson",
-        email: "jameswilson202@gmail.com",
-        phone: "3454545467577",
-        address: "",
-        dateOfBirth: "",
-        joinDate: "2025-06-15T15:33:27.627Z"
-      },
-      {
-        customerNumber: "BOI744505351",
-        pin: "000000",
-        name: "James willoughby",
-        email: "jameswilloughby57@gmail.com",
-        phone: "07769911123",
-        address: "31 Ashfield Road Dublin 6 D06 WD50 Ireland",
-        dateOfBirth: "1999-08-14",
-        joinDate: "Member since 2021"
-      },
-      {
-        customerNumber: "BOI461732937",
-        pin: "000000",
-        name: "James Papa",
-        email: "hahahaha@gmail.com",
-        phone: "07428064718",
-        address: "",
-        dateOfBirth: "2001-06-01",
-        joinDate: "2025-06-"
-      },
-      {
-        customerNumber: "BOI634374772",
-        pin: "000000",
-        name: "James",
-        email: "haha@gmail.com",
-        phone: "07428064718",
-        address: "",
-        dateOfBirth: "",
-        joinDate: "2025-06-16T12:02:59.685Z"
-      }
-    ];
-
-    for (const userData of sampleUsers) {
-      const user = await this.createUser(userData);
-      console.log(`Created user: ${user.name} (${user.customerNumber})`);
-
-      // Create sample accounts for each user
-      const sampleAccounts = [
-        {
-          userId: user.id,
-          type: "Current Account" as const,
-          accountNumber: `IE12BOFI90000${user.id}12345678`,
-          balance: "2500.00",
-          currency: "EUR" as const,
-          isActive: true
-        },
-        {
-          userId: user.id,
-          type: "Savings Account" as const,
-          accountNumber: `IE12BOFI90000${user.id}87654321`,
-          balance: "15000.00",
-          currency: "EUR" as const,
-          isActive: true
-        }
-      ];
-
-      for (const accountData of sampleAccounts) {
-        const account = await this.createAccount(accountData);
-
-        // Create sample transactions
-        const sampleTransactions = [
-          {
-            accountId: account.id,
-            type: "credit" as const,
-            amount: "500.00",
-            currency: "EUR" as const,
-            description: "Salary deposit",
-            reference: "SAL001",
-            date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-            balance: account.balance
-          },
-          {
-            accountId: account.id,
-            type: "debit" as const,
-            amount: "125.50",
-            currency: "EUR" as const,
-            description: "Grocery shopping",
-            reference: "POS001",
-            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            balance: (parseFloat(account.balance) - 125.50).toString()
-          }
-        ];
-
-        for (const transactionData of sampleTransactions) {
-          await this.createTransaction(transactionData);
-        }
-      }
-
-      // Create sample payees
-      const samplePayees = [
-        {
-          userId: user.id,
-          name: "Electric Ireland",
-          accountNumber: "IE29AIBK93115212345678",
-          sortCode: "931152",
-          type: "Utility" as const
-        },
-        {
-          userId: user.id,
-          name: "John Smith",
-          accountNumber: "IE64BOFI90017412345678",
-          sortCode: "900174",
-          type: "Personal" as const
-        }
-      ];
-
-      for (const payeeData of samplePayees) {
-        await this.createPayee(payeeData);
-      }
-    }
-
-    console.log("Sample data initialization complete");
-  }
 }
 
 export const storage = new MemStorage();

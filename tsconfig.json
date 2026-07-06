@@ -3,6 +3,7 @@
   "exclude": ["node_modules", "build", "dist"],
   "compilerOptions": {
     "noEmit": true,
+    "target": "ES2022",
     "module": "ESNext",
     "strict": true,
     "lib": ["esnext", "dom", "dom.iterable"],

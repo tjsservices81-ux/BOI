@@ -81,7 +81,7 @@ export class BrowserStorageDetector {
         }
       }
     } catch (error) {
-      console.warn('Test file scanning failed:', error.message);
+      console.warn('Test file scanning failed:', error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -119,7 +119,7 @@ export class BrowserStorageDetector {
       });
       
     } catch (error) {
-      console.warn('Storage pattern detection failed:', error.message);
+      console.warn('Storage pattern detection failed:', error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -160,7 +160,7 @@ export class BrowserStorageDetector {
         }
       }
     } catch (error) {
-      console.warn('Persistent auth indicator check failed:', error.message);
+      console.warn('Persistent auth indicator check failed:', error instanceof Error ? error.message : String(error));
     }
   }
 
