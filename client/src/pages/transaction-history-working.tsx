@@ -21,8 +21,33 @@ export default function TransactionHistoryWorking() {
   const routeHook = useRoute("/transactions/:accountId");
   const [match, params] = routeHook || [false, {}];
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [balance, setBalance] = useState<string>('0.00');
-  const [accountInfo, setAccountInfo] = useState<any>(null);
+  // Seed the balance from the cached account for this route on the very first
+  // render, so the page never flashes "0.00" before loadData() runs after the
+  // first paint. loadData() still reconciles this against the database right
+  // after mount; this just avoids the wrong-value flash in between.
+  const [balance, setBalance] = useState<string>(() => {
+    try {
+      const id = params?.accountId ? parseInt(params.accountId) : 1;
+      const cached = UserDataManager.getUserData('bankAccounts', []) || [];
+      const acc = Array.isArray(cached)
+        ? cached.find((a: any) => String(a.id) === String(id))
+        : null;
+      return acc?.balance || '0.00';
+    } catch {
+      return '0.00';
+    }
+  });
+  const [accountInfo, setAccountInfo] = useState<any>(() => {
+    try {
+      const id = params?.accountId ? parseInt(params.accountId) : 1;
+      const cached = UserDataManager.getUserData('bankAccounts', []) || [];
+      return Array.isArray(cached)
+        ? cached.find((a: any) => String(a.id) === String(id)) || null
+        : null;
+    } catch {
+      return null;
+    }
+  });
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -561,7 +586,39 @@ export default function TransactionHistoryWorking() {
       
       console.log('Loaded transactions for account', accountId);
       
-      // THEN sync from database in the background (non-blocking)
+      // Reconcile the balance against the database (source of truth). The
+      // cached value was shown instantly above; this replaces it with the
+      // server's value, unless there's an unsynced offline transfer for this
+      // account (those pending entries expire after a couple of minutes).
+      fetch('/api/accounts', { credentials: 'include' })
+        .then(response => {
+          if (response.ok) return response.json();
+          throw new Error('Failed to fetch accounts');
+        })
+        .then((dbAccounts) => {
+          if (!Array.isArray(dbAccounts) || dbAccounts.length === 0) return;
+          const pendingSyncs = getPendingBalanceSyncs();
+          const serverAccount = dbAccounts.find((a: any) => String(a.id) === String(accountId));
+          if (!serverAccount) return;
+          const authoritativeBalance = pendingSyncs[String(accountId)] ?? (serverAccount.balance || '0.00');
+          setBalance(authoritativeBalance);
+          setAccountInfo((prev: any) => ({ ...(prev || {}), ...serverAccount, balance: authoritativeBalance }));
+
+          // Keep the cached copy in step so other screens read the same value
+          const cached = UserDataManager.getUserData('bankAccounts', []) || [];
+          if (Array.isArray(cached)) {
+            const merged = cached.map((a: any) =>
+              String(a.id) === String(accountId) ? { ...a, balance: authoritativeBalance } : a
+            );
+            UserDataManager.setUserData('bankAccounts', merged);
+          }
+        })
+        .catch(error => {
+          // Offline / unreachable - keep the cached balance shown above
+          console.log('Balance reconcile skipped:', error.message);
+        });
+
+      // THEN sync transactions from database in the background (non-blocking)
       fetch(`/api/transactions/${accountId}`, { credentials: 'include' })
         .then(response => {
           if (response.ok) return response.json();
