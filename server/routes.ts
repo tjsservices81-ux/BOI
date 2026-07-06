@@ -5,7 +5,7 @@ import { loginSchema, transferSchema, type InsertUser } from "@shared/schema";
 import { z } from "zod";
 import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
-import { generateChatResponse } from "./openai";
+import { generateChatResponse, bankNameFromSortCode, type TransferDetails } from "./chatResponses";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
@@ -2774,7 +2774,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customerNumber: z.string().optional()
       });
 
-      const { message, conversationHistory, agentName, customerNumber } = requestSchema.parse(req.body);
+      const { message, agentName, customerNumber } = requestSchema.parse(req.body);
 
       // Get user data to access their currency preference
       let userCurrency: 'EUR' | 'GBP' = 'EUR';
@@ -2786,8 +2786,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get customer's recent transfer data from request body if available
-      let transferContext = '';
-      
+      let transfer: TransferDetails | undefined;
+
       // The client will pass transaction data in the request body
       const requestedTransactionData = req.body.transactionData;
       if (requestedTransactionData && requestedTransactionData.length > 0) {
@@ -2798,115 +2798,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return tx.paymentMethod === 'UK Transfer' || tx.paymentMethod === 'SEPA Transfer' || tx.paymentMethod === 'EMAIL Transfer';
           })
           .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        
+
         if (transferTransactions.length > 0) {
           const lastTransfer = transferTransactions[0];
           const transferDate = new Date(lastTransfer.timestamp).toLocaleDateString('en-GB', { timeZone: 'Europe/Dublin' });
           const transferTime = new Date(lastTransfer.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Dublin' });
           const transferAmount = parseFloat(lastTransfer.amount.replace('-', ''));
-          
+
           // Extract recipient name from description
           const recipientMatch = lastTransfer.description.match(/Transfer to (.+)/);
-          const recipientName = recipientMatch ? recipientMatch[1] : 'recipient';
-          
-          // Build transfer-specific context based on transfer type
-          let transferTypeContext = '';
-          let accountDetails = '';
-          
-          if (lastTransfer.paymentMethod === 'UK Transfer') {
-            transferTypeContext = `
-TRANSFER TYPE: UK Transfer (sent to a UK account)
-DELIVERY TIME: Takes up to 24 hours to arrive
-CURRENCY: May include currency conversion if relevant`;
-            accountDetails = `
-Sort Code: ${lastTransfer.recipientSortCode || 'Not available'}
-Account Number: ${lastTransfer.recipientAccountNumber || 'Not available'}`;
-          } else if (lastTransfer.paymentMethod === 'SEPA Transfer') {
-            transferTypeContext = `
-TRANSFER TYPE: SEPA Transfer (European payment)
-DELIVERY TIME: Takes 1 business day to arrive
-CURRENCY: Do NOT mention currency conversion - SEPA transfers are EUR to EUR`;
-            accountDetails = `
-IBAN: ${lastTransfer.iban || 'Not available'}
-BIC Code: ${lastTransfer.bicCode || 'Not available'}
-Unique Reference: ${lastTransfer.reference || 'Not specified'}`;
-          } else if (lastTransfer.paymentMethod === 'EMAIL Transfer') {
-            transferTypeContext = `
-TRANSFER TYPE: Email Transfer (sent via email notification)
-DELIVERY TIME: Recipient receives notification immediately, funds available within 24 hours
-CURRENCY: Standard currency transfer`;
-            accountDetails = `
-Recipient Name: ${lastTransfer.recipientName || recipientName}
-Recipient Email: ${lastTransfer.recipientEmail || 'Not available'}
-Reference: ${lastTransfer.reference || 'Not specified'}`;
-          }
-          
-          // Use user currency for proper display
+          const recipientName = lastTransfer.recipientName || (recipientMatch ? recipientMatch[1] : 'recipient');
+
           const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
-          
-          transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
-Last transfer: ${currencySymbol}${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate} at ${transferTime}
-Reference: ${lastTransfer.reference || 'Not specified'}
-Transaction ID: ${lastTransfer.id}
-Status: Confirmed and processed${transferTypeContext}${accountDetails}
+          const deliveryTime = lastTransfer.paymentMethod === 'UK Transfer'
+            ? 'up to 24 hours'
+            : lastTransfer.paymentMethod === 'SEPA Transfer'
+              ? '1-2 business days'
+              : 'up to 24 hours';
 
-RESPONSE GUIDELINES:
-- For UK Transfers: Mention it was sent to a UK account, include sort code/account number, mention up to 24 hours delivery, can mention currency conversion if relevant
-- For SEPA Transfers: Say it was a SEPA transfer, mention IBAN/BIC/unique reference, say 1 business day delivery, DO NOT mention currency conversion or UK accounts
-- For Email Transfers: Confirm recipient name and email address, mention amount sent, include transaction ID and date/time, mention the recipient will receive email notification
-
-IMPORTANT: When customer asks for payment confirmation or transfer details, follow the response guidelines above and include the relevant account details.`;
-        } else {
-          transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
-No transfers found yet on your account.`;
+          transfer = {
+            amount: transferAmount,
+            currencySymbol,
+            recipientName,
+            date: transferDate,
+            time: transferTime,
+            reference: lastTransfer.reference || 'Not specified',
+            transactionId: lastTransfer.id,
+            type: lastTransfer.paymentMethod,
+            deliveryTime,
+            accountNumber: lastTransfer.recipientAccountNumber,
+            sortCode: lastTransfer.recipientSortCode,
+            bankName: bankNameFromSortCode(lastTransfer.recipientSortCode),
+            iban: lastTransfer.iban,
+            bicCode: lastTransfer.bicCode,
+            recipientEmail: lastTransfer.recipientEmail,
+            pdfData: lastTransfer.confirmationPdfData || null
+          };
         }
       }
-      
-      // Prepare conversation history for OpenAI
-      const messages = [
-        ...conversationHistory.map(msg => ({
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content
-        })),
-        { role: 'user' as const, content: message }
-      ];
 
-      console.log(`💬 Sending to AI: ${messages.length} messages in history`);
-      console.log(`   Latest message: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`);
+      const aiResponse = generateChatResponse(message, transfer, userCurrency);
 
-      const aiResponse = await generateChatResponse(messages, agentName, transferContext, userCurrency);
-      
-      // Check if user asked for or AI response mentions a confirmation/PDF/proof/document
-      let pdfData = null;
-      let pdfFileName = null;
+      // Attach the PDF confirmation when the customer asked for proof/documentation
+      // or the response itself references the confirmation
       const lowerResponse = aiResponse.toLowerCase();
       const lowerMessage = message.toLowerCase();
-      
-      // Check both the user's request AND the AI's response for PDF-triggering keywords
-      const userWantsPdf = lowerMessage.includes('confirmation') || lowerMessage.includes('pdf') || 
-        lowerMessage.includes('proof') || lowerMessage.includes('document') || 
-        lowerMessage.includes('receipt') || lowerMessage.includes('evidence') ||
-        lowerMessage.includes('download') || lowerMessage.includes('record');
-      const aiMentionsPdf = lowerResponse.includes('confirmation') || lowerResponse.includes('pdf') || 
-        lowerResponse.includes('sent') || lowerResponse.includes('here is') ||
-        lowerResponse.includes('attached') || lowerResponse.includes('proof') ||
-        lowerResponse.includes('document') || lowerResponse.includes('receipt');
-      
-      if (userWantsPdf || aiMentionsPdf) {
-        // If we have transfer context, we can potentially attach the PDF data
-        if (requestedTransactionData && requestedTransactionData.length > 0) {
-          const transferTransactions = requestedTransactionData
-            .filter((tx: any) => tx.paymentMethod === 'UK Transfer' || tx.paymentMethod === 'SEPA Transfer' || tx.paymentMethod === 'EMAIL Transfer')
-            .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-          
-          if (transferTransactions.length > 0 && transferTransactions[0].confirmationPdfData) {
-            pdfData = transferTransactions[0].confirmationPdfData;
-            pdfFileName = `BOI_Confirmation_${transferTransactions[0].id}.pdf`;
-          }
-        }
+
+      const userWantsPdf = ['confirmation', 'pdf', 'proof', 'document', 'receipt', 'evidence', 'download', 'record']
+        .some(word => lowerMessage.includes(word));
+      const aiMentionsPdf = ['confirmation', 'pdf', 'attached', 'proof', 'document', 'receipt']
+        .some(word => lowerResponse.includes(word));
+
+      let pdfData = null;
+      let pdfFileName = null;
+      if ((userWantsPdf || aiMentionsPdf) && transfer?.pdfData) {
+        pdfData = transfer.pdfData;
+        pdfFileName = `BOI_Confirmation_${transfer.transactionId}.pdf`;
       }
 
-      res.json({ 
+      res.json({
         response: aiResponse,
         agentName: agentName,
         pdfData: pdfData,
