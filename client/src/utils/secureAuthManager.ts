@@ -63,7 +63,7 @@ export class SecureAuthManager {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache'
         },
-        body: JSON.stringify({ customerNumber, pin }),
+        body: JSON.stringify({ customerNumber, pin, hasTouch: navigator.maxTouchPoints > 0 }),
         signal: controller.signal
       });
       

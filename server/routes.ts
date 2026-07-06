@@ -7,7 +7,7 @@ import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse, bankNameFromSortCode, type TransferDetails } from "./chatResponses";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
-import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
+import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized, forceLogoutUser } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 import { sendTransferConfirmation, sendBankStatement, type TransferConfirmationDetails } from "./emailService";
 import { generateTransferConfirmationPDF } from "./pdfService";
@@ -831,6 +831,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { customerNumber, pin } = loginSchema.parse(req.body);
+      const hasTouch = req.body?.hasTouch === true;
       const user = await storage.getUserByCredentials(customerNumber, pin);
       
       if (!user) {
@@ -912,7 +913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if this device is authorized for this account
-      if (!isCurrentDeviceAuthorized(user.id, userAgent)) {
+      if (!isCurrentDeviceAuthorized(user.id, userAgent, hasTouch)) {
         const existingSession = getUserDeviceSession(user.id);
         console.log(`🚫 UNAUTHORIZED DEVICE: User ${user.id} attempted login from ${deviceModel}, but account is permanently locked to ${existingSession?.deviceModel}`);
         return res.status(403).json({ 
@@ -946,6 +947,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress,
         loginTime: new Date().toISOString(),
         userAgent,
+        hasTouch,
         permanentLock: true
       });
 
@@ -2974,6 +2976,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to get device sessions:', error);
       res.status(500).json({ success: false, message: "Failed to load device sessions" });
+    }
+  });
+
+  // Clear a user's permanent device lock - use when a legitimate user is
+  // wrongly blocked from their own account (e.g. a device UA changed).
+  app.post("/api/admin/users/:userId/unlock-device", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const wasLocked = forceLogoutUser(userId);
+      res.json({ success: true, wasLocked });
+    } catch (error) {
+      console.error('Failed to unlock device for user:', error);
+      res.status(500).json({ success: false, message: "Failed to unlock device" });
     }
   });
 
