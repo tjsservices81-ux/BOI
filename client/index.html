@@ -19,7 +19,10 @@
     
     <!-- iOS Web App Configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- Must stay "default": black-translucent makes iOS draw the page UNDER
+         the status bar, which shifts the whole home-screen app up because the
+         layout is not padded for that mode -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#126987" />
     
@@ -203,7 +206,9 @@
     <script>
       // Keep body background blue during load for the splash screen visual
       // but do NOT change theme-color — on iOS 26 Liquid Glass the status bar
-      // reads theme-color and gets stuck on the blue if we change it here
+      // reads theme-color and gets stuck on the blue if we change it here.
+      // App.tsx resets these to the app teal (#126987) once the splash is
+      // done, so the glass status bar stops reflecting splash blue.
       document.body.style.backgroundColor = '#000DFF';
       document.documentElement.style.backgroundColor = '#000DFF';
 

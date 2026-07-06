@@ -366,6 +366,21 @@ function AppRoutes() {
 
 
 
+  // Hand off the page background from splash blue to the app theme color.
+  // index.html forces body/html to #000DFF so the very first paint matches
+  // the splash, but on iOS's glass status bar the bar takes its color from
+  // the page background - if we never reset it, the status bar stays blue
+  // forever. Once the splash is done (or skipped on warm start), switch the
+  // underlying page background to the app teal so the status bar matches
+  // the app chrome.
+  useEffect(() => {
+    if (splashShown) {
+      document.body.style.backgroundColor = '#126987';
+      document.documentElement.style.backgroundColor = '#126987';
+      document.body.removeAttribute('data-initial-bg');
+    }
+  }, [splashShown]);
+
   // Listen for splash completion and mark it properly
   useEffect(() => {
     const handleSplashComplete = () => {
