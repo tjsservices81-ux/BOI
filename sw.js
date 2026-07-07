@@ -1,23 +1,26 @@
 /**
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
- * 
- * VERSION: 4.6.3 - Fix bottom nav missing after swiping back from Customer Panel
- * BUILD: {{BUILD_TIMESTAMP}}
+ *
+ * VERSION: 5.0.0 - HTML/navigation requests are now NETWORK-FIRST.
+ * The old stale-while-revalidate strategy returned the CACHED app shell on
+ * every launch and only refreshed it in the background, so every deployed
+ * fix appeared at least one launch late on installed PWAs - and could stay
+ * stuck for many launches if iOS killed the background refresh. Now every
+ * launch loads the freshly deployed HTML, with the cache used only when
+ * genuinely offline.
  */
 
-const SW_VERSION = '4.6.4';
+const SW_VERSION = '5.0.0';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
 
-// Critical assets that must be cached for PWA to work
+// Critical assets that must be cached for PWA to work.
+// (Only real production URLs - the old list cached dev-only source paths
+// like /client/src/main.tsx that 404 in production builds.)
 const CRITICAL_ASSETS = [
   '/',
-  '/client/index.html',
-  '/client/src/main.tsx',
-  '/client/src/App.tsx',
-  '/client/src/index.css',
   '/manifest.json',
   '/boi_app_icon.png',
   '/boi_logo.svg'
@@ -165,29 +168,24 @@ self.addEventListener('activate', (event) => {
         });
       });
       
-      // Delay old cache cleanup by 30 seconds so any running app can finish loading
-      // This prevents crashes when users have the app open during an update
-      setTimeout(() => {
-        caches.keys().then((cacheNames) => {
-          return Promise.all(
-            cacheNames.map((cacheName) => {
-              if (cacheName === FALLBACK_CACHE) {
-                return Promise.resolve();
-              }
-              if (cacheName.startsWith('boi-mobile-') && 
-                  (!cacheName.includes(SW_VERSION) || !cacheName.includes(String(BUILD_TIMESTAMP)))) {
-                console.log('🗑️ Cleaning old cache:', cacheName);
-                return caches.delete(cacheName);
-              }
-              if (cacheName.startsWith('boi-fallback-') && cacheName !== FALLBACK_CACHE) {
-                console.log('🗑️ Cleaning old fallback cache:', cacheName);
-                return caches.delete(cacheName);
-              }
+      // Purge ALL old caches immediately. Pages that are already running have
+      // their resources in memory, so this is safe - and it guarantees no
+      // stale copy of the app shell survives an update. (The old 30s delayed,
+      // partial cleanup left previous versions' HTML lying around.)
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName === CACHE_NAME || cacheName === FALLBACK_CACHE) {
               return Promise.resolve();
-            })
-          );
-        });
-      }, 30000);
+            }
+            if (cacheName.startsWith('boi-mobile-') || cacheName.startsWith('boi-fallback-')) {
+              console.log('🗑️ Cleaning old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+            return Promise.resolve();
+          })
+        );
+      });
     })
   );
 });
@@ -211,21 +209,30 @@ self.addEventListener('fetch', (event) => {
 
 async function handleFetch(request) {
   const url = new URL(request.url);
-  
+
   try {
+    // HTML / app-shell navigations MUST be network-first: this is what makes
+    // a redeploy actually show up on the next launch instead of serving the
+    // previous cached version of the whole app.
+    if (request.mode === 'navigate' ||
+        request.headers.get('accept')?.includes('text/html')) {
+      return await networkFirstStrategy(request);
+    }
+
     // Network-first strategy for API calls and dynamic content
     if (NETWORK_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname))) {
       return await networkFirstStrategy(request);
     }
-    
-    // Cache-first strategy for static assets
+
+    // Cache-first strategy for static assets (safe: JS/CSS filenames are
+    // content-hashed by the build, so new deploys use new URLs)
     if (CACHE_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname))) {
       return await cacheFirstStrategy(request);
     }
-    
-    // Stale-while-revalidate for HTML pages
+
+    // Stale-while-revalidate for anything else
     return await staleWhileRevalidateStrategy(request);
-    
+
   } catch (error) {
     console.error('Fetch handler error:', error);
     return await getFallbackResponse(request);
@@ -345,7 +352,7 @@ async function getFallbackResponse(request) {
     
     // Ultimate fallback for main page
     if (url.pathname === '/') {
-      const indexResponse = await caches.match('/client/index.html');
+      const indexResponse = await caches.match('/');
       if (indexResponse) {
         return indexResponse;
       }
