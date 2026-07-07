@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, ArrowUpRight, CreditCard, Building2, Zap, Ch
 import { motion, AnimatePresence } from "framer-motion";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
+import { PlatformDetection } from "../utils/platformDetection";
 import { getPendingBalanceSyncs } from "../utils/transferUtils";
 import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } from "../utils/currencyUtils";
 
@@ -192,8 +193,33 @@ export default function TransactionHistoryWorking() {
     alert(`Payment of ${currencySymbol} ${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
   };
 
+  // Opening a PDF backgrounds the PWA; on iOS, closing the document often
+  // relaunches the app. Mark a warm return and save the exact route/user
+  // first, so it comes straight back to this page instead of cold-starting
+  // into the splash screen.
+  const prepareForDocumentView = () => {
+    try {
+      const currentUser = UserDataManager.getCurrentUser();
+      const userProfile = UserDataManager.getUserProfile();
+      StateManager.saveAppState({
+        currentRoute: `/transactions/${accountId}`,
+        user: userProfile ? { ...userProfile, customerNumber: currentUser } : { customerNumber: currentUser },
+        scrollPositions: {},
+        formData: {},
+        timestamp: Date.now(),
+      });
+      // Force the next launch to be treated as a warm start (restore, no splash)
+      PlatformDetection.markWarmStart();
+      localStorage.setItem('splash_completed', 'true');
+      localStorage.removeItem('cold_start_active');
+    } catch (e) {
+      console.warn('prepareForDocumentView failed:', e);
+    }
+  };
+
   const handleOpenStatement = () => {
     if (!statementPdfBlob) return;
+    prepareForDocumentView();
     const url = window.URL.createObjectURL(statementPdfBlob);
     window.open(url, '_blank');
   };
@@ -202,6 +228,9 @@ export default function TransactionHistoryWorking() {
     if (!selectedTransaction) {
       return;
     }
+
+    // Ensure returning from the document restores this page (no splash)
+    prepareForDocumentView();
 
     const openPdfBlob = (blob: Blob) => {
       const url = window.URL.createObjectURL(blob);
@@ -259,6 +288,7 @@ export default function TransactionHistoryWorking() {
 
   const handleAllowPopup = () => {
     if (pendingPdfUrl) {
+      prepareForDocumentView();
       const newWindow = window.open(pendingPdfUrl, '_blank');
       if (newWindow) {
         setShowPopupBlockedModal(false);
@@ -275,6 +305,7 @@ export default function TransactionHistoryWorking() {
 
   const handleDownloadConfirmation = () => {
     if (pendingPdfUrl) {
+      prepareForDocumentView();
       const link = document.createElement('a');
       link.href = pendingPdfUrl;
       link.download = `transfer-confirmation-${selectedTransaction?.reference || Date.now()}.pdf`;
@@ -302,6 +333,7 @@ export default function TransactionHistoryWorking() {
 
   const handleSaveStatement = () => {
     if (!statementPdfBlob || !statementFileName) return;
+    prepareForDocumentView();
     const url = window.URL.createObjectURL(statementPdfBlob);
     const link = document.createElement('a');
     link.href = url;

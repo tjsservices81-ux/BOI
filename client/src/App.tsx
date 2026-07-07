@@ -125,15 +125,6 @@ function AppRoutes() {
     return () => window.removeEventListener('openLiveChat', handleOpenLiveChat);
   }, []);
 
-  // Centralized theme color management
-  const updateThemeColor = (color: string) => {
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', color);
-    }
-  };
-
-  
   // Initialize app state with proper cold/warm start detection
   useEffect(() => {
     let initializationTimer: NodeJS.Timeout;
@@ -356,87 +347,44 @@ function AppRoutes() {
 
 
 
-  // Theme restoration helper - always keep theme-color as the app colour
-  // The splash screen background is already blue via CSS, theme-color must stay
-  // #126987 so the iOS 26 Liquid Glass status bar never gets stuck on blue
-  const restoreThemeForCurrentScreen = () => {
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
-  };
+  // ==========================================================================
+  // STATUS BAR / APP BACKGROUND - single, authoritative mechanism.
+  //
+  // The iOS home-screen status bar takes its colour from the page background.
+  // So there is exactly ONE rule: the page background is the app teal
+  // (#126987) everywhere, and the ONLY thing allowed to make it blue is the
+  // splash screen, which paints blue while it is on screen and reverts to
+  // teal when it leaves (see splash.tsx). theme-color and the body base are
+  // pinned to teal in index.html and never changed here. That's the whole
+  // system - no per-route/per-focus theme juggling, which is what kept
+  // leaving the bar stuck on the wrong colour.
+  // ==========================================================================
 
-
-
-  // Hand off the page background from splash blue to the app theme color.
-  // index.html forces body/html to #000DFF so the very first paint matches
-  // the splash, but on iOS's glass status bar the bar takes its color from
-  // the page background - if we never reset it, the status bar stays blue
-  // forever. Once the splash is done (or skipped on warm start), switch the
-  // underlying page background to the app teal so the status bar matches
-  // the app chrome.
-  useEffect(() => {
-    if (splashShown) {
-      document.body.style.backgroundColor = '#126987';
-      document.documentElement.style.backgroundColor = '#126987';
-      document.body.removeAttribute('data-initial-bg');
-    }
-  }, [splashShown]);
-
-  // On warm starts (or direct loads of /login etc.) the splash screen never
-  // mounts, so it can't remove the static boot loader from index.html -
-  // remove it here the moment the app is initialized. On cold starts the
-  // splash screen removes it first and this is a harmless no-op.
+  // Remove the static boot loader from index.html once React is ready. On a
+  // cold start the splash screen removes it first; this covers warm starts
+  // and reloads that land straight on /login or /dashboard.
   useEffect(() => {
     if (isInitialized) {
       (window as any).__reactTookOver = true;
       const bootLoader = document.getElementById('loading-screen');
       if (bootLoader) bootLoader.remove();
-
-      // If the splash screen is NOT on screen (warm start, or a reload that
-      // landed directly on /login or /dashboard), hand the page background
-      // to the app teal now - the splash-driven handoff below never runs on
-      // those paths, and leaving the body blue kept the status bar blue.
-      // (The splash adds the 'splash-fullscreen' class while it's mounted.)
-      if (!document.body.classList.contains('splash-fullscreen')) {
-        document.body.style.backgroundColor = '#126987';
-        document.documentElement.style.backgroundColor = '#126987';
-        document.body.removeAttribute('data-initial-bg');
-      }
     }
   }, [isInitialized]);
 
-  // Listen for splash completion and mark it properly
+  // Track splash completion for routing (no colour work here - splash.tsx owns that)
   useEffect(() => {
     const handleSplashComplete = () => {
       setSplashTransitioning(true);
-      // Mark splash as completed in localStorage for proper state tracking
       localStorage.setItem('splash_completed', 'true');
-      
-      // Small delay to prevent flash, then complete transition
       setTimeout(() => {
         setSplashShown(true);
         setSplashTransitioning(false);
       }, 100);
-      
-      // Restore theme-color after splash
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
     };
 
     window.addEventListener('splashComplete', handleSplashComplete);
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
-
-  // Focus event handling for theme restoration
-  useEffect(() => {
-    const handleFocusRestore = () => {
-      restoreThemeForCurrentScreen();
-      // Ensure layout is correctly calculated after focus
-      window.dispatchEvent(new Event('resize'));
-    };
-
-    window.addEventListener('focus', handleFocusRestore);
-    return () => window.removeEventListener('focus', handleFocusRestore);
-  }, [location]);
 
   // Flush any pending balance syncs when connectivity is restored
   useEffect(() => {
@@ -450,18 +398,12 @@ function AppRoutes() {
     return () => window.removeEventListener('online', handleOnline);
   }, []);
 
-  // Keep theme-color in sync with route
-  useEffect(() => {
-    restoreThemeForCurrentScreen();
-  }, [location]);
-
-  // Prevent flash during initialization
+  // Prevent flash during initialization. Teal (not blue) - the blue boot
+  // visual is the #loading-screen div from index.html, which sits on top of
+  // this until React shows the splash; keeping this teal means blue only ever
+  // comes from the splash itself.
   if (!isInitialized) {
-    return (
-      <div className="w-full h-full bg-[#000DFF]">
-        {/* Empty blue screen during initialization */}
-      </div>
-    );
+    return <div className="w-full h-full bg-[#126987]" />;
   }
 
   return (
