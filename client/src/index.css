@@ -1191,14 +1191,10 @@ img {
     margin: 0;
   }
   
-  .splash-fullscreen html,
-  .splash-fullscreen body {
-    background: transparent !important;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-  }
-  
+  /* (Removed dead `.splash-fullscreen html/body` rules - the class is ON the
+     body element, so those selectors never matched. body.splash-fullscreen
+     is styled in the base-background section further down.) */
+
   .splash-fullscreen #root {
     background: transparent !important;
     margin: 0;
@@ -1849,6 +1845,16 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
   box-sizing: border-box;
 }
 
+/* ===========================================================================
+   PAGE BASE BACKGROUND = STATUS BAR COLOUR.
+   iOS paints the home-screen app's status bar with the page background, so
+   html/body MUST be the app teal - and it must be !important here because
+   these used to be `transparent !important`, which silently overrode every
+   attempt to set the colour from JS and kept the status bar stuck on the
+   old inline splash blue. The ONLY exception is while the splash screen is
+   showing (body gets the .splash-fullscreen class), which flips it to the
+   splash blue below.
+   =========================================================================== */
 html, body {
   margin: 0;
   padding: 0;
@@ -1859,7 +1865,7 @@ html, body {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-  background: transparent !important;
+  background: #126987 !important;
 }
 
 #root {
@@ -1875,7 +1881,14 @@ body {
   position: fixed !important;
   width: 100% !important;
   height: 100% !important;
-  background: transparent !important;
+  background: #126987 !important;
+}
+
+/* Splash blue - ONLY while the splash screen is on screen. The splash adds
+   this class to <body> on mount and removes it on unmount. */
+body.splash-fullscreen,
+html:has(body.splash-fullscreen) {
+  background: #000DFF !important;
 }
 
 /* Mobile specific fixes */
@@ -2185,7 +2198,9 @@ body {
 
   body {
     @apply antialiased text-foreground;
-    background: transparent !important;
+    /* Base background = app teal; iOS paints the status bar with this.
+       (Was `transparent !important`, which fought the real base colour.) */
+    background: #126987 !important;
     font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
