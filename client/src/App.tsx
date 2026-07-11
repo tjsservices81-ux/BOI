@@ -410,6 +410,25 @@ function AppRoutes() {
     <SecurityWrapper>
       <ErrorBoundary>
         <div className="fixed inset-0 overflow-hidden">
+          {/* Deploy verification stamp - visible ONLY on the login screen.
+              If this number isn't visible on the device, the device is
+              running an old cached build. Bump it on notable deploys. */}
+          {(location === '/login' || location === '/') && (
+            <div
+              style={{
+                position: 'fixed',
+                bottom: 2,
+                right: 8,
+                fontSize: 10,
+                color: 'rgba(255,255,255,0.55)',
+                zIndex: 99999,
+                pointerEvents: 'none',
+                fontFamily: 'monospace',
+              }}
+            >
+              v5.0.1
+            </div>
+          )}
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
