@@ -4,7 +4,7 @@
 // history to follow up naturally instead of treating every message in isolation.
 import { UserDataManager } from "./userDataManager";
 import { getUserCurrency } from "./currencyUtils";
-import { formatSortCode } from "./bankValidation";
+import { formatSortCode, validateUKSortCode } from "./bankValidation";
 
 export interface ChatEngineResult {
   text: string;
@@ -37,22 +37,11 @@ interface LastTransfer {
 
 type Topic = 'transfer' | 'proof' | 'cancel' | 'guarantee' | 'delay' | 'balance' | 'card' | 'atm' | null;
 
+// Reuses the single, verified sort-code-to-bank table in bankValidation.ts
+// instead of keeping a separate (and easily outdated) copy here.
 function getBankNameFromSortCode(sortCode?: string): string {
   if (!sortCode) return "UK Bank";
-  const prefix = sortCode.replace(/-/g, "").substring(0, 2);
-  const banks: Record<string, string> = {
-    "04": "Monzo",
-    "20": "Barclays",
-    "30": "Lloyds Bank",
-    "60": "Lloyds Bank",
-    "77": "TSB Bank",
-    "83": "NatWest",
-    "80": "Bank of Scotland",
-    "40": "HSBC",
-    "16": "Starling Bank",
-    "23": "Metro Bank",
-  };
-  return banks[prefix] || "UK Bank";
+  return validateUKSortCode(sortCode) || "UK Bank";
 }
 
 function getLastTransfer(): LastTransfer | null {

@@ -41,147 +41,133 @@ const sortCodePrefixes: { prefix: string; bank: string }[] = [
   // Nationwide Building Society - 07-xx-xx range
   { prefix: "07", bank: "Nationwide Building Society" },
   
-  // TSB Bank - Multiple ranges
-  { prefix: "30", bank: "TSB Bank" },
+  // TSB Bank - 87-xx-xx range. TSB also issues some 30-xx-xx and 77-xx-xx
+  // codes inherited from the 2013 Lloyds/TSB split, but those specific
+  // ranges are shared with Lloyds Bank branches at the individual-branch
+  // level, not distinguishable by prefix alone - only TSB's own dedicated
+  // 87-xx-xx range is listed here to avoid misidentifying either bank.
   { prefix: "87", bank: "TSB Bank" },
-  
+
   // Co-operative Bank - 08-xx-xx range
   { prefix: "08", bank: "Co-operative Bank" },
-  
-  // Metro Bank - 23-xx-xx range
-  { prefix: "23", bank: "Metro Bank" },
-  
-  // Virgin Money - 82-xx-xx range
-  { prefix: "82", bank: "Virgin Money" },
-  
-  // First Direct - 40-xx-xx range (HSBC)
-  { prefix: "40", bank: "First Direct" },
-  
-  // Monzo - 04-00-04
+
+  // Metro Bank - 23-05-xx range (23 is a shared clearing prefix used by many
+  // challenger banks, so only Metro Bank's specific sub-range is mapped here)
+  { prefix: "2305", bank: "Metro Bank" },
+
+  // Virgin Money / Clydesdale Bank - 82-xx-xx range (Clydesdale rebranded to
+  // Virgin Money; both names still appear on sort code records for this range)
+  { prefix: "82", bank: "Virgin Money (Clydesdale Bank)" },
+
+  // First Direct - 40-47-xx range specifically (a division of HSBC UK, but
+  // with its own dedicated sub-range distinct from general HSBC UK codes)
+  { prefix: "4047", bank: "First Direct" },
+
+  // Monzo - 04-00-04 (and additional allocated codes)
   { prefix: "040004", bank: "Monzo" },
-  
-  // Starling Bank - 60-83-71
+  { prefix: "040039", bank: "Monzo" },
+  { prefix: "040040", bank: "Monzo" },
+
+  // Starling Bank - 60-83-71 (and additional allocated codes)
   { prefix: "608371", bank: "Starling Bank" },
-  
-  // Revolut - 23-92-02
-  { prefix: "239202", bank: "Revolut" },
-  
-  // Wise - Multiple ranges
+  { prefix: "608372", bank: "Starling Bank" },
+  { prefix: "608373", bank: "Starling Bank" },
+
+  // Wise (formerly TransferWise) - 23-14-70 and 23-08-01
   { prefix: "231470", bank: "Wise" },
-  { prefix: "232144", bank: "Wise" },
   { prefix: "230801", bank: "Wise" },
-  
+
   // Monese - 23-27-15
   { prefix: "232715", bank: "Monese" },
-  
+
   // Tide - 23-31-14
   { prefix: "233114", bank: "Tide" },
-  
-  // Atom Bank - 23-41-05
-  { prefix: "234105", bank: "Atom Bank" },
-  
-  // Cashplus Bank - 23-05-53
-  { prefix: "230553", bank: "Cashplus Bank" },
-  
+
+  // Atom Bank - 04-40-01
+  { prefix: "044001", bank: "Atom Bank" },
+
+  // Zempler Bank (formerly Cashplus) - 08-71-99
+  { prefix: "087199", bank: "Zempler Bank (formerly Cashplus)" },
+
   // Allica Bank - 23-43-42
   { prefix: "234342", bank: "Allica Bank" },
-  
+
   // Kroo Bank - 23-23-28
   { prefix: "232328", bank: "Kroo Bank" },
-  
-  // Zopa Bank - 23-24-22
-  { prefix: "232422", bank: "Zopa Bank" },
-  
+
+  // Zopa Bank - 60-84-00
+  { prefix: "608400", bank: "Zopa Bank" },
+
   // Triodos Bank - 16-58-xx range
   { prefix: "1658", bank: "Triodos Bank" },
-  
-  // Clydesdale Bank - 82-xx-xx range
-  { prefix: "82", bank: "Clydesdale Bank" },
-  
+
   // Yorkshire Bank - 05-xx-xx range
   { prefix: "05", bank: "Yorkshire Bank" },
-  
+
   // Chase UK - Specific codes
   { prefix: "609926", bank: "Chase UK" },
   { prefix: "609927", bank: "Chase UK" },
   { prefix: "609928", bank: "Chase UK" },
-  
+
   // Barclaycard (part of Barclays but separate)
   { prefix: "204967", bank: "Barclaycard" },
-  
-  // American Express Banking - UK
-  { prefix: "232857", bank: "American Express" },
-  
-  // M&S Bank - 30-91-xx range
-  { prefix: "3091", bank: "M&S Bank" },
-  
-  // Tesco Bank - 30-96-xx range
-  { prefix: "3096", bank: "Tesco Bank" },
-  
+
+  // M&S Bank (HSBC-operated) - 40-12-xx range
+  { prefix: "4012", bank: "M&S Bank" },
+
+  // Tesco Bank - 40-64-xx range
+  { prefix: "4064", bank: "Tesco Bank" },
+
   // The Co-operative Bank - Additional ranges
   { prefix: "089", bank: "Co-operative Bank" },
-  
+
   // Yorkshire Building Society - 60-99-xx range (except Chase specific)
   { prefix: "6099", bank: "Yorkshire Building Society" },
-  
-  // Coventry Building Society - 40-30-xx range
-  { prefix: "4030", bank: "Coventry Building Society" },
-  
+
+  // Coventry Building Society - 40-63-xx range
+  { prefix: "4063", bank: "Coventry Building Society" },
+
   // Leeds Building Society - 08-90-xx range
   { prefix: "0890", bank: "Leeds Building Society" },
-  
+
   // Principality Building Society - 20-31-xx range
   { prefix: "2031", bank: "Principality Building Society" },
-  
+
   // Newcastle Building Society - 55-61-xx range
   { prefix: "5561", bank: "Newcastle Building Society" },
-  
+
   // Nottingham Building Society - 60-70-xx range
   { prefix: "6070", bank: "Nottingham Building Society" },
-  
+
   // Skipton Building Society - 30-97-xx range
   { prefix: "3097", bank: "Skipton Building Society" },
-  
-  // Apple Bank / Goldman Sachs - 23-69-xx range
-  { prefix: "236926", bank: "Apple Bank (Goldman Sachs)" },
-  
+
+  // Tandem Bank - 60-83-63
+  { prefix: "608363", bank: "Tandem Bank" },
+
   // Curve - 23-14-xx range
   { prefix: "231454", bank: "Curve" },
-  
+
   // Chip Savings - 23-26-xx range
   { prefix: "232653", bank: "Chip" },
-  
-  // Tandem Bank - 23-14-xx range
-  { prefix: "231428", bank: "Tandem Bank" },
-  
-  // Modulr - 23-14-xx range
+
+  // Modulr (payments infrastructure used by several fintechs) - 23-14-03
   { prefix: "231403", bank: "Modulr" },
-  
-  // ClearBank (used by many fintechs) - 23-14-xx range
+
+  // ClearBank (payments infrastructure used by many fintechs) - 23-14-xx range
   { prefix: "2314", bank: "ClearBank" },
-  
-  // Lloyds Business Banking - 30-xx-xx range (subset)
+
+  // Lloyds Business Banking - 30-92-74 (subset of Lloyds' own range)
   { prefix: "309274", bank: "Lloyds Business" },
-  
+
   // Ulster Bank - 98-xx-xx range
   { prefix: "98", bank: "Ulster Bank" },
-  
+
   // Danske Bank - 95-xx-xx range
   { prefix: "95", bank: "Danske Bank" },
-  
-  // AIB (GB) - 23-69-xx range
+
+  // AIB (GB) - 23-69-40
   { prefix: "236940", bank: "AIB (GB)" },
-  
-  // Starling Bank (additional codes)
-  { prefix: "608372", bank: "Starling Bank" },
-  { prefix: "608373", bank: "Starling Bank" },
-  
-  // Monzo (additional codes)
-  { prefix: "040039", bank: "Monzo" },
-  { prefix: "040040", bank: "Monzo" },
-  
-  // N26 - 23-14-xx range
-  { prefix: "231448", bank: "N26" },
 ];
 
 export function validateUKSortCode(sortCode: string): string | null {
@@ -231,7 +217,12 @@ export function formatSortCode(sortCode: string): string {
   return cleanCode;
 }
 
-// IBAN Bank Code Database
+// IBAN Bank Code Database - for countries whose IBAN embeds the bank's
+// actual 4-letter BIC code directly in the account number (Ireland, UK,
+// Netherlands). Most other SEPA countries embed a purely NUMERIC national
+// bank code instead (see numericIbanBankCodes below) - an alphabetic BIC
+// like "COBADEFF" never actually appears inside a real German/French/
+// Spanish/Italian IBAN, so those countries must be looked up differently.
 const ibanBankCodeMap: Record<string, string> = {
   // Irish Banks (IE)
   "AIBK": "AIB (Allied Irish Banks)",
@@ -240,7 +231,7 @@ const ibanBankCodeMap: Record<string, string> = {
   "PTSB": "Permanent TSB",
   "EIRE": "EBS Ireland",
   "ULSB": "Ulster Bank",
-  
+
   // UK Banks (GB)
   "NWBK": "NatWest",
   "BARC": "Barclays",
@@ -258,210 +249,95 @@ const ibanBankCodeMap: Record<string, string> = {
   "SRLG": "Starling Bank",
   "CHAS": "Chase UK",
   "CPBK": "Co-operative Bank",
-  
-  // German Banks (DE)
-  "DEUT": "Deutsche Bank",
-  "DEUTDE": "Deutsche Bank",
-  "DEUTDEFF": "Deutsche Bank",
-  "COBADEFF": "Commerzbank",
-  "COBA": "Commerzbank",
-  "DRSD": "Commerzbank (Dresdner Bank)",
-  "DRESDEFF": "Commerzbank (Dresdner Bank)",
-  "HYVEDEMM": "HypoVereinsbank (UniCredit)",
-  "HYVE": "HypoVereinsbank",
-  "BYLADEM1": "Bayerische Landesbank",
-  "MARKDEF1": "Bundesbank",
-  "SOLADEST": "Landesbank Baden-Württemberg",
-  "WELADED1": "Landesbank Hessen-Thüringen",
-  "NOLADE21": "Nord/LB Norddeutsche Landesbank",
-  "WELADE3L": "Helaba Landesbank Hessen-Thüringen",
-  "PBNKDEFF": "Postbank (Deutsche Bank)",
-  "ESSEDE5F": "Santander Consumer Bank",
-  "GENODE51": "DZ Bank",
-  "GENODEFF": "DZ Bank",
-  "GENODEF1": "Volksbanken Raiffeisenbanken",
-  "VBRSDE33": "Volksbank",
-  "DGPBDEFF": "DG HYP (Deutsche Genossenschafts-Hypothekenbank)",
-  "N26DEFF": "N26 Bank",
-  
-  // French Banks (FR)
-  "BNPA": "BNP Paribas",
-  "BNPAFRPP": "BNP Paribas",
-  "SOGEFRPP": "Société Générale",
-  "CRLYFRPP": "Crédit Lyonnais (LCL)",
-  "AGRIFRPP": "Crédit Agricole",
-  "CEPAFRPP": "Banque Populaire",
-  "CMCIFRPP": "Crédit Mutuel",
-  "CCFRFRPP": "HSBC France",
-  "PSSTFRPP": "La Banque Postale",
-  "BDFEFRPP": "Banque de France",
-  "CAIXFRPP": "CaixaBank France",
-  "NATXFRPP": "Natixis",
-  "BFCMFRPP": "Banque Fédérative du Crédit Mutuel",
-  "CCHQFRPP": "Crédit Coopératif",
-  "CMCIFR2A": "CIC (Crédit Industriel et Commercial)",
-  "ILADFRPP": "Caisse d'Épargne",
-  "TRIOFRPP": "Triodos Bank France",
-  "REVOLT21": "Revolut France",
-  
-  // Spanish Banks (ES)
-  "BBVA": "BBVA",
-  "BBVAESMM": "BBVA",
-  "BSCH": "Santander",
-  "BSCHESMM": "Santander Spain",
-  "SABH": "Banco Sabadell",
-  "SABADELL": "Banco Sabadell",
-  "CAIXESBB": "CaixaBank",
-  "CAIXESBBXXX": "CaixaBank",
-  "POPUESMM": "Banco Popular",
-  "INGDESMM": "ING Spain",
-  "OPENESMM": "Openbank (Santander)",
-  
+
   // Dutch Banks (NL)
   "ABNA": "ABN AMRO",
-  "ABNANL2A": "ABN AMRO",
   "INGB": "ING Bank",
-  "INGBNL2A": "ING Netherlands",
   "RABO": "Rabobank",
-  "RABONL2U": "Rabobank",
   "TRIO": "Triodos Bank",
-  "TRIONL2U": "Triodos Bank Netherlands",
-  "SNSBNL2A": "SNS Bank (de Volksbank)",
-  "ASNBNL21": "ASN Bank",
-  "RBRBNL21": "RegioBank",
-  "BUNQNL2A": "bunq",
-  "KNABNL2H": "Knab",
-  "MOYONL21": "Moneyou (ABN AMRO)",
-  
-  // Swiss Banks (CH)
-  "UBSW": "UBS",
-  "UBSWCHZH": "UBS Switzerland",
-  "CRESCHZZ": "Credit Suisse",
-  "CRESCHZ8": "Credit Suisse",
-  "RAIF": "Raiffeisen Switzerland",
-  "RAIFCH22": "Raiffeisen Schweiz",
-  "ZKBKCHZZ": "Zürcher Kantonalbank",
-  "POFICHBE": "PostFinance",
-  "BCVLCH2L": "Banque Cantonale Vaudoise",
-  "BPCVCH21": "Banque Cantonale de Genève",
-  "LUKBCH2L": "Luzerner Kantonalbank",
-  "MIGRCHZZ": "Migros Bank",
-  "HYPLCH22": "Hypothekarbank Lenzburg",
-  "RBABCH22": "Basler Kantonalbank",
-  
-  // Belgian Banks (BE)
-  "GEBA": "BNP Paribas Fortis",
-  "GEBABEBB": "BNP Paribas Fortis",
-  "KRBE": "KBC Bank",
-  "KREDBEBB": "KBC Bank Belgium",
-  "CEBA": "Belfius",
-  "GKCCBEBB": "Belfius Bank",
-  "INGA": "ING Belgium",
-  "BBRUBEBB": "ING Belgium",
-  "AXABBE22": "AXA Bank Belgium",
-  "ARSPBE22": "Argenta",
-  "VDSPBE91": "Vdk Bank",
-  
-  // Italian Banks (IT)
-  "UNCRITMM": "UniCredit",
-  "BCITITMM": "Intesa Sanpaolo",
-  "BNLIITRR": "BNL (BNP Paribas)",
-  "BLOPIT22": "Banca Popolare di Milano",
-  "BPPIITRRXXX": "Banca Popolare",
-  
-  // Austrian Banks (AT)
-  "BKAU": "Bank Austria (UniCredit)",
-  "BKAUATWW": "Bank Austria",
-  "RLNW": "Raiffeisen",
-  "RLNWATWW": "Raiffeisen Landesbank",
-  "BAWAATWW": "BAWAG",
-  "OPSKATWW": "Erste Bank",
-  "GIBAATWW": "Erste Group Bank",
-  
-  // Portuguese Banks (PT)
-  "CGDIPTPL": "Caixa Geral de Depósitos",
-  "BCOMPTPL": "Millennium BCP",
-  "BNIFPTPL": "BNI Europa",
-  "BBPIPTPL": "Banco BPI",
-  
-  // Polish Banks (PL)
-  "PKOPPLPW": "PKO Bank Polski",
-  "WBKPPLPP": "Santander Bank Polska",
-  "BPKOPLPW": "Bank Pekao",
-  "INGBPLPW": "ING Bank Śląski",
-  "ALBPPLPW": "Alior Bank"
+  "SNSB": "SNS Bank (de Volksbank)",
+  "ASNB": "ASN Bank",
+  "RBRB": "RegioBank",
+  "BUNQ": "bunq",
+  "KNAB": "Knab",
+  "MOYO": "Moneyou (ABN AMRO)",
+};
+
+// Numeric national bank codes, keyed by country then by the exact digit
+// string as it appears in the IBAN. Germany/France/Spain/Italy (and most
+// other SEPA countries) identify the bank with a number, not a BIC, so this
+// is the only way to recognise them. Coverage here is necessarily partial -
+// each of these countries has thousands of individual bank/branch codes -
+// but includes the major, most commonly encountered banks.
+const numericIbanBankCodes: Record<string, Record<string, string>> = {
+  DE: {
+    "37040044": "Deutsche Bank",
+    "50040000": "Commerzbank",
+  },
+  FR: {
+    "30004": "BNP Paribas",
+    "30003": "Société Générale",
+    "30006": "Crédit Agricole",
+    "30002": "LCL (Crédit Lyonnais)",
+    "20041": "La Banque Postale",
+  },
+  ES: {
+    "0049": "Santander",
+    "0182": "BBVA",
+    "2100": "CaixaBank",
+    "0128": "Bankinter",
+    "0081": "Banco Sabadell",
+    "1465": "ING Spain",
+    "0073": "Openbank",
+    "0019": "Deutsche Bank Spain",
+  },
+  IT: {
+    "02008": "UniCredit",
+    "03069": "Intesa Sanpaolo",
+  },
 };
 
 export function validateIBAN(iban: string): { isValid: boolean; bankName: string | null; country: string | null } {
   // Remove spaces and convert to uppercase
   const cleanIban = iban.replace(/\s/g, '').toUpperCase();
-  
+
   // Basic validation - minimum 15 characters, starts with 2 letters
   if (cleanIban.length < 15 || !/^[A-Z]{2}/.test(cleanIban)) {
     return { isValid: false, bankName: null, country: null };
   }
-  
+
   // Extract country code
   const countryCode = cleanIban.substring(0, 2);
-  
-  // Extract bank code (typically characters 4-8, but varies by country)
-  let bankCode = '';
   let bankName: string | null = null;
-  
-  // Country-specific bank code extraction
-  switch (countryCode) {
-    case 'IE': // Ireland - chars 4-7 (4 chars)
-      bankCode = cleanIban.substring(4, 8);
-      break;
-    case 'GB': // UK - chars 4-7 (4 chars)
-      bankCode = cleanIban.substring(4, 8);
-      break;
-    case 'DE': // Germany - chars 4-11 (8 chars, but we check first 4)
-      bankCode = cleanIban.substring(4, 8);
-      break;
-    case 'FR': // France - chars 4-8 (5 chars, but we check first 4)
-      bankCode = cleanIban.substring(4, 8);
-      break;
-    case 'ES': // Spain - chars 4-7 (4 chars)
-      bankCode = cleanIban.substring(4, 8);
-      break;
-    case 'NL': // Netherlands - chars 4-7 (4 chars)
-      bankCode = cleanIban.substring(4, 8);
-      break;
-    case 'BE': // Belgium - chars 4-6 (3 chars, but we check 4)
-      bankCode = cleanIban.substring(4, 8);
-      break;
-    case 'IT': // Italy - chars 5-10 (check chars after X)
-      bankCode = cleanIban.substring(5, 9);
-      break;
-    case 'AT': // Austria - chars 4-8
-      bankCode = cleanIban.substring(4, 8);
-      break;
-    case 'CH': // Switzerland - chars 4-8
-      bankCode = cleanIban.substring(4, 8);
-      break;
-    default:
-      bankCode = cleanIban.substring(4, 8);
+
+  // Ireland, the UK, and the Netherlands embed the bank's actual 4-letter
+  // BIC code directly after the check digits (e.g. GB29 NWBK ... -> NWBK).
+  if (countryCode === 'IE' || countryCode === 'GB' || countryCode === 'NL') {
+    const bicCode = cleanIban.substring(4, 8);
+    bankName = ibanBankCodeMap[bicCode] || null;
+  } else {
+    // Most other SEPA countries embed a purely numeric national bank code
+    // instead, at a country-specific position/length.
+    let numericCode = '';
+    switch (countryCode) {
+      case 'DE': // Germany - 8-digit Bankleitzahl at position 4-11
+        numericCode = cleanIban.substring(4, 12);
+        break;
+      case 'FR': // France - 5-digit code banque at position 4-8
+        numericCode = cleanIban.substring(4, 9);
+        break;
+      case 'ES': // Spain - 4-digit entity code at position 4-7
+        numericCode = cleanIban.substring(4, 8);
+        break;
+      case 'IT': // Italy - 5-digit ABI code at position 5-9 (after 1-letter CIN)
+        numericCode = cleanIban.substring(5, 10);
+        break;
+    }
+    if (numericCode) {
+      bankName = numericIbanBankCodes[countryCode]?.[numericCode] || null;
+    }
   }
-  
-  // Look up bank name - try multiple code lengths for better matching
-  // Try 8 characters first (full BIC codes like DEUTDEFF)
-  if (cleanIban.length >= 12) {
-    const code8 = cleanIban.substring(4, 12);
-    bankName = ibanBankCodeMap[code8] || null;
-  }
-  
-  // Try 6 characters (like DEUTDE)
-  if (!bankName && cleanIban.length >= 10) {
-    const code6 = cleanIban.substring(4, 10);
-    bankName = ibanBankCodeMap[code6] || null;
-  }
-  
-  // Try 4 characters (standard BIC like DEUT, BNPA)
-  if (!bankName) {
-    bankName = ibanBankCodeMap[bankCode] || null;
-  }
-  
+
   const countryNames: Record<string, string> = {
     'IE': 'Ireland',
     'GB': 'United Kingdom',

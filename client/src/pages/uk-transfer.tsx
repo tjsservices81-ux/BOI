@@ -48,9 +48,10 @@ const knownSortCodes: Record<string, string> = {
   "39": "Lloyds Bank",
   "77": "Lloyds Bank",
   "11": "Halifax",
-  "40": "HSBC",
+  "40-47": "First Direct",
+  "40": "HSBC UK",
   "60": "NatWest",
-  "50": "NatWest (older)",
+  "50": "NatWest",
   "01-10-01": "NatWest",
   "50-00-00": "NatWest", 
   "53-61-07": "NatWest",
@@ -78,7 +79,7 @@ const knownSortCodes: Record<string, string> = {
   "04-12-06": "Pockit (via PPS)",
   "04-06-05": "Tide",
   "60-83-71": "Starling Bank",
-  "08-71-99": "Cashplus",
+  "08-71-99": "Zempler Bank (formerly Cashplus)",
   "23-14-70": "Wise",
   "23-05-80": "Metro Bank"
 };
@@ -112,7 +113,7 @@ const getBankIcon = (bankName: string): string | undefined => {
   if (bankName === 'NatWest') {
     return natwestIcon;
   }
-  if (bankName === 'HSBC') {
+  if (bankName === 'HSBC UK' || bankName === 'First Direct') {
     return hsbcIcon;
   }
   if (bankName === 'Bank of Scotland') {
@@ -154,21 +155,23 @@ const identifyBankFromSortCode = (sortCode: string): string => {
   if (formattedSortCode in knownSortCodes) {
     return knownSortCodes[formattedSortCode];
   }
-  
-  // Check for partial matches (first 2 digits, then first 5 characters for patterns like "04-00")
-  const firstTwo = cleanSortCode.slice(0, 2);
-  if (firstTwo in knownSortCodes) {
-    return knownSortCodes[firstTwo];
-  }
-  
-  // Check for 5-character patterns like "04-00", "04-12"
+
+  // Check the more specific 4-digit pattern (e.g. "40-47") BEFORE the bare
+  // 2-digit prefix - otherwise a generic entry like "40" would always win
+  // over a more specific one like "40-47", making the specific entry dead code.
   if (cleanSortCode.length >= 4) {
     const firstFour = `${cleanSortCode.slice(0, 2)}-${cleanSortCode.slice(2, 4)}`;
     if (firstFour in knownSortCodes) {
       return knownSortCodes[firstFour];
     }
   }
-  
+
+  // Fall back to the bare 2-digit prefix
+  const firstTwo = cleanSortCode.slice(0, 2);
+  if (firstTwo in knownSortCodes) {
+    return knownSortCodes[firstTwo];
+  }
+
   return '';
 };
 
