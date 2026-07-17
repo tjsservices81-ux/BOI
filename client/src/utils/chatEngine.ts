@@ -235,6 +235,24 @@ function isAskingWhereMoneyIs(normalized: string): boolean {
   return mentionsLocating && mentionsSubject;
 }
 
+// "guarantee" is one of the most commonly misspelled words in English -
+// list the frequent misspellings explicitly rather than relying on edit
+// distance alone (some are too far from the correct spelling to catch).
+const GUARANTEE_MISSPELLINGS = [
+  "guarantee", "guarenteed", "guarenty", "guaranty", "garantee", "gaurantee",
+  "guarrantee", "gauranteed", "gaurenteed", "gaurnteed", "gaurenteed",
+];
+
+// A person asking for reassurance that the recipient will definitely get
+// the money, in any phrasing ("will they 100% receive it", "are they
+// gaurnteed to get it", "is it definitely going through").
+function isAskingForGuarantee(normalized: string): boolean {
+  const hasCertaintyWord = GUARANTEE_MISSPELLINGS.some((w) => includesAny(normalized, [w])) ||
+    includesAny(normalized, ["100", "for sure", "definitely", "certain", "sure it", "safe"]);
+  const hasReceiveWord = includesAny(normalized, ["receive", "get it", "arrive", "go through", "land", "come through", "reach them", "reach him", "reach her"]);
+  return hasCertaintyWord && hasReceiveWord;
+}
+
 // ---------------------------------------------------------------------------
 // Conversation memory: infer what the discussion has been about so short
 // follow-ups ("yes", "and?", "why not") can be answered in context.
@@ -243,7 +261,7 @@ function detectTopic(text: string): Topic {
   const t = normalizeMessage(text);
   if (includesAnyFuzzy(t, ["proof", "document", "receipt", "confirmation", "pdf", "evidence", "record", "attach"])) return "proof";
   if (includesAnyFuzzy(t, ["cancel", "reverse", "undo", "pull back", "recall"])) return "cancel";
-  if (includesAnyFuzzy(t, ["guarantee", "safe", "sure it will", "certain it", "is it safe"])) return "guarantee";
+  if (includesAnyFuzzy(t, ["guarantee", "safe", "sure it will", "certain it", "is it safe"]) || isAskingForGuarantee(t)) return "guarantee";
   if (includesAny(t, ["how long", "when will", "taking so long", "delay", "not arrived", "not gone in", "not showing", "still waiting", "hasnt shown"]) || isAskingWhereMoneyIs(t)) return "delay";
   if (includesAnyFuzzy(t, ["transfer", "payment", "transaction", "sent", "iban", "bic", "sort code", "account number"])) return "transfer";
   if (includesAnyFuzzy(t, ["balance", "how much", "money left", "statement"])) return "balance";
@@ -393,10 +411,11 @@ export function getLocalChatResponse(userMessage: string, conversationHistory: C
     });
   }
 
-  // 3) Guarantee / safety / "will it arrive" questions
-  if (includesAnyFuzzy(normalized, ["guarantee", "safe", "will it arrive", "sure it will", "certain it", "will it go through", "is it safe"])) {
+  // 3) Guarantee / safety / "will it arrive" / "will they 100% get it" questions
+  if (includesAnyFuzzy(normalized, ["guarantee", "safe", "will it arrive", "sure it will", "certain it", "will it go through", "is it safe"]) || isAskingForGuarantee(normalized)) {
+    const recipient = lastTransfer ? lastTransfer.recipientName : "the recipient";
     return wrap({
-      text: `I can confirm your payment is fully secured and guaranteed to arrive. ${deliveryTimescale(lastTransfer || undefined)}.`,
+      text: `Yes, absolutely - ${recipient} is guaranteed to receive it. ${deliveryTimescale(lastTransfer || undefined)}.`,
     });
   }
 
