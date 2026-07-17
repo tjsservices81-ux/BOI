@@ -1,12 +1,13 @@
 /**
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
- * 
- * VERSION: 4.6.3 - Fix bottom nav missing after swiping back from Customer Panel
+ *
+ * VERSION: 5.0.0 - Network-first navigation so deploys are never invisible;
+ * old caches purged immediately on activate instead of a delayed cleanup.
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '4.6.4';
+const SW_VERSION = '5.0.0';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
@@ -47,10 +48,13 @@ const NETWORK_FIRST_PATTERNS = [
   /\/dashboard/
 ];
 
-// Cache-first patterns for static assets
+// Cache-first patterns for static assets that never change filename (images,
+// fonts). Content-hashed JS/CSS is handled separately via isHashedAsset() -
+// only a hashed filename is safe to serve cache-first, since a new deploy
+// gives it a new filename; an un-hashed JS/CSS file could go stale forever.
 const CACHE_FIRST_PATTERNS = [
   /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
-  /\.(?:css|js|woff|woff2|ttf|eot)$/
+  /\.(?:woff|woff2|ttf|eot)$/
 ];
 
 // Inline fallback HTML generator (used if offline.html file fetch fails)
@@ -147,16 +151,29 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   console.log(`🚀 PWA Service Worker v${SW_VERSION} activating (build: ${BUILD_TIMESTAMP})...`);
-  
+
   event.waitUntil(
     Promise.all([
-      self.clients.claim()
+      self.clients.claim(),
+      // Purge ALL old caches immediately - deploys must never be masked by a
+      // previous build's cache still being served.
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName === CACHE_NAME || cacheName === FALLBACK_CACHE) {
+              return Promise.resolve();
+            }
+            console.log('🗑️ Purging old cache:', cacheName);
+            return caches.delete(cacheName);
+          })
+        );
+      })
     ]).then(() => {
       console.log(`✅ PWA Service Worker v${SW_VERSION} activated`);
-      
+
       self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
         clients.forEach((client) => {
-          client.postMessage({ 
+          client.postMessage({
             type: 'SW_ACTIVATED',
             version: SW_VERSION,
             buildTimestamp: BUILD_TIMESTAMP,
@@ -164,30 +181,6 @@ self.addEventListener('activate', (event) => {
           });
         });
       });
-      
-      // Delay old cache cleanup by 30 seconds so any running app can finish loading
-      // This prevents crashes when users have the app open during an update
-      setTimeout(() => {
-        caches.keys().then((cacheNames) => {
-          return Promise.all(
-            cacheNames.map((cacheName) => {
-              if (cacheName === FALLBACK_CACHE) {
-                return Promise.resolve();
-              }
-              if (cacheName.startsWith('boi-mobile-') && 
-                  (!cacheName.includes(SW_VERSION) || !cacheName.includes(String(BUILD_TIMESTAMP)))) {
-                console.log('🗑️ Cleaning old cache:', cacheName);
-                return caches.delete(cacheName);
-              }
-              if (cacheName.startsWith('boi-fallback-') && cacheName !== FALLBACK_CACHE) {
-                console.log('🗑️ Cleaning old fallback cache:', cacheName);
-                return caches.delete(cacheName);
-              }
-              return Promise.resolve();
-            })
-          );
-        });
-      }, 30000);
     })
   );
 });
@@ -209,23 +202,37 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(handleFetch(request));
 });
 
+// HTML/navigation requests must NEVER be served cache-first (or
+// stale-while-revalidate, which also serves cache first) - otherwise a
+// deployed update is invisible until a second reload. They always go
+// network-first, falling back to cache only when genuinely offline.
+function isNavigationRequest(request) {
+  return request.mode === 'navigate' ||
+    (request.headers.get('accept') || '').includes('text/html');
+}
+
 async function handleFetch(request) {
   const url = new URL(request.url);
-  
+
   try {
+    if (isNavigationRequest(request)) {
+      return await networkFirstStrategy(request);
+    }
+
     // Network-first strategy for API calls and dynamic content
     if (NETWORK_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname))) {
       return await networkFirstStrategy(request);
     }
-    
-    // Cache-first strategy for static assets
-    if (CACHE_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname))) {
+
+    // Cache-first strategy for content-hashed static assets (new builds get
+    // new filenames, so serving a cached copy can never mask a deploy).
+    if (CACHE_FIRST_PATTERNS.some(pattern => pattern.test(url.pathname)) || isHashedAsset(url.pathname)) {
       return await cacheFirstStrategy(request);
     }
-    
-    // Stale-while-revalidate for HTML pages
+
+    // Stale-while-revalidate for anything else
     return await staleWhileRevalidateStrategy(request);
-    
+
   } catch (error) {
     console.error('Fetch handler error:', error);
     return await getFallbackResponse(request);
@@ -233,7 +240,8 @@ async function handleFetch(request) {
 }
 
 function isHashedAsset(pathname) {
-  return /\.(js|css)$/.test(pathname) && /[.-][a-f0-9]{8,}\./.test(pathname);
+  // Vite content hashes are mixed-case alphanumeric (base62-ish), not hex-only.
+  return /\.(js|css)$/.test(pathname) && /[.-][A-Za-z0-9_-]{8,}\.(?:js|css)$/.test(pathname);
 }
 
 function handleStaleBundleResponse(request) {

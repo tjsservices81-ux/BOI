@@ -5,7 +5,6 @@ import { loginSchema, transferSchema, type InsertUser } from "@shared/schema";
 import { z } from "zod";
 import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
-import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
@@ -832,10 +831,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { customerNumber, pin } = loginSchema.parse(req.body);
       const user = await storage.getUserByCredentials(customerNumber, pin);
-      
+
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
+
+      // Sent by the client as navigator.maxTouchPoints; used to recognise a
+      // touch device (iPhone/iPad) even when its User-Agent reports "Macintosh".
+      const isTouchDevice = Number(req.body?.maxTouchPoints) > 0;
 
       // DISABLED: Panic mode should not prevent initial login
       // Users can only be blocked AFTER they're logged in via heartbeat/session check
@@ -912,7 +915,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if this device is authorized for this account
-      if (!isCurrentDeviceAuthorized(user.id, userAgent)) {
+      if (!isCurrentDeviceAuthorized(user.id, userAgent, isTouchDevice)) {
         const existingSession = getUserDeviceSession(user.id);
         console.log(`🚫 UNAUTHORIZED DEVICE: User ${user.id} attempted login from ${deviceModel}, but account is permanently locked to ${existingSession?.deviceModel}`);
         return res.status(403).json({ 
@@ -946,6 +949,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress,
         loginTime: new Date().toISOString(),
         userAgent,
+        isTouchDevice,
         permanentLock: true
       });
 
@@ -1412,32 +1416,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!account || account.userId !== sessionUser.id) {
         return res.status(403).json({ message: "Not authorized to delete this transaction" });
       }
-      
-      // Calculate balance adjustment (reverse the transaction effect)
-      const transactionAmount = parseFloat(transaction.amount.replace('+', '').replace('-', ''));
-      const currentBalance = parseFloat(account.balance);
-      let newBalance: number;
-      
-      if (transaction.type === 'credit') {
-        // If it was a credit, subtract from balance
-        newBalance = currentBalance - transactionAmount;
-      } else {
-        // If it was a debit, add back to balance
-        newBalance = currentBalance + transactionAmount;
-      }
-      
-      // Delete the transaction
-      const deleted = await storage.deleteTransaction(transactionId);
-      
-      if (deleted) {
-        // Update account balance
-        await storage.updateAccountBalance(account.id, newBalance.toFixed(2));
-        
-        console.log(`🗑️ Transaction ${transactionId} deleted by user ${sessionUser.customerNumber}, balance adjusted to ${newBalance.toFixed(2)}`);
-        res.json({ 
-          success: true, 
+
+      // Delete the transaction row and adjust the balance atomically in the DB.
+      const result = await storage.deleteTransaction(transactionId);
+
+      if (result.success) {
+        console.log(`🗑️ Transaction ${transactionId} deleted by user ${sessionUser.customerNumber}, balance adjusted to ${result.newBalance}`);
+        res.json({
+          success: true,
           message: "Transaction deleted successfully",
-          newBalance: newBalance.toFixed(2)
+          newBalance: result.newBalance
         });
       } else {
         res.status(500).json({ message: "Failed to delete transaction" });
@@ -2761,174 +2749,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI-powered chat response endpoint
-  app.post("/api/chat/ai-response", async (req, res) => {
-    try {
-      const requestSchema = z.object({
-        message: z.string(),
-        conversationHistory: z.array(z.object({
-          role: z.enum(['user', 'assistant']),
-          content: z.string()
-        })).default([]),
-        agentName: z.string().default('Support Agent'),
-        customerNumber: z.string().optional()
-      });
-
-      const { message, conversationHistory, agentName, customerNumber } = requestSchema.parse(req.body);
-
-      // Get user data to access their currency preference
-      let userCurrency: 'EUR' | 'GBP' = 'EUR';
-      if (customerNumber) {
-        const user = await storage.getUserByCustomerNumber(customerNumber);
-        if (user && user.currency) {
-          userCurrency = user.currency as 'EUR' | 'GBP';
-        }
-      }
-
-      // Get customer's recent transfer data from request body if available
-      let transferContext = '';
-      
-      // The client will pass transaction data in the request body
-      const requestedTransactionData = req.body.transactionData;
-      if (requestedTransactionData && requestedTransactionData.length > 0) {
-        // Find the most recent external transfer transaction (exclude internal BOI transfers)
-        const transferTransactions = requestedTransactionData
-          .filter((tx: any) => {
-            // Only include external transfers (UK Transfer, SEPA Transfer, or EMAIL Transfer)
-            return tx.paymentMethod === 'UK Transfer' || tx.paymentMethod === 'SEPA Transfer' || tx.paymentMethod === 'EMAIL Transfer';
-          })
-          .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        
-        if (transferTransactions.length > 0) {
-          const lastTransfer = transferTransactions[0];
-          const transferDate = new Date(lastTransfer.timestamp).toLocaleDateString('en-GB', { timeZone: 'Europe/Dublin' });
-          const transferTime = new Date(lastTransfer.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Dublin' });
-          const transferAmount = parseFloat(lastTransfer.amount.replace('-', ''));
-          
-          // Extract recipient name from description
-          const recipientMatch = lastTransfer.description.match(/Transfer to (.+)/);
-          const recipientName = recipientMatch ? recipientMatch[1] : 'recipient';
-          
-          // Build transfer-specific context based on transfer type
-          let transferTypeContext = '';
-          let accountDetails = '';
-          
-          if (lastTransfer.paymentMethod === 'UK Transfer') {
-            transferTypeContext = `
-TRANSFER TYPE: UK Transfer (sent to a UK account)
-DELIVERY TIME: Takes up to 24 hours to arrive
-CURRENCY: May include currency conversion if relevant`;
-            accountDetails = `
-Sort Code: ${lastTransfer.recipientSortCode || 'Not available'}
-Account Number: ${lastTransfer.recipientAccountNumber || 'Not available'}`;
-          } else if (lastTransfer.paymentMethod === 'SEPA Transfer') {
-            transferTypeContext = `
-TRANSFER TYPE: SEPA Transfer (European payment)
-DELIVERY TIME: Takes 1 business day to arrive
-CURRENCY: Do NOT mention currency conversion - SEPA transfers are EUR to EUR`;
-            accountDetails = `
-IBAN: ${lastTransfer.iban || 'Not available'}
-BIC Code: ${lastTransfer.bicCode || 'Not available'}
-Unique Reference: ${lastTransfer.reference || 'Not specified'}`;
-          } else if (lastTransfer.paymentMethod === 'EMAIL Transfer') {
-            transferTypeContext = `
-TRANSFER TYPE: Email Transfer (sent via email notification)
-DELIVERY TIME: Recipient receives notification immediately, funds available within 24 hours
-CURRENCY: Standard currency transfer`;
-            accountDetails = `
-Recipient Name: ${lastTransfer.recipientName || recipientName}
-Recipient Email: ${lastTransfer.recipientEmail || 'Not available'}
-Reference: ${lastTransfer.reference || 'Not specified'}`;
-          }
-          
-          // Use user currency for proper display
-          const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
-          
-          transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
-Last transfer: ${currencySymbol}${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate} at ${transferTime}
-Reference: ${lastTransfer.reference || 'Not specified'}
-Transaction ID: ${lastTransfer.id}
-Status: Confirmed and processed${transferTypeContext}${accountDetails}
-
-RESPONSE GUIDELINES:
-- For UK Transfers: Mention it was sent to a UK account, include sort code/account number, mention up to 24 hours delivery, can mention currency conversion if relevant
-- For SEPA Transfers: Say it was a SEPA transfer, mention IBAN/BIC/unique reference, say 1 business day delivery, DO NOT mention currency conversion or UK accounts
-- For Email Transfers: Confirm recipient name and email address, mention amount sent, include transaction ID and date/time, mention the recipient will receive email notification
-
-IMPORTANT: When customer asks for payment confirmation or transfer details, follow the response guidelines above and include the relevant account details.`;
-        } else {
-          transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
-No transfers found yet on your account.`;
-        }
-      }
-      
-      // Prepare conversation history for OpenAI
-      const messages = [
-        ...conversationHistory.map(msg => ({
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content
-        })),
-        { role: 'user' as const, content: message }
-      ];
-
-      console.log(`💬 Sending to AI: ${messages.length} messages in history`);
-      console.log(`   Latest message: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`);
-
-      const aiResponse = await generateChatResponse(messages, agentName, transferContext, userCurrency);
-      
-      // Check if user asked for or AI response mentions a confirmation/PDF/proof/document
-      let pdfData = null;
-      let pdfFileName = null;
-      const lowerResponse = aiResponse.toLowerCase();
-      const lowerMessage = message.toLowerCase();
-      
-      // Check both the user's request AND the AI's response for PDF-triggering keywords
-      const userWantsPdf = lowerMessage.includes('confirmation') || lowerMessage.includes('pdf') || 
-        lowerMessage.includes('proof') || lowerMessage.includes('document') || 
-        lowerMessage.includes('receipt') || lowerMessage.includes('evidence') ||
-        lowerMessage.includes('download') || lowerMessage.includes('record');
-      const aiMentionsPdf = lowerResponse.includes('confirmation') || lowerResponse.includes('pdf') || 
-        lowerResponse.includes('sent') || lowerResponse.includes('here is') ||
-        lowerResponse.includes('attached') || lowerResponse.includes('proof') ||
-        lowerResponse.includes('document') || lowerResponse.includes('receipt');
-      
-      if (userWantsPdf || aiMentionsPdf) {
-        // If we have transfer context, we can potentially attach the PDF data
-        if (requestedTransactionData && requestedTransactionData.length > 0) {
-          const transferTransactions = requestedTransactionData
-            .filter((tx: any) => tx.paymentMethod === 'UK Transfer' || tx.paymentMethod === 'SEPA Transfer' || tx.paymentMethod === 'EMAIL Transfer')
-            .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-          
-          if (transferTransactions.length > 0 && transferTransactions[0].confirmationPdfData) {
-            pdfData = transferTransactions[0].confirmationPdfData;
-            pdfFileName = `BOI_Confirmation_${transferTransactions[0].id}.pdf`;
-          }
-        }
-      }
-
-      res.json({ 
-        response: aiResponse,
-        agentName: agentName,
-        pdfData: pdfData,
-        pdfFileName: pdfFileName
-      });
-    } catch (error) {
-      console.error('Failed to generate AI response:', error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid request data" });
-      }
-      // Always return a valid chat response so the customer sees a helpful message
-      const fallbackMessages = [
-        "Sorry, I wasn't able to bring that up just now. Could you try again or let me know how else I can help?",
-        "I'm sorry, I didn't quite catch that. Could you give me a moment and try again?",
-        "Thanks for your patience — I wasn't able to get that for you just now. Would you like to try again?",
-        "I'd be happy to help with that. Could you send that again? I want to make sure I give you the right information."
-      ];
-      const fallback = fallbackMessages[Math.floor(Math.random() * fallbackMessages.length)];
-      res.json({ response: fallback, agentName: req.body.agentName || 'Support Agent', pdfData: null, pdfFileName: null });
-    }
-  });
-
   app.put("/api/chat/responses/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -3092,6 +2912,29 @@ No transfers found yet on your account.`;
     } catch (error) {
       console.error('Failed to enable user:', error);
       res.status(500).json({ success: false, message: "Failed to enable user" });
+    }
+  });
+
+  // Clear a wrongly-locked account's device lock without restarting the server.
+  // Accepts either a numeric userId or a customerNumber in the URL param.
+  app.post("/api/admin/users/:userId/clear-device-lock", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      let numericUserId = parseInt(userId, 10);
+
+      if (Number.isNaN(numericUserId)) {
+        const user = await storage.getUserByCustomerNumber(userId);
+        if (!user) {
+          return res.status(404).json({ success: false, message: "User not found" });
+        }
+        numericUserId = user.id;
+      }
+
+      const cleared = removeUserDeviceSession(numericUserId);
+      res.json({ success: true, cleared });
+    } catch (error) {
+      console.error('Failed to clear device lock:', error);
+      res.status(500).json({ success: false, message: "Failed to clear device lock" });
     }
   });
 

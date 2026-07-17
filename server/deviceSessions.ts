@@ -164,40 +164,16 @@ export async function getUserSessions() {
   // Initialize sample sessions if needed
   initializeSampleSessions();
   
-  // Import storage and database access
+  // Import storage access. There is no PostgreSQL "users" table - user
+  // records only exist in the in-memory/persistent storage layer below.
   const { storage } = await import('./storage');
-  const { db } = await import('./db');
-  
+
   try {
     console.log('🔍 Scanning all user data sources for admin panel recovery...');
-    
+
     const userSessionsMap = new Map();
-    
-    // 1. Get all users from PostgreSQL database (primary source)
-    try {
-      const dbUsers = await db.select().from((await import('../shared/schema')).users);
-      console.log(`📊 Found ${dbUsers.length} users in PostgreSQL database`);
-      
-      dbUsers.forEach(user => {
-        userSessionsMap.set(user.customerNumber, {
-          sessionId: `db_user_${user.id}`,
-          username: user.name || user.customerNumber,
-          email: user.email || 'No email provided',
-          dateOfBirth: user.dateOfBirth || 'Not provided',
-          deviceInfo: 'Database User',
-          ipAddress: 'N/A',
-          loginTime: user.dateCreated ? new Date(user.dateCreated).toISOString() : 'Not available',
-          customerNumber: user.customerNumber,
-          isLoggedIn: false,
-          userId: user.id,
-          source: 'database'
-        });
-      });
-    } catch (dbError: any) {
-      console.warn('Database access failed, falling back to memory storage:', dbError?.message || 'Unknown error');
-    }
-    
-    // 2. Get all users from memory storage system
+
+    // 1. Get all users from memory storage system
     try {
       await storage.waitForInitialization();
       const memoryUsers = await storage.getAllUsers();
@@ -230,7 +206,7 @@ export async function getUserSessions() {
       console.warn('Memory storage access failed:', storageError?.message || 'Unknown error');
     }
     
-    // 3. Update with active device session data for currently logged-in users
+    // 2. Update with active device session data for currently logged-in users
     deviceSessions.forEach(session => {
       if (session.customerNumber) {
         if (userSessionsMap.has(session.customerNumber)) {
@@ -262,7 +238,7 @@ export async function getUserSessions() {
       }
     });
     
-    // 4. Check for any persistent storage file users
+    // 3. Check for any persistent storage file users
     try {
       const fs = await import('fs');
       const path = await import('path');
@@ -300,7 +276,7 @@ export async function getUserSessions() {
     const loggedInCount = allUsers.filter(u => u.isLoggedIn).length;
     
     console.log(`✅ User recovery complete: ${allUsers.length} total users, ${loggedInCount} currently authenticated`);
-    console.log(`📋 Data sources: database, memory, device sessions, persistent files`);
+    console.log(`📋 Data sources: memory, device sessions, persistent files`);
     
     return allUsers;
     

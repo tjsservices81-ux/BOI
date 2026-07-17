@@ -1,5 +1,7 @@
 // Device-exclusive authentication system
-// Permanently locks each account to the first device they log in from
+// Locks each account to the first device they log in from, while tolerating
+// User-Agent changes on that SAME physical device (browser/OS updates, or an
+// iPad reporting itself as "Macintosh").
 
 interface UserDeviceSession {
   userId: number;
@@ -8,78 +10,78 @@ interface UserDeviceSession {
   ipAddress: string;
   loginTime: string;
   userAgent: string;
+  isTouchDevice: boolean; // navigator.maxTouchPoints > 0 at login
   permanentLock: boolean; // Account is permanently locked to this device
 }
 
 // In-memory storage for user-device mappings
 let userDeviceSessions: Map<number, UserDeviceSession> = new Map();
 
+// Broad device "family" - deliberately coarse so browser/OS version bumps
+// never change the classification for the same physical hardware.
+type DeviceFamily = 'iOS' | 'Android' | 'Windows' | 'Mac' | 'Other';
+
+function getDeviceFamily(userAgent: string, isTouchDevice: boolean): DeviceFamily {
+  if (/iPhone|iPad|iPod/i.test(userAgent)) return 'iOS';
+  if (/Android/i.test(userAgent)) return 'Android';
+  // iPadOS 13+ requests the desktop site by default, so it reports a
+  // "Macintosh" UA indistinguishable from a real Mac - except it's touch
+  // capable. Treat any touch-capable "Mac" UA as an iPad (iOS family).
+  if (/Macintosh|Mac OS X/i.test(userAgent) && isTouchDevice) return 'iOS';
+  if (/Windows/i.test(userAgent)) return 'Windows';
+  if (/Macintosh|Mac OS X/i.test(userAgent)) return 'Mac';
+  return 'Other';
+}
+
 export function isAccountActiveOnOtherDevice(userId: number, currentDeviceSessionId?: string): boolean {
   const existingSession = userDeviceSessions.get(userId);
-  
+
   if (!existingSession) {
     return false; // No existing session for this user
   }
-  
+
   // Account is permanently locked to first device - ALWAYS block other devices
   return true;
 }
 
-export function isCurrentDeviceAuthorized(userId: number, currentUserAgent: string): boolean {
+export function isCurrentDeviceAuthorized(userId: number, currentUserAgent: string, isTouchDevice = false): boolean {
   const existingSession = userDeviceSessions.get(userId);
-  
+
   if (!existingSession) {
     return true; // First time login - allow and lock to this device
   }
-  
-  // FIXED: More lenient device matching to prevent lockouts
-  // Allow login if:
-  // 1. Exact user agent match (same browser)
-  // 2. Same device type (iPhone to iPhone, Android to Android)
-  // 3. Always allow if existing session is very old (>7 days - device reset)
-  
-  const exactMatch = existingSession.userAgent === currentUserAgent;
-  if (exactMatch) return true;
-  
-  // Check if login is very old (>7 days) - allow re-authentication
-  const loginAge = Date.now() - new Date(existingSession.loginTime).getTime();
-  const sevenDays = 7 * 24 * 60 * 60 * 1000;
-  if (loginAge > sevenDays) {
-    console.log(`🔓 OLD SESSION: Allowing re-auth for user ${userId} (session ${Math.floor(loginAge / (24*60*60*1000))} days old)`);
+
+  // Exact match (same browser, nothing changed) - always allow.
+  if (existingSession.userAgent === currentUserAgent) {
     return true;
   }
-  
-  // Check device type compatibility (iOS to iOS, Android to Android, etc.)
-  const getDeviceType = (ua: string) => {
-    if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS';
-    if (/Android/i.test(ua)) return 'Android';
-    if (/Windows/i.test(ua)) return 'Windows';
-    if (/Mac/i.test(ua)) return 'Mac';
-    return 'Other';
-  };
-  
-  const currentDeviceType = getDeviceType(currentUserAgent);
-  const existingDeviceType = getDeviceType(existingSession.userAgent);
-  
-  if (currentDeviceType === existingDeviceType) {
-    console.log(`✅ SAME DEVICE TYPE: Allowing ${currentDeviceType} login for user ${userId}`);
+
+  // Same physical device family - allow even if the UA string itself changed
+  // (browser update, iOS/iPadOS update, or an iPad now reporting as "Mac").
+  const currentFamily = getDeviceFamily(currentUserAgent, isTouchDevice);
+  const existingFamily = getDeviceFamily(existingSession.userAgent, existingSession.isTouchDevice);
+
+  if (currentFamily === existingFamily) {
+    console.log(`✅ SAME DEVICE FAMILY (${currentFamily}): Allowing login for user ${userId} despite UA change`);
     return true;
   }
-  
-  // Different device type - block
-  console.log(`🚫 DIFFERENT DEVICE: User ${userId} trying ${currentDeviceType} but locked to ${existingDeviceType}`);
+
+  // Genuinely different device family - block.
+  console.log(`🚫 DIFFERENT DEVICE: User ${userId} trying ${currentFamily} but locked to ${existingFamily}`);
   return false;
 }
 
 export function setUserDeviceSession(userSession: UserDeviceSession): void {
   userDeviceSessions.set(userSession.userId, userSession);
-  console.log(`🔒 PERMANENT DEVICE LOCK: User ${userSession.userId} permanently locked to device ${userSession.deviceModel} (${userSession.deviceSessionId})`);
+  console.log(`🔒 DEVICE LOCK: User ${userSession.userId} locked to device ${userSession.deviceModel} (${userSession.deviceSessionId})`);
 }
 
-export function removeUserDeviceSession(userId: number): void {
-  // Permanent device locks cannot be removed
-  // This function is disabled to prevent device unlocking
-  console.log(`🚫 PERMANENT LOCK: Cannot unlock User ${userId} - device lock is permanent`);
+export function removeUserDeviceSession(userId: number): boolean {
+  const existed = userDeviceSessions.delete(userId);
+  if (existed) {
+    console.log(`🔓 DEVICE LOCK CLEARED: User ${userId} device lock removed`);
+  }
+  return existed;
 }
 
 export function getUserDeviceSession(userId: number): UserDeviceSession | undefined {
@@ -90,7 +92,7 @@ export function getAllUserDeviceSessions(): UserDeviceSession[] {
   return Array.from(userDeviceSessions.values());
 }
 
-// For admin panel - force logout user from their device
+// For admin panel - force logout user from their device and clear the lock
 export function forceLogoutUser(userId: number): boolean {
   const session = userDeviceSessions.get(userId);
   if (session) {

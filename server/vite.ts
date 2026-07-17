@@ -23,7 +23,7 @@ export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
-    allowedHosts: true,
+    allowedHosts: true as const,
   };
 
   const vite = await createViteServer({
@@ -67,6 +67,22 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
+// Vite content-hashes built JS/CSS filenames (e.g. index-BX8Glete.js) using a
+// mixed-case alphanumeric hash, so a new deploy always gets a new filename -
+// safe to cache forever. index.html (and any other unhashed file) must
+// always be revalidated so a deploy is never masked by a stale cached copy.
+function isHashedBuildAsset(filePath: string): boolean {
+  return /\.(?:js|css)$/.test(filePath) && /[.-][A-Za-z0-9_-]{8,}\.(?:js|css)$/.test(filePath);
+}
+
+function setStaticCacheHeaders(res: express.Response, filePath: string) {
+  if (path.basename(filePath) === "index.html") {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  } else if (isHashedBuildAsset(filePath)) {
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  }
+}
+
 export function serveStatic(app: Express) {
   const distPath = path.resolve(import.meta.dirname, "public");
 
@@ -76,10 +92,12 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  app.use(express.static(distPath, { setHeaders: setStaticCacheHeaders }));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    const indexPath = path.resolve(distPath, "index.html");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.sendFile(indexPath);
   });
 }

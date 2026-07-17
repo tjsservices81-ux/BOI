@@ -20,9 +20,25 @@ export default function TransactionHistoryWorking() {
   const [, setLocation] = locationHook || [null, () => {}];
   const routeHook = useRoute("/transactions/:accountId");
   const [match, params] = routeHook || [false, {}];
+  const accountId = params?.accountId ? parseInt(params.accountId) : 1;
+
+  // Seed balance + header (name, masked account number, sort code) from the
+  // cached account on the very first render, so there's no €0.00 flash and
+  // no "bounce" while the DB reconciliation below completes.
+  const getCachedAccount = (): any => {
+    try {
+      const storedAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+      return (Array.isArray(storedAccounts) ? storedAccounts : []).find(
+        (acc: any) => String(acc.id) === String(accountId)
+      ) || null;
+    } catch {
+      return null;
+    }
+  };
+
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [balance, setBalance] = useState<string>('0.00');
-  const [accountInfo, setAccountInfo] = useState<any>(null);
+  const [balance, setBalance] = useState<string>(() => getCachedAccount()?.balance || '0.00');
+  const [accountInfo, setAccountInfo] = useState<any>(() => getCachedAccount());
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -84,8 +100,6 @@ export default function TransactionHistoryWorking() {
     { value: 'other_debit', label: 'Other Debits' },
     { value: 'cash_withdrawal', label: 'Cash Withdrawals' }
   ];
-  
-  const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -360,21 +374,26 @@ export default function TransactionHistoryWorking() {
         console.log('Statement: Using cached transactions');
       }
       
-      // Fetch fresh accounts from database
+      // Fetch fresh balances from database. The cached display fields (name,
+      // masked account number, sort code) are never overwritten here - only
+      // the balance is reconciled with the database value, so the header
+      // never "bounces" to raw/unmasked server data.
       let allAccounts = UserDataManager.getUserAccounts();
       try {
         const accResponse = await fetch('/api/accounts', { credentials: 'include' });
         if (accResponse.ok) {
           const dbAccounts = await accResponse.json();
           if (dbAccounts && dbAccounts.length > 0) {
-            // Protect any accounts with pending local balance syncs
             const pendingSyncs = getPendingBalanceSyncs();
-            const protectedAccounts = dbAccounts.map((acc: any) => {
-              const id = String(acc.id);
-              return pendingSyncs[id] ? { ...acc, balance: pendingSyncs[id] } : acc;
+            const cachedAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+            const mergedAccounts = cachedAccounts.map((cached: any) => {
+              const id = String(cached.id);
+              const dbMatch = dbAccounts.find((acc: any) => String(acc.id) === id);
+              const newBalance = pendingSyncs[id] ?? dbMatch?.balance ?? cached.balance;
+              return { ...cached, balance: newBalance };
             });
-            allAccounts = protectedAccounts;
-            UserDataManager.setUserData('bankAccounts', protectedAccounts);
+            allAccounts = mergedAccounts;
+            UserDataManager.setUserData('bankAccounts', mergedAccounts);
           }
           console.log(`📄 Statement: Synced ${dbAccounts.length} accounts from database`);
         }

@@ -63,7 +63,14 @@ export class SecureAuthManager {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache'
         },
-        body: JSON.stringify({ customerNumber, pin }),
+        body: JSON.stringify({
+          customerNumber,
+          pin,
+          // Sent so the server can recognise this device even if a future
+          // browser/OS update changes its User-Agent string (e.g. iPadOS
+          // reporting as "Macintosh").
+          maxTouchPoints: typeof navigator !== 'undefined' ? navigator.maxTouchPoints || 0 : 0
+        }),
         signal: controller.signal
       });
       

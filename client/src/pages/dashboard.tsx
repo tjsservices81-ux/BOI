@@ -2,7 +2,6 @@ import { ChevronRight, ChevronDown, ChevronUp, User, Loader2, ArrowRightLeft } f
 import { useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
-import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
 import { getPendingBalanceSyncs } from "../utils/transferUtils";
 import { StateManager } from "../utils/stateManager";
@@ -37,6 +36,49 @@ const sortAccountsForDisplay = (accountsList: any[]): any[] => {
     return (a.displayName || '').localeCompare(b.displayName || '');
   });
 };
+
+// Fetches accounts from the database (source of truth for balance) and
+// returns them formatted/sorted for display, or null if unreachable. Used on
+// mount, after balance-changing events, on focus/visibility regain, and on
+// reconnect, so a locally-cached balance never permanently shadows the DB.
+async function fetchAccountsFromServer(): Promise<any[] | null> {
+  try {
+    const res = await fetch('/api/accounts', { credentials: 'include' });
+    if (!res.ok) throw new Error('Failed to fetch accounts');
+    const serverAccounts = await res.json();
+    if (!serverAccounts || serverAccounts.length === 0) return null;
+
+    // Check for locally-processed transfers not yet synced to server
+    const pendingSyncs = getPendingBalanceSyncs();
+
+    const formattedAccounts = serverAccounts.map((acc: any) => {
+      const accountId = String(acc.id);
+      // If there's a pending local balance sync for this account, use the local balance
+      // so the server doesn't overwrite a transfer the user just made while offline
+      const protectedBalance = pendingSyncs[accountId] ?? (acc.balance || '0.00');
+      return {
+        id: acc.id,
+        displayName: acc.displayName || acc.display_name || 'Current Account',
+        accountNumber: acc.accountNumber?.startsWith('****')
+          ? acc.accountNumber
+          : `~ ${acc.accountNumber?.slice(-4) || '0000'}`,
+        balance: protectedBalance,
+        accountType: acc.accountType || acc.account_type || 'current',
+        sortCode: acc.sortCode || acc.sort_code || '90-78-68',
+        bic: acc.bic || 'BOFIIE2D',
+        iban: acc.iban || null,
+        fullAccountNumber: acc.accountNumber || acc.account_number
+      };
+    });
+
+    const sortedAccounts = sortAccountsForDisplay(formattedAccounts);
+    UserDataManager.setUserData('bankAccounts', sortedAccounts);
+    return sortedAccounts;
+  } catch (err: any) {
+    console.log('Using cached accounts:', err?.message);
+    return null;
+  }
+}
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -129,56 +171,15 @@ export default function Dashboard() {
     }
 
     // Fetch real accounts from server API (server is source of truth for balance)
-    fetch('/api/accounts', { credentials: 'include' })
-      .then(res => {
-        if (res.ok) return res.json();
-        throw new Error('Failed to fetch accounts');
-      })
-      .then(serverAccounts => {
-        if (serverAccounts && serverAccounts.length > 0) {
-          // Check for locally-processed transfers not yet synced to server
-          const pendingSyncs = getPendingBalanceSyncs();
-
-          // Format accounts for display (mask account numbers, ensure proper structure)
-          const formattedAccounts = serverAccounts.map((acc: any) => {
-            const accountId = String(acc.id);
-            // If there's a pending local balance sync for this account, use the local balance
-            // so the server doesn't overwrite a transfer the user just made while offline
-            const protectedBalance = pendingSyncs[accountId] ?? (acc.balance || '0.00');
-            if (pendingSyncs[accountId]) {
-              console.log(`🔒 Protecting local balance for account ${accountId}: ${protectedBalance} (server had ${acc.balance})`);
-            }
-            return {
-              id: acc.id,
-              displayName: acc.displayName || acc.display_name || 'Current Account',
-              accountNumber: acc.accountNumber?.startsWith('****') 
-                ? acc.accountNumber 
-                : `~ ${acc.accountNumber?.slice(-4) || '0000'}`,
-              balance: protectedBalance,
-              accountType: acc.accountType || acc.account_type || 'current',
-              sortCode: acc.sortCode || acc.sort_code || '90-78-68',
-              bic: acc.bic || 'BOFIIE2D',
-              iban: acc.iban || null,
-              fullAccountNumber: acc.accountNumber || acc.account_number
-            };
-          });
-          
-          // Sort accounts with current account at top
-          const sortedAccounts = sortAccountsForDisplay(formattedAccounts);
-          
-          // Store sorted accounts locally for offline access
-          UserDataManager.setUserData('bankAccounts', sortedAccounts);
-          setAccounts(sortedAccounts);
-          console.log('💳 Loaded accounts from server (sorted):', sortedAccounts.length, sortedAccounts);
-        }
-      })
-      .catch(err => {
-        console.log('Using cached accounts:', err.message);
+    fetchAccountsFromServer().then(sortedAccounts => {
+      if (sortedAccounts) {
+        setAccounts(sortedAccounts);
+        console.log('💳 Loaded accounts from server (sorted):', sortedAccounts.length, sortedAccounts);
+      } else if (storedAccounts && storedAccounts.length > 0) {
         // Keep using cached accounts if server fetch fails, but ensure they're sorted
-        if (storedAccounts && storedAccounts.length > 0) {
-          setAccounts(sortAccountsForDisplay(storedAccounts));
-        }
-      });
+        setAccounts(sortAccountsForDisplay(storedAccounts));
+      }
+    });
     
     // Initialize empty transactions array if needed
     if (!UserDataManager.getUserData('bankTransactions', null)) {
@@ -319,11 +320,14 @@ export default function Dashboard() {
           setAccounts(sortAccountsForDisplay(freshAccounts));
         } else {
           // Fallback to updating individual account (preserve current sort order)
-          setAccounts(prev => sortAccountsForDisplay(prev.map(acc => 
+          setAccounts(prev => sortAccountsForDisplay(prev.map(acc =>
             acc.id === accountId ? { ...acc, balance: newBalance } : acc
           )));
         }
       }
+
+      // Reconcile with the database - this is a balance-changing event.
+      refetchFromServer();
     };
 
     const handleProfileUpdate = async () => {
@@ -378,13 +382,23 @@ export default function Dashboard() {
       }
     };
 
+    // Re-fetch from the database so a locally-cached balance never
+    // permanently shadows the server value once the DB is reachable again.
+    const refetchFromServer = () => {
+      fetchAccountsFromServer().then(sortedAccounts => {
+        if (sortedAccounts) {
+          setAccounts(sortedAccounts);
+        }
+      });
+    };
+
     const handleTransactionDeleted = (event: CustomEvent) => {
       const { accountId, transactions, accounts: updatedAccounts } = event.detail || {};
-      
+
       // Clear cache to ensure fresh data
       UserDataManager.clearCache('bankAccounts');
       UserDataManager.clearCache('bankTransactions');
-      
+
       // Update accounts if provided
       if (updatedAccounts) {
         setAccounts(sortAccountsForDisplay(updatedAccounts));
@@ -395,6 +409,9 @@ export default function Dashboard() {
           setAccounts(sortAccountsForDisplay(freshAccounts));
         }
       }
+
+      // Reconcile with the database - this is a balance-changing event.
+      refetchFromServer();
     };
 
     const handleForceRefresh = () => {
@@ -404,6 +421,18 @@ export default function Dashboard() {
       if (Array.isArray(freshAccounts) && freshAccounts.length > 0) {
         setAccounts(sortAccountsForDisplay(freshAccounts));
       }
+      refetchFromServer();
+    };
+
+    // Re-fetch when the app regains focus/visibility (e.g. user switches
+    // back to the tab/app) and when connectivity is restored.
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        refetchFromServer();
+      }
+    };
+    const handleOnline = () => {
+      refetchFromServer();
     };
 
     window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
@@ -414,7 +443,10 @@ export default function Dashboard() {
     window.addEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
     window.addEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
     window.addEventListener('forceRefresh', handleForceRefresh as EventListener);
-    
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    window.addEventListener('online', handleOnline);
+
     return () => {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
@@ -424,6 +456,9 @@ export default function Dashboard() {
       window.removeEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
       window.removeEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
       window.removeEventListener('forceRefresh', handleForceRefresh as EventListener);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      window.removeEventListener('online', handleOnline);
     };
   }, [accounts]);
 

@@ -9,6 +9,7 @@ import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHo
 import { UserDataManager } from "@/utils/userDataManager";
 import { getUserCurrency } from "@/utils/currencyUtils";
 import { promptNotificationsAtCreation } from "@/utils/notifications";
+import { APP_VERSION } from "@/version";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
@@ -2310,6 +2311,19 @@ export default function Login() {
           </div>
         </div>
       )}
+      <span
+        style={{
+          position: 'fixed',
+          bottom: 4,
+          right: 6,
+          fontSize: '10px',
+          color: 'rgba(255, 255, 255, 0.4)',
+          pointerEvents: 'none',
+          zIndex: 60,
+        }}
+      >
+        {APP_VERSION}
+      </span>
     </div>
   );
 }

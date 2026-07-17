@@ -158,10 +158,6 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   animation: slideOutToRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.page-fade-slide-in {
-  animation: fadeSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
 /* Page transition states */
 .page-transitioning {
   overflow: hidden;
@@ -705,11 +701,6 @@ input, select, textarea {
   pointer-events: none;
 }
 
-/* Smooth exit animations for dashboard navigation */
-.dashboard-exit {
-  animation: slideOutToLeft 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
 /* Enhanced slide animations with better easing */
 @keyframes slideOutToLeft {
   0% {
@@ -896,16 +887,6 @@ input, select, textarea {
   opacity: 1;
 }
 
-/* Prevent auth state flash */
-.auth-loading {
-  visibility: hidden;
-}
-
-.auth-ready {
-  visibility: visible;
-  opacity: 1;
-}
-
 /* Skeleton loading states */
 .skeleton {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -975,13 +956,6 @@ input, textarea, select {
   visibility: visible;
   transform: translateZ(0);
   backface-visibility: hidden;
-}
-
-/* Payment screen instant render */
-.payment-option, .transfer-option {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
 }
 
 /* Cross-platform modal handling - identical experience on all devices */
@@ -1340,285 +1314,6 @@ button[type="submit"] {
   -webkit-backface-visibility: hidden;
 }
 
-/* Processing Transfer Screen - Universal iOS/Android Match */
-.processing-transfer-container {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
-  z-index: 1000 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  -webkit-overflow-scrolling: touch !important;
-  overflow: hidden !important;
-}
-
-/* Processing Transfer content wrapper */
-.processing-content-wrapper {
-  text-align: center !important;
-  padding: 2rem !important;
-  max-width: 28rem !important;
-  width: 100% !important;
-  margin: 0 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-/* Loading Spinner Container */
-.android-spinner-container {
-  margin-bottom: 2rem !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-direction: column !important;
-}
-
-/* Spinner Circle - Exact iOS Match */
-.android-spinner-circle {
-  width: 80px !important;
-  height: 80px !important;
-  background-color: #126987 !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0 auto 1.5rem !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-  position: relative !important;
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
-}
-
-/* Spinner Animation - Smooth iOS-style */
-.android-spinner-animation {
-  width: 48px !important;
-  height: 48px !important;
-  border: 4px solid white !important;
-  border-top: 4px solid transparent !important;
-  border-radius: 50% !important;
-  animation: androidSpinnerRotate 1s linear infinite !important;
-  -webkit-animation: androidSpinnerRotate 1s linear infinite !important;
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
-}
-
-/* Typography - Exact iOS Font Rendering */
-.android-processing-title {
-  font-size: 1.875rem !important;
-  line-height: 2.25rem !important;
-  font-weight: 700 !important;
-  color: #111827 !important;
-  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  margin-bottom: 1rem !important;
-  text-align: center !important;
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
-  letter-spacing: -0.025em !important;
-}
-
-.android-processing-subtitle {
-  font-size: 1.125rem !important;
-  line-height: 1.75rem !important;
-  color: #6b7280 !important;
-  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  margin-bottom: 1.5rem !important;
-  text-align: center !important;
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
-}
-
-/* Progress Bar Container */
-.android-progress-container {
-  margin: 1.5rem 0 !important;
-  width: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-}
-
-/* Progress Bar - Exact iOS Styling */
-.android-progress-bar {
-  width: 100% !important;
-  background-color: white !important;
-  border-radius: 9999px !important;
-  height: 16px !important;
-  overflow: hidden !important;
-  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06) !important;
-  border: 1px solid #e5e7eb !important;
-  position: relative !important;
-}
-
-.android-progress-fill {
-  background: linear-gradient(to right, #126987, #5a7b85, #126987) !important;
-  height: 16px !important;
-  border-radius: 9999px !important;
-  transition: width 300ms ease-out !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-.android-progress-shine {
-  position: absolute !important;
-  inset: 0 !important;
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  border-radius: 9999px !important;
-  animation: androidProgressPulse 2s ease-in-out infinite !important;
-}
-
-/* Progress Percentage */
-.android-progress-percent {
-  font-size: 1.25rem !important;
-  line-height: 1.75rem !important;
-  font-weight: 600 !important;
-  color: #126987 !important;
-  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  margin-top: 1rem !important;
-  text-align: center !important;
-  -webkit-font-smoothing: antialiased !important;
-}
-
-/* Security Notice Card */
-.android-security-card {
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border-radius: 0.75rem !important;
-  padding: 1.5rem !important;
-  border: 1px solid #e5e7eb !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-  margin-top: 1.5rem !important;
-  width: 100% !important;
-}
-
-.android-security-status {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin-bottom: 0.75rem !important;
-}
-
-.android-security-dot {
-  width: 12px !important;
-  height: 12px !important;
-  background-color: #10b981 !important;
-  border-radius: 50% !important;
-  animation: androidSecurityPulse 2s ease-in-out infinite !important;
-  margin-right: 0.75rem !important;
-}
-
-.android-security-text {
-  font-size: 0.875rem !important;
-  font-weight: 600 !important;
-  color: #374151 !important;
-  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  -webkit-font-smoothing: antialiased !important;
-}
-
-.android-security-description {
-  font-size: 0.75rem !important;
-  color: #6b7280 !important;
-  line-height: 1.5 !important;
-  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  text-align: center !important;
-  -webkit-font-smoothing: antialiased !important;
-}
-
-/* Universal Processing Transfer Animations - iOS & Android */
-@keyframes androidSpinnerRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes androidProgressPulse {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.4; }
-}
-
-@keyframes androidSecurityPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.1); }
-}
-
-/* Universal Hardware Acceleration - Force GPU rendering on all platforms */
-.processing-transfer-container,
-.processing-content-wrapper,
-.android-spinner-container,
-.android-spinner-circle,
-.android-spinner-animation,
-.android-progress-container,
-.android-progress-bar,
-.android-progress-fill,
-.android-progress-shine,
-.android-security-card,
-.android-security-dot {
-  will-change: transform, opacity !important;
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-  -webkit-perspective: 1000px !important;
-  perspective: 1000px !important;
-}
-
-/* Force immediate animation start on all platforms */
-.android-spinner-animation {
-  animation: androidSpinnerRotate 1s linear infinite !important;
-  -webkit-animation: androidSpinnerRotate 1s linear infinite !important;
-  animation-play-state: running !important;
-  -webkit-animation-play-state: running !important;
-  animation-fill-mode: both !important;
-  -webkit-animation-fill-mode: both !important;
-}
-
-.android-progress-shine {
-  animation: androidProgressPulse 2s ease-in-out infinite !important;
-  -webkit-animation: androidProgressPulse 2s ease-in-out infinite !important;
-  animation-play-state: running !important;
-  -webkit-animation-play-state: running !important;
-  animation-fill-mode: both !important;
-  -webkit-animation-fill-mode: both !important;
-}
-
-.android-security-dot {
-  animation: androidSecurityPulse 2s ease-in-out infinite !important;
-  -webkit-animation: androidSecurityPulse 2s ease-in-out infinite !important;
-  animation-play-state: running !important;
-  -webkit-animation-play-state: running !important;
-  animation-fill-mode: both !important;
-  -webkit-animation-fill-mode: both !important;
-}
-
-/* Android-specific animation fixes */
-@media screen and (-webkit-min-device-pixel-ratio: 1) {
-  .android-spinner-animation,
-  .android-progress-shine,
-  .android-security-dot {
-    animation-duration: inherit !important;
-    animation-timing-function: inherit !important;
-    animation-iteration-count: infinite !important;
-    animation-direction: normal !important;
-  }
-}
-
-/* Splash screen specific animations */
-.splash-logo-enter {
-  animation: logoFadeIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-.splash-logo-visible {
-  animation: logoVisible 6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-.splash-logo-exit {
-  animation: logoFadeOut 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
 @keyframes logoFadeIn {
   0% {
     opacity: 0;
@@ -1682,11 +1377,6 @@ button:active {
   transform: translateZ(0) scale(0.98);
 }
 
-/* Remove any visual delays and improve responsiveness */
-.active-scale-98:active {
-  transform: scale(0.98);
-}
-
 /* Prevent visual glitches during state changes */
 .will-change-transform {
   will-change: transform;
@@ -1738,13 +1428,6 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
   opacity: 1 !important;
   transform: none !important;
   transition: none !important;
-}
-
-/* Account balance instant display */
-.balance-display {
-  opacity: 1 !important;
-  visibility: visible !important;
-  font-variant-numeric: tabular-nums;
 }
 
 /* Admin panel click handling fixes */
