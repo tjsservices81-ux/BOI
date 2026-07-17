@@ -1,5 +1,7 @@
 // Local, rule-based live chat response engine.
 // Runs entirely on-device (no external AI API, no network call) so replies work offline.
+// Understands loose phrasing/typos/slang, and uses the recent conversation
+// history to follow up naturally instead of treating every message in isolation.
 import { UserDataManager } from "./userDataManager";
 import { getUserCurrency } from "./currencyUtils";
 
@@ -7,6 +9,11 @@ export interface ChatEngineResult {
   text: string;
   pdfData?: string;
   pdfFileName?: string;
+}
+
+export interface ConversationTurn {
+  text: string;
+  isUser: boolean;
 }
 
 interface LastTransfer {
@@ -26,6 +33,8 @@ interface LastTransfer {
   bankName?: string;
   confirmationPdfData?: string;
 }
+
+type Topic = 'transfer' | 'proof' | 'cancel' | 'guarantee' | 'delay' | 'balance' | 'card' | 'atm' | null;
 
 function getBankNameFromSortCode(sortCode?: string): string {
   if (!sortCode) return "UK Bank";
@@ -99,8 +108,55 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Matches whole words/phrases only - a plain substring check would let short
+// keywords like "hi" or "no" false-match inside "this" or "note".
 function includesAny(message: string, keywords: string[]): boolean {
-  return keywords.some((kw) => message.includes(kw));
+  return keywords.some((kw) => {
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(?:^|\\s)${escaped}(?:$|\\s)`).test(message);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Fuzzy matching: tolerate small typos on individual words (e.g. "reciet",
+// "guarentee", "trasnfer") without needing every misspelling listed out.
+// ---------------------------------------------------------------------------
+function levenshtein(a: string, b: string): number {
+  const rows = a.length + 1;
+  const cols = b.length + 1;
+  const dp: number[][] = Array.from({ length: rows }, () => new Array(cols).fill(0));
+  for (let i = 0; i < rows; i++) dp[i][0] = i;
+  for (let j = 0; j < cols; j++) dp[0][j] = j;
+  for (let i = 1; i < rows; i++) {
+    for (let j = 1; j < cols; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+  return dp[a.length][b.length];
+}
+
+function fuzzyHasWord(message: string, target: string): boolean {
+  return message.split(" ").some((word) => {
+    // Stem match: "cancel" also matches "cancelled", "cancelling", "cancellation"
+    if (target.length >= 5 && word.length > target.length && word.startsWith(target)) return true;
+    // Typo-distance tolerance - only for longer/more distinctive words. Short
+    // words (e.g. "lost", "card") are skipped here since they're only 1-2
+    // edits away from many unrelated common words ("lot", "cart"), which
+    // would cause false-positive matches.
+    if (target.length < 6) return false;
+    const maxDistance = target.length > 8 ? 2 : 1;
+    if (Math.abs(word.length - target.length) > maxDistance) return false;
+    return levenshtein(word, target) <= maxDistance;
+  });
+}
+
+// For single-word keywords, tolerate a typo or a different word ending
+// (cancel/cancelled, guarantee/guaranteed); multi-word phrases must match exactly.
+function includesAnyFuzzy(message: string, keywords: string[]): boolean {
+  if (includesAny(message, keywords)) return true;
+  return keywords.some((kw) => !kw.includes(" ") && kw.length >= 4 && fuzzyHasWord(message, kw));
 }
 
 function describeTransfer(t: LastTransfer): string {
@@ -124,114 +180,281 @@ function deliveryTimescale(t?: LastTransfer): string {
   return "UK transfers take up to 24 hours to arrive, and SEPA transfers take 1-2 business days";
 }
 
-export function getLocalChatResponse(userMessage: string): ChatEngineResult {
-  const message = userMessage.toLowerCase().trim();
-  const lastTransfer = getLastTransfer();
+// ---------------------------------------------------------------------------
+// Understanding loose phrasing: text-speak, dropped apostrophes, dropped "g"
+// ---------------------------------------------------------------------------
+const SLANG_MAP: Record<string, string> = {
+  u: "you", ur: "your", r: "are", y: "why", pls: "please", plz: "please",
+  thx: "thanks", tks: "thanks", gr8: "great", cuz: "because", coz: "because",
+  bc: "because", b4: "before", wanna: "want to", gonna: "going to", gotta: "got to",
+  idk: "i dont know", btw: "by the way",
+  gon: "gone", wer: "where", wen: "when", nd: "and", cnt: "cant", tht: "that",
+  mssg: "message", txt: "text", ppl: "people", def: "definitely", rn: "right now",
+  wat: "what", wut: "what", sry: "sorry",
+  // common dropped-"g" informal spellings
+  takin: "taking", goin: "going", comin: "coming", doin: "doing",
+  waitin: "waiting", tryin: "trying", lookin: "looking", showin: "showing",
+  gettin: "getting", sendin: "sending", checkin: "checking", happenin: "happening",
+  arrivin: "arriving", processin: "processing",
+};
 
-  const wantsProof = includesAny(message, [
+function normalizeMessage(raw: string): string {
+  let msg = raw.toLowerCase().trim();
+  // collapse excessive repeated characters (soooo -> soo, plzzzz -> plzz)
+  msg = msg.replace(/(.)\1{2,}/g, "$1$1");
+  // strip all punctuation, including apostrophes, for consistent matching
+  msg = msg.replace(/[^\w\s]/g, " ");
+  msg = msg.replace(/\s+/g, " ").trim();
+  // expand known slang/typos/informal spellings word-by-word
+  msg = msg
+    .split(" ")
+    .map((word) => SLANG_MAP[word] || word)
+    .join(" ");
+  return msg;
+}
+
+function isShouting(raw: string): boolean {
+  const letters = raw.replace(/[^a-zA-Z]/g, "");
+  return letters.length >= 6 && letters === letters.toUpperCase();
+}
+
+function isFrustrated(raw: string, normalized: string): boolean {
+  return isShouting(raw) ||
+    includesAny(normalized, [
+      "ridiculous", "unacceptable", "sort this out", "fed up", "furious",
+      "this is a joke", "worst bank", "disgusting", "scam", "fraudulent",
+      "wtf", "sort it out now", "now please", "immediately",
+    ]) ||
+    (raw.match(/!/g) || []).length >= 2;
+}
+
+// A person asking "where's my money/transfer/payment gone" in any phrasing.
+function isAskingWhereMoneyIs(normalized: string): boolean {
+  const mentionsLocating = includesAny(normalized, ["wheres", "where is", "where has", "gone missing", "not showing", "not arrived", "not gone in", "not there", "cant see it", "cant find it"]);
+  const mentionsSubject = includesAny(normalized, ["money", "transfer", "payment", "it", "that", "cash", "funds"]);
+  return mentionsLocating && mentionsSubject;
+}
+
+// ---------------------------------------------------------------------------
+// Conversation memory: infer what the discussion has been about so short
+// follow-ups ("yes", "and?", "why not") can be answered in context.
+// ---------------------------------------------------------------------------
+function detectTopic(text: string): Topic {
+  const t = normalizeMessage(text);
+  if (includesAnyFuzzy(t, ["proof", "document", "receipt", "confirmation", "pdf", "evidence", "record", "attach"])) return "proof";
+  if (includesAnyFuzzy(t, ["cancel", "reverse", "undo", "pull back", "recall"])) return "cancel";
+  if (includesAnyFuzzy(t, ["guarantee", "safe", "sure it will", "certain it", "is it safe"])) return "guarantee";
+  if (includesAny(t, ["how long", "when will", "taking so long", "delay", "not arrived", "not gone in", "not showing", "still waiting", "hasnt shown"]) || isAskingWhereMoneyIs(t)) return "delay";
+  if (includesAnyFuzzy(t, ["transfer", "payment", "transaction", "sent", "iban", "bic", "sort code", "account number"])) return "transfer";
+  if (includesAnyFuzzy(t, ["balance", "how much", "money left", "statement"])) return "balance";
+  if (includesAnyFuzzy(t, ["atm", "cash machine", "withdraw", "withdrawal"])) return "atm";
+  if (includesAnyFuzzy(t, ["card", "blocked", "lost", "stolen", "freeze"])) return "card";
+  return null;
+}
+
+function recentTopic(history: ConversationTurn[]): Topic {
+  // Look at the last few turns (most recent first) and use the first one
+  // that clearly maps to a topic - this is what "it"/"that"/"yes" refer to.
+  for (let i = history.length - 1; i >= 0 && i >= history.length - 4; i--) {
+    const topic = detectTopic(history[i].text);
+    if (topic) return topic;
+  }
+  return null;
+}
+
+function lastAgentMessage(history: ConversationTurn[]): string | null {
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (!history[i].isUser) return history[i].text;
+  }
+  return null;
+}
+
+const AFFIRMATIVE_WORDS = new Set(["yes", "yeah", "yep", "yup", "sure", "please", "ok", "okay", "alright", "go", "correct", "right"]);
+const NEGATIVE_WORDS = new Set(["no", "nah", "nope", "negative"]);
+const CONTINUATION_PHRASES = ["and", "what else", "anything else", "go on", "ok what else", "so"];
+
+function respondToShortFollowUp(normalized: string, topic: Topic, lastTransfer: LastTransfer | null, history: ConversationTurn[]): ChatEngineResult | null {
+  const words = normalized.split(" ").filter(Boolean);
+  const isBareAffirmative = words.length > 0 && words.length <= 2 && words.every((w) => AFFIRMATIVE_WORDS.has(w));
+  const isBareNegative = words.length > 0 && words.length <= 2 && words.every((w) => NEGATIVE_WORDS.has(w));
+  const isContinuation = CONTINUATION_PHRASES.includes(normalized);
+
+  if (!isBareAffirmative && !isBareNegative && !isContinuation) {
+    return null;
+  }
+
+  if (isBareNegative) {
+    return { text: "No problem at all - is there anything else I can help you with?" };
+  }
+
+  // A bare "yes"/"ok" only means "please go ahead with that" if the agent's
+  // last message actually asked a question. If it was just a statement
+  // (e.g. explaining a policy), treat it as a plain acknowledgement instead
+  // of repeating the same explanation again.
+  const lastAgentText = lastAgentMessage(history) || "";
+  const agentAskedQuestion = lastAgentText.trim().endsWith("?");
+
+  if (agentAskedQuestion) {
+    switch (topic) {
+      case "transfer":
+        return { text: "No problem - you can start a transfer from the 'Payments' section on your dashboard. Let me know if you'd like a hand with it." };
+      case "proof":
+        if (lastTransfer?.confirmationPdfData) {
+          return {
+            text: `Here you go - the PDF confirmation for ${describeTransfer(lastTransfer)} is attached below.`,
+            pdfData: lastTransfer.confirmationPdfData,
+            pdfFileName: `BOI_Confirmation_${lastTransfer.id}.pdf`,
+          };
+        }
+        return { text: "I still wasn't able to find a recent transfer to generate that document for - let me know once you've made one." };
+      default:
+        break;
+    }
+  }
+
+  if (topic === "transfer" && lastTransfer) {
+    return { text: `Sure - to recap, ${describeTransfer(lastTransfer)}. Anything specific you'd like me to check on it?` };
+  }
+
+  return { text: pick([
+    "Great, is there anything else I can help you with?",
+    "Glad that's clear - anything else you need?",
+    "No problem at all. Anything else I can help with today?",
+  ]) };
+}
+
+export function getLocalChatResponse(userMessage: string, conversationHistory: ConversationTurn[] = []): ChatEngineResult {
+  const normalized = normalizeMessage(userMessage);
+  const lastTransfer = getLastTransfer();
+  const frustrated = isFrustrated(userMessage, normalized);
+
+  const empathyPrefix = frustrated
+    ? pick([
+        "I understand how frustrating that is - let me sort this out for you. ",
+        "Sorry for the trouble, I can see why that's annoying. ",
+        "I hear you, let's get this fixed. ",
+      ])
+    : "";
+
+  const wrap = (result: ChatEngineResult): ChatEngineResult => ({
+    ...result,
+    text: empathyPrefix + result.text,
+  });
+
+  // Short, context-dependent follow-ups ("yes", "and?", "why not") - answered
+  // using whatever was actually being discussed a moment ago.
+  const followUp = respondToShortFollowUp(normalized, recentTopic(conversationHistory), lastTransfer, conversationHistory);
+  if (followUp) {
+    return frustrated ? wrap(followUp) : followUp;
+  }
+
+  const wantsProof = includesAnyFuzzy(normalized, [
     "proof", "document", "receipt", "confirmation", "pdf", "evidence", "record", "attach",
   ]);
 
   // 1) Proof / receipt / PDF requests
   if (wantsProof) {
     if (lastTransfer) {
-      return {
+      return wrap({
         text: `Of course, I've attached the PDF confirmation for ${describeTransfer(lastTransfer)}. You can download it below.`,
         pdfData: lastTransfer.confirmationPdfData,
         pdfFileName: `BOI_Confirmation_${lastTransfer.id}.pdf`,
-      };
+      });
     }
-    return {
+    return wrap({
       text: "I'd be happy to provide that documentation, but I wasn't able to find a recent transfer on your account. Could you confirm you've made a transfer recently?",
-    };
+    });
   }
 
   // 2) Cancellation requests
-  if (includesAny(message, ["cancel", "stop the transfer", "reverse", "undo", "pull back", "recall"])) {
-    return {
+  if (includesAnyFuzzy(normalized, ["cancel", "stop the transfer", "reverse", "undo", "pull back", "recall"])) {
+    return wrap({
       text: pick([
         "I'm afraid once a transfer has been submitted it cannot be cancelled, as it's already being processed by the banking system.",
         "Unfortunately there's no way to cancel it now - once a transfer is sent it's already gone through to processing and can't be stopped.",
         "I'm sorry, but transfers can't be reversed once initiated. The payment is already in the system and will complete as scheduled.",
       ]),
-    };
+    });
+  }
+
+  // Follow-up "why" / "why not" after a cancellation refusal earlier in the chat
+  if (includesAny(normalized, ["why not", "why cant", "why is that", "how come"]) && recentTopic(conversationHistory) === "cancel") {
+    return wrap({
+      text: "It's simply because transfers are sent for processing the moment you confirm them, so by the time you'd ask to cancel it's already with the receiving bank. There's no way for us to intercept it after that point.",
+    });
   }
 
   // 3) Guarantee / safety / "will it arrive" questions
-  if (includesAny(message, ["guarantee", "safe", "will it arrive", "sure it will", "certain it", "will it go through", "is it safe"])) {
-    return {
+  if (includesAnyFuzzy(normalized, ["guarantee", "safe", "will it arrive", "sure it will", "certain it", "will it go through", "is it safe"])) {
+    return wrap({
       text: `I can confirm your payment is fully secured and guaranteed to arrive. ${deliveryTimescale(lastTransfer || undefined)}.`,
-    };
+    });
   }
 
   // 4) Delay / timescale / "where is my money" questions
-  if (includesAny(message, ["how long", "when will", "taking so long", "delay", "not arrived", "not gone in", "not showing", "wheres my money", "where's my money", "still waiting", "hasn't shown"])) {
+  if (includesAny(normalized, ["how long", "when will", "taking so long", "delay", "not arrived", "not gone in", "not showing", "still waiting", "hasnt shown"]) || isAskingWhereMoneyIs(normalized)) {
     if (lastTransfer) {
-      return {
+      return wrap({
         text: `${deliveryTimescale(lastTransfer)}. Your transfer of ${lastTransfer.currencySymbol}${lastTransfer.amount} to ${lastTransfer.recipientName} on ${lastTransfer.date} is still well within that timeframe and is guaranteed to arrive.`,
-      };
+      });
     }
-    return {
+    return wrap({
       text: `${deliveryTimescale()}. If your transfer is still within that window, it's on track and will arrive.`,
-    };
+    });
   }
 
   // 5) Transfer confirmation / "last transfer" queries
-  if (includesAny(message, ["last transfer", "last payment", "recent transfer", "most recent transaction", "confirm my transfer", "did my transfer", "transfer go through", "payment go through", "show my transfer"])) {
+  if (includesAny(normalized, ["last transfer", "last payment", "recent transfer", "most recent transaction", "confirm my transfer", "did my transfer", "transfer go through", "payment go through", "show my transfer"])) {
     if (lastTransfer) {
-      return {
+      return wrap({
         text: `I can confirm ${describeTransfer(lastTransfer)}. It's been processed successfully and is guaranteed to arrive within the normal timeframe.`,
-      };
+      });
     }
-    return {
+    return wrap({
       text: "I wasn't able to find any recent transfers on your account. Would you like help making one?",
-    };
+    });
   }
 
   // 6) Account details: IBAN, BIC, account number, sort code
-  if (includesAny(message, ["iban", "bic", "account number", "sort code"])) {
-    return {
+  if (includesAnyFuzzy(normalized, ["iban", "bic", "account number", "sort code"])) {
+    return wrap({
       text: "You can find your account number, sort code and IBAN by tapping on your 'Current Account' from the dashboard - they're displayed at the top of the account view.",
-    };
+    });
   }
 
   // 7) Balance / statement
-  if (includesAny(message, ["balance", "how much", "money left", "statement", "transactions", "history"])) {
-    return {
+  if (includesAnyFuzzy(normalized, ["balance", "how much", "money left", "statement", "transactions", "history"])) {
+    return wrap({
       text: pick([
         "Your account balance is shown on the main dashboard. Tap any account to view the full details and transaction history.",
         "You can check your balance and download your statement from the account details page - just tap on the account and choose 'Get Statement'.",
       ]),
-    };
+    });
   }
 
   // 8) Card / ATM
-  if (includesAny(message, ["card", "blocked", "lost", "stolen", "freeze", "atm", "cash machine", "withdraw", "withdrawal"])) {
-    if (includesAny(message, ["atm", "cash machine", "withdraw", "withdrawal"])) {
+  if (includesAnyFuzzy(normalized, ["card", "blocked", "lost", "stolen", "freeze", "atm", "cash machine", "withdraw", "withdrawal"])) {
+    if (includesAnyFuzzy(normalized, ["atm", "cash machine", "withdraw", "withdrawal"])) {
       const symbol = getUserCurrency() === "GBP" ? "£250" : "€300";
-      return {
+      return wrap({
         text: `Cash withdrawals are available at any ATM using your card, with a daily limit of ${symbol}. Let me know if you need help with anything else.`,
-      };
+      });
     }
-    return {
+    return wrap({
       text: "If your card is lost, stolen or blocked, you can freeze it or request a replacement from the Cards section in the app. Let me know if you'd like help with that.",
-    };
+    });
   }
 
   // 9) Identity / small talk questions
-  if (includesAny(message, ["are you real", "real person", "are you a bot", "are you human", "are you ai", "who are you", "what's your name", "whats your name"])) {
-    return {
-      text: "Yes, I'm part of the Bank of Ireland customer support team, here to help with your banking query today.",
-    };
+  if (includesAny(normalized, ["are you real", "real person", "are you a bot", "are you human", "are you ai", "who are you", "whats your name"])) {
+    return { text: "Yes, I'm part of the Bank of Ireland customer support team, here to help with your banking query today." };
   }
-  if (includesAny(message, ["how are you", "how's your day", "hows your day"])) {
-    return {
-      text: "I'm doing well, thank you for asking. How can I help you with your banking today?",
-    };
+  if (includesAny(normalized, ["how are you", "hows your day"])) {
+    return { text: "I'm doing well, thank you for asking. How can I help you with your banking today?" };
   }
 
   // 10) Greetings
-  if (includesAny(message, ["hello", "hi", "hey", "good morning", "good afternoon", "good evening", "howdy"])) {
+  if (includesAny(normalized, ["hello", "hi", "hey", "good morning", "good afternoon", "good evening", "howdy"])) {
     return {
       text: pick([
         "Hello! Welcome to Bank of Ireland support. How can I help you today?",
@@ -242,7 +465,7 @@ export function getLocalChatResponse(userMessage: string): ChatEngineResult {
   }
 
   // 11) Thanks
-  if (includesAny(message, ["thank", "thanks", "cheers", "appreciate"])) {
+  if (includesAnyFuzzy(normalized, ["thank", "thanks", "cheers", "appreciate"])) {
     return {
       text: pick([
         "You're welcome! Is there anything else I can help you with?",
@@ -253,7 +476,7 @@ export function getLocalChatResponse(userMessage: string): ChatEngineResult {
   }
 
   // 12) Goodbyes
-  if (includesAny(message, ["bye", "goodbye", "see you", "close chat", "end chat", "thats all", "that's all", "done", "finished"])) {
+  if (includesAny(normalized, ["bye", "goodbye", "see you", "close chat", "end chat", "thats all", "done", "finished"])) {
     return {
       text: pick([
         "Thank you for contacting Bank of Ireland. Have a great day!",
@@ -263,13 +486,32 @@ export function getLocalChatResponse(userMessage: string): ChatEngineResult {
     };
   }
 
-  // Default
-  return {
+  // 13) Very short or vague messages ("help", emoji-only) - ask a clarifying
+  // question rather than a flat generic reply every time.
+  const wordCount = normalized.split(" ").filter(Boolean).length;
+  if (wordCount <= 2 && normalized.length > 0) {
+    return wrap({
+      text: pick([
+        "I'm here to help - could you give me a few more details about what's going on?",
+        "Could you tell me a bit more about what you need? I want to make sure I point you in the right direction.",
+        "Sorry, could you expand on that a little? I want to make sure I help with the right thing.",
+      ]),
+    });
+  }
+
+  // Default - still take a guess based on the conversation so far rather
+  // than a completely generic line.
+  const fallbackTopic = recentTopic(conversationHistory);
+  if (fallbackTopic === "transfer" && lastTransfer) {
+    return wrap({ text: `I want to make sure I understand - are you asking about ${describeTransfer(lastTransfer)}? Let me know what you'd like to check.` });
+  }
+
+  return wrap({
     text: pick([
       "I'm here to help with your banking needs. Could you tell me a bit more about what you're looking for?",
       "Thanks for your message. How can I assist you with your banking today?",
       "I'd be happy to help. Could you provide a few more details about your query?",
       "I can help with transfers, balances, cards and more. What do you need help with?",
     ]),
-  };
+  });
 }

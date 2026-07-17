@@ -411,12 +411,26 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return "Are you still there? Let me know if you need anything else.";
   };
 
-  // Every agent types at the same realistic, professional pace.
-  const AGENT_TYPING_WPM = 130;
+  // Human typing pace: varies a little per message (like a real person) but
+  // capped so a longer reply never drags - it always feels responsive.
+  const HUMAN_TYPING_WPM_MIN = 45;
+  const HUMAN_TYPING_WPM_MAX = 70;
+  const MIN_TYPING_DELAY_MS = 600;
+  const MAX_TYPING_DELAY_MS = 3200;
 
-  const generateAIResponse = async (userMessage: string, _messages: ChatMessage[]): Promise<{ text: string; category: string; pdfData?: string; pdfFileName?: string }> => {
+  const getHumanTypingDelayMs = (responseText: string): number => {
+    const words = responseText.split(' ').filter(Boolean).length;
+    const wpm = HUMAN_TYPING_WPM_MIN + Math.random() * (HUMAN_TYPING_WPM_MAX - HUMAN_TYPING_WPM_MIN);
+    const rawMs = (words / wpm) * 60 * 1000;
+    return Math.min(MAX_TYPING_DELAY_MS, Math.max(MIN_TYPING_DELAY_MS, rawMs));
+  };
+
+  const generateAIResponse = async (userMessage: string, messages: ChatMessage[]): Promise<{ text: string; category: string; pdfData?: string; pdfFileName?: string }> => {
     // Fully local, rule-based response generation - no network call, works offline.
-    const result = getLocalChatResponse(userMessage);
+    // The recent conversation history is passed in so follow-up messages
+    // ("yes", "why not", "and the reference?") are answered in context.
+    const conversationHistory = messages.map(msg => ({ text: msg.text, isUser: msg.isUser }));
+    const result = getLocalChatResponse(userMessage, conversationHistory);
     return {
       text: result.text,
       category: 'local',
@@ -466,10 +480,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         // Generate response while agent is "reading" - use captured messages for context
         const responseData = await generateAIResponse(userMessage.text, currentMessages);
         
-        // Calculate realistic typing time based on agent personality
-        const responseWords = responseData.text.split(' ').length;
-        const typingTimeMs = (responseWords / AGENT_TYPING_WPM) * 60 * 1000;
-        const typingDelay = Math.max(500, typingTimeMs); // Minimum 500ms (fast typing)
+        // Calculate a natural, human-paced typing delay - varies per message
+        // but never drags on, even for longer replies.
+        const typingDelay = getHumanTypingDelayMs(responseData.text);
         
         // Show typing indicator
         setIsTyping(true);
