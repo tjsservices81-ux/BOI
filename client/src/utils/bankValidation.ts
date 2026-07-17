@@ -261,6 +261,17 @@ const ibanBankCodeMap: Record<string, string> = {
   "BUNQ": "bunq",
   "KNAB": "Knab",
   "MOYO": "Moneyou (ABN AMRO)",
+
+  // Romanian Banks (RO) - Romania also embeds a real 4-letter BIC directly
+  "RNCB": "Banca Comercială Română (BCR)",
+  "BRDE": "BRD (Groupe Société Générale)",
+  "BTRL": "Banca Transilvania",
+  "CECE": "CEC Bank",
+  "RZBR": "Raiffeisen Bank Romania",
+  "BACX": "UniCredit Bank Romania",
+
+  // Bulgarian Banks (BG) - Bulgaria also embeds a real 4-letter BIC directly
+  "UNCR": "UniCredit Bulbank",
 };
 
 // Numeric national bank codes, keyed by country then by the exact digit
@@ -295,6 +306,27 @@ const numericIbanBankCodes: Record<string, Record<string, string>> = {
     "02008": "UniCredit",
     "03069": "Intesa Sanpaolo",
   },
+  BE: {
+    "734": "KBC Bank",
+    "363": "ING Belgium",
+  },
+  PL: {
+    "1020": "PKO Bank Polski",
+    "1140": "mBank",
+    "1090": "Santander Bank Polska",
+    "1240": "Bank Pekao",
+    "1050": "ING Bank Śląski",
+  },
+  PT: {
+    "0035": "Caixa Geral de Depósitos",
+    "0018": "Santander Totta",
+    "0033": "Millennium BCP",
+    "0010": "Banco BPI",
+    "0007": "Novo Banco",
+  },
+  DK: {
+    "3000": "Danske Bank",
+  },
 };
 
 export function validateIBAN(iban: string): { isValid: boolean; bankName: string | null; country: string | null } {
@@ -310,9 +342,10 @@ export function validateIBAN(iban: string): { isValid: boolean; bankName: string
   const countryCode = cleanIban.substring(0, 2);
   let bankName: string | null = null;
 
-  // Ireland, the UK, and the Netherlands embed the bank's actual 4-letter
-  // BIC code directly after the check digits (e.g. GB29 NWBK ... -> NWBK).
-  if (countryCode === 'IE' || countryCode === 'GB' || countryCode === 'NL') {
+  // Ireland, the UK, the Netherlands, Romania and Bulgaria embed the bank's
+  // actual 4-letter BIC code directly after the check digits
+  // (e.g. GB29 NWBK ... -> NWBK).
+  if (countryCode === 'IE' || countryCode === 'GB' || countryCode === 'NL' || countryCode === 'RO' || countryCode === 'BG') {
     const bicCode = cleanIban.substring(4, 8);
     bankName = ibanBankCodeMap[bicCode] || null;
   } else {
@@ -331,6 +364,18 @@ export function validateIBAN(iban: string): { isValid: boolean; bankName: string
         break;
       case 'IT': // Italy - 5-digit ABI code at position 5-9 (after 1-letter CIN)
         numericCode = cleanIban.substring(5, 10);
+        break;
+      case 'BE': // Belgium - 3-digit bank code at position 4-6
+        numericCode = cleanIban.substring(4, 7);
+        break;
+      case 'PL': // Poland - 4-digit bank code at position 4-7 (of an 8-digit segment)
+        numericCode = cleanIban.substring(4, 8);
+        break;
+      case 'PT': // Portugal - 4-digit bank code at position 4-7
+        numericCode = cleanIban.substring(4, 8);
+        break;
+      case 'DK': // Denmark - 4-digit registration number at position 4-7
+        numericCode = cleanIban.substring(4, 8);
         break;
     }
     if (numericCode) {
@@ -355,7 +400,26 @@ export function validateIBAN(iban: string): { isValid: boolean; bankName: string
     'SE': 'Sweden',
     'DK': 'Denmark',
     'NO': 'Norway',
-    'FI': 'Finland'
+    'FI': 'Finland',
+    'LU': 'Luxembourg',
+    'CZ': 'Czech Republic',
+    'HU': 'Hungary',
+    'RO': 'Romania',
+    'BG': 'Bulgaria',
+    'HR': 'Croatia',
+    'SI': 'Slovenia',
+    'SK': 'Slovakia',
+    'CY': 'Cyprus',
+    'MT': 'Malta',
+    'EE': 'Estonia',
+    'LV': 'Latvia',
+    'LT': 'Lithuania',
+    'IS': 'Iceland',
+    'LI': 'Liechtenstein',
+    'MC': 'Monaco',
+    'SM': 'San Marino',
+    'AD': 'Andorra',
+    'VA': 'Vatican City'
   };
   
   return {
