@@ -327,6 +327,13 @@ const numericIbanBankCodes: Record<string, Record<string, string>> = {
   DK: {
     "3000": "Danske Bank",
   },
+  CH: {
+    "00230": "UBS",
+    "00762": "Credit Suisse (UBS)",
+    "09000": "PostFinance",
+    "80000": "Raiffeisen Switzerland",
+    "00700": "Zürcher Kantonalbank",
+  },
 };
 
 export function validateIBAN(iban: string): { isValid: boolean; bankName: string | null; country: string | null } {
@@ -376,6 +383,9 @@ export function validateIBAN(iban: string): { isValid: boolean; bankName: string
         break;
       case 'DK': // Denmark - 4-digit registration number at position 4-7
         numericCode = cleanIban.substring(4, 8);
+        break;
+      case 'CH': // Switzerland - 5-digit bank clearing number (BC number) at position 4-8
+        numericCode = cleanIban.substring(4, 9);
         break;
     }
     if (numericCode) {
