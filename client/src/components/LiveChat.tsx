@@ -419,7 +419,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const MAX_TYPING_DELAY_MS = 3200;
 
   const getHumanTypingDelayMs = (responseText: string): number => {
-    const words = responseText.split(' ').filter(Boolean).length;
+    const words = responseText.split(/\s+/).filter(Boolean).length;
     const wpm = HUMAN_TYPING_WPM_MIN + Math.random() * (HUMAN_TYPING_WPM_MAX - HUMAN_TYPING_WPM_MIN);
     const rawMs = (words / wpm) * 60 * 1000;
     return Math.min(MAX_TYPING_DELAY_MS, Math.max(MIN_TYPING_DELAY_MS, rawMs));
@@ -732,7 +732,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                       : 'bg-white text-gray-900 rounded-bl-sm shadow-sm border border-gray-100'
                   }`}
                 >
-                  <p className="text-base leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-base leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif', whiteSpace: 'pre-line' }}>
                     {message.text}
                   </p>
                   {message.pdfData && (

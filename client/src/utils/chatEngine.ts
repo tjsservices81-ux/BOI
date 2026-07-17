@@ -4,6 +4,7 @@
 // history to follow up naturally instead of treating every message in isolation.
 import { UserDataManager } from "./userDataManager";
 import { getUserCurrency } from "./currencyUtils";
+import { formatSortCode } from "./bankValidation";
 
 export interface ChatEngineResult {
   text: string;
@@ -162,7 +163,8 @@ function includesAnyFuzzy(message: string, keywords: string[]): boolean {
 function describeTransfer(t: LastTransfer): string {
   const base = `your transfer of ${t.currencySymbol}${t.amount} to ${t.recipientName} on ${t.date} at ${t.time}`;
   if (t.paymentMethod === "UK Transfer") {
-    return `${base} (sent to their ${t.bankName} account, sort code ${t.recipientSortCode || "n/a"}, account number ${t.recipientAccountNumber || "n/a"}, reference "${t.reference}")`;
+    const sortCode = t.recipientSortCode ? formatSortCode(t.recipientSortCode) : "n/a";
+    return `${base} (sent to their ${t.bankName} account, sort code ${sortCode}, account number ${t.recipientAccountNumber || "n/a"}, reference "${t.reference}")`;
   }
   if (t.paymentMethod === "SEPA Transfer") {
     return `${base} (SEPA transfer, IBAN ${t.iban || "n/a"}, BIC ${t.bicCode || "n/a"}, reference "${t.reference}")`;
@@ -171,6 +173,31 @@ function describeTransfer(t: LastTransfer): string {
     return `${base} (sent via email to ${t.recipientEmail || "their registered email"}, reference "${t.reference}")`;
   }
   return `${base} (reference "${t.reference}")`;
+}
+
+// The full, itemised confirmation shown the first time a transfer is
+// confirmed in the chat - every detail a customer would want laid out
+// clearly (amount, recipient, bank details, date/time, reference, ID)
+// rather than buried in one long sentence.
+function formatTransferConfirmation(t: LastTransfer): string {
+  const lines = [`Amount: ${t.currencySymbol}${t.amount}`, `To: ${t.recipientName}`];
+
+  if (t.paymentMethod === "UK Transfer") {
+    lines.push(`Bank: ${t.bankName}`);
+    lines.push(`Sort Code: ${t.recipientSortCode ? formatSortCode(t.recipientSortCode) : "n/a"}`);
+    lines.push(`Account Number: ${t.recipientAccountNumber || "n/a"}`);
+  } else if (t.paymentMethod === "SEPA Transfer") {
+    lines.push(`IBAN: ${t.iban || "n/a"}`);
+    lines.push(`BIC: ${t.bicCode || "n/a"}`);
+  } else if (t.paymentMethod === "EMAIL Transfer") {
+    lines.push(`Sent To Email: ${t.recipientEmail || "their registered email"}`);
+  }
+
+  lines.push(`Date & Time: ${t.date} at ${t.time}`);
+  lines.push(`Reference: ${t.reference}`);
+  lines.push(`Transaction ID: ${t.id}`);
+
+  return lines.join("\n");
 }
 
 // Only describes the timescale for the transfer type actually in question -
@@ -475,15 +502,22 @@ export function getLocalChatResponse(userMessage: string, conversationHistory: C
     });
   }
 
-  // 5) Transfer confirmation / "last transfer" queries
+  // 5) Transfer confirmation / "last transfer" queries - the first time a
+  // transfer is confirmed in the chat, lay out every detail clearly rather
+  // than burying it in one long sentence.
   if (includesAny(normalized, ["last transfer", "last payment", "recent transfer", "most recent transaction", "confirm my transfer", "did my transfer", "transfer go through", "payment go through", "show my transfer"])) {
     if (lastTransfer) {
+      const intro = pick([
+        "Of course - here's the confirmation for your last transfer:",
+        "Yes, I can see it. Here are the full details:",
+        "That's all in order - here's everything for your records:",
+      ]);
+      const outro = pick([
+        `It's been processed successfully and is guaranteed to arrive within the normal timeframe (${lowerFirst(deliveryTimescale(lastTransfer))}).`,
+        `Everything's gone through fine and it's on its way - ${lowerFirst(deliveryTimescale(lastTransfer))}.`,
+      ]);
       return wrap({
-        text: pick([
-          `I can confirm ${describeTransfer(lastTransfer)}. It's been processed successfully and is on track to arrive within the normal timeframe.`,
-          `Yes, I can see it - ${describeTransfer(lastTransfer)}. It went through fine and is on its way.`,
-          `That's all in order - ${describeTransfer(lastTransfer)}. It's been processed and will arrive within the normal timeframe.`,
-        ]),
+        text: `${intro}\n\n${formatTransferConfirmation(lastTransfer)}\n\n${outro}`,
       });
     }
     return wrap({
