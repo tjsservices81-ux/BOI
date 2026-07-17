@@ -368,6 +368,15 @@ export function getLocalChatResponse(userMessage: string, conversationHistory: C
 
   // 2) Cancellation requests
   if (includesAnyFuzzy(normalized, ["cancel", "stop the transfer", "reverse", "undo", "pull back", "recall"])) {
+    if (lastTransfer) {
+      return wrap({
+        text: pick([
+          `I'm afraid not - your transfer of ${lastTransfer.currencySymbol}${lastTransfer.amount} to ${lastTransfer.recipientName} has already been submitted, so it can't be cancelled now. It's already being processed by the banking system.`,
+          `Unfortunately there's no way to cancel that ${lastTransfer.currencySymbol}${lastTransfer.amount} transfer to ${lastTransfer.recipientName} now - once it's sent it's already gone through to processing and can't be stopped.`,
+          `I'm sorry, but that transfer to ${lastTransfer.recipientName} can't be reversed once initiated. The payment is already in the system and will complete as scheduled.`,
+        ]),
+      });
+    }
     return wrap({
       text: pick([
         "I'm afraid once a transfer has been submitted it cannot be cancelled, as it's already being processed by the banking system.",
