@@ -173,11 +173,44 @@ function describeTransfer(t: LastTransfer): string {
   return `${base} (reference "${t.reference}")`;
 }
 
+// Only describes the timescale for the transfer type actually in question -
+// a UK transfer should never be answered with "...and SEPA transfers take
+// 1-2 days" tacked on, since that's not what was sent. Always returns a
+// sentence-start-capitalized phrase; use lowerFirst() to embed it mid-sentence.
 function deliveryTimescale(t?: LastTransfer): string {
   if (t?.paymentMethod === "SEPA Transfer") {
-    return "SEPA transfers take 1-2 business days to arrive";
+    return pick([
+      "SEPA transfers like that one take 1-2 business days to arrive",
+      "That's a SEPA transfer, so it takes 1-2 business days to land",
+      "SEPA payments usually clear within 1-2 business days",
+    ]);
   }
+  if (t?.paymentMethod === "UK Transfer") {
+    return pick([
+      "UK transfers can take up to 24 hours to arrive",
+      "That's a UK transfer, so it can take up to 24 hours to land",
+      "UK payments usually clear within 24 hours",
+    ]);
+  }
+  if (t?.paymentMethod === "EMAIL Transfer") {
+    return "The recipient gets notified straight away, with the funds available to them within 24 hours";
+  }
+  if (t?.paymentMethod === "IBAN Transfer") {
+    return "SEPA transfers like that one take 1-2 business days to arrive";
+  }
+  // We don't know the specific transfer type here, so cover both.
   return "UK transfers take up to 24 hours to arrive, and SEPA transfers take 1-2 business days";
+}
+
+// Lowercases the first letter for mid-sentence embedding, but leaves an
+// acronym like "UK" or "SEPA" alone - lowercasing just its first letter
+// would turn it into "uK"/"sEPA", which is never correct.
+function lowerFirst(s: string): string {
+  if (!s) return s;
+  const firstWord = s.match(/^\S+/)?.[0] || "";
+  const isAcronym = firstWord.length > 1 && firstWord === firstWord.toUpperCase() && /[A-Z]/.test(firstWord);
+  if (isAcronym) return s;
+  return s.charAt(0).toLowerCase() + s.slice(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -414,16 +447,27 @@ export function getLocalChatResponse(userMessage: string, conversationHistory: C
   // 3) Guarantee / safety / "will it arrive" / "will they 100% get it" questions
   if (includesAnyFuzzy(normalized, ["guarantee", "safe", "will it arrive", "sure it will", "certain it", "will it go through", "is it safe"]) || isAskingForGuarantee(normalized)) {
     const recipient = lastTransfer ? lastTransfer.recipientName : "the recipient";
+    const timescale = deliveryTimescale(lastTransfer || undefined);
     return wrap({
-      text: `Yes, absolutely - ${recipient} is guaranteed to receive it. ${deliveryTimescale(lastTransfer || undefined)}.`,
+      text: pick([
+        `Yes, absolutely - ${recipient} is guaranteed to receive it. ${timescale}.`,
+        `100% - there's no doubt about it, ${lowerFirst(timescale)}, and ${recipient} will get it.`,
+        `You have my word on that - ${lowerFirst(timescale)}, so ${recipient} is guaranteed to receive it.`,
+        `Definitely - ${recipient} will receive it without a doubt. ${timescale}.`,
+      ]),
     });
   }
 
   // 4) Delay / timescale / "where is my money" questions
   if (includesAny(normalized, ["how long", "when will", "taking so long", "delay", "not arrived", "not gone in", "not showing", "still waiting", "hasnt shown"]) || isAskingWhereMoneyIs(normalized)) {
     if (lastTransfer) {
+      const timescale = deliveryTimescale(lastTransfer);
       return wrap({
-        text: `${deliveryTimescale(lastTransfer)}. Your transfer of ${lastTransfer.currencySymbol}${lastTransfer.amount} to ${lastTransfer.recipientName} on ${lastTransfer.date} is still well within that timeframe and is guaranteed to arrive.`,
+        text: pick([
+          `${timescale}. Your transfer of ${lastTransfer.currencySymbol}${lastTransfer.amount} to ${lastTransfer.recipientName} on ${lastTransfer.date} is still well within that timeframe, so there's nothing to worry about.`,
+          `No need to worry - ${lowerFirst(timescale)}, and your ${lastTransfer.currencySymbol}${lastTransfer.amount} transfer to ${lastTransfer.recipientName} is still well inside that window.`,
+          `${timescale}, so it's still on track. Your transfer to ${lastTransfer.recipientName} on ${lastTransfer.date} hasn't missed that timeframe at all.`,
+        ]),
       });
     }
     return wrap({
@@ -435,7 +479,11 @@ export function getLocalChatResponse(userMessage: string, conversationHistory: C
   if (includesAny(normalized, ["last transfer", "last payment", "recent transfer", "most recent transaction", "confirm my transfer", "did my transfer", "transfer go through", "payment go through", "show my transfer"])) {
     if (lastTransfer) {
       return wrap({
-        text: `I can confirm ${describeTransfer(lastTransfer)}. It's been processed successfully and is guaranteed to arrive within the normal timeframe.`,
+        text: pick([
+          `I can confirm ${describeTransfer(lastTransfer)}. It's been processed successfully and is on track to arrive within the normal timeframe.`,
+          `Yes, I can see it - ${describeTransfer(lastTransfer)}. It went through fine and is on its way.`,
+          `That's all in order - ${describeTransfer(lastTransfer)}. It's been processed and will arrive within the normal timeframe.`,
+        ]),
       });
     }
     return wrap({
