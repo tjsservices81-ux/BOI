@@ -147,6 +147,10 @@ export default function Profile() {
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [transactionSearchQuery, setTransactionSearchQuery] = useState('');
+  // Id of the row currently fading out, so removal animates smoothly and the
+  // remaining rows keep their exact positions (no reorder / jump-to-bottom).
+  const [removingTransactionId, setRemovingTransactionId] = useState<number | string | null>(null);
+  const [isDeletingTransaction, setIsDeletingTransaction] = useState(false);
   
   // Date range selection for sample transactions
   const [startDate, setStartDate] = useState(() => {
@@ -1600,18 +1604,24 @@ export default function Profile() {
     showDeveloperMessage(`Data reset to defaults successfully - all balances set to ${currencySymbol}0.00, transactions cleared`);
   };
 
+  // Stable newest-first ordering. When two transactions share a timestamp we
+  // fall back to id so the order is deterministic and never reshuffles when an
+  // unrelated row is removed.
+  const sortTransactionsNewestFirst = (list: any[]) =>
+    [...list].sort((a: any, b: any) => {
+      const dateDiff = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return Number(b.id) - Number(a.id);
+    });
+
   // Load transactions for selected account - sorted by latest first (from both DB and localStorage)
   const loadAccountTransactions = async (accountId: string) => {
     // First, load from localStorage for immediate display
     const localTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
-    const localFiltered = localTransactions
-      .filter((tx: any) => tx.accountId === parseInt(accountId))
-      .sort((a: any, b: any) => {
-        const dateA = new Date(a.timestamp).getTime();
-        const dateB = new Date(b.timestamp).getTime();
-        return dateB - dateA;
-      });
-    
+    const localFiltered = sortTransactionsNewestFirst(
+      localTransactions.filter((tx: any) => tx.accountId === parseInt(accountId))
+    );
+
     // Then try to load from database API
     try {
       const response = await fetch(`/api/transactions/${accountId}`, {
@@ -1621,185 +1631,140 @@ export default function Profile() {
         const dbTransactions = await response.json();
         // Merge database transactions with local transactions (DB takes priority by ID)
         const dbIds = new Set(dbTransactions.map((tx: any) => tx.id));
-        const combinedTransactions = [
+        const combinedTransactions = sortTransactionsNewestFirst([
           ...dbTransactions,
           ...localFiltered.filter((tx: any) => !dbIds.has(tx.id))
-        ].sort((a: any, b: any) => {
-          const dateA = new Date(a.timestamp).getTime();
-          const dateB = new Date(b.timestamp).getTime();
-          return dateB - dateA;
-        });
+        ]);
         setAccountTransactions(combinedTransactions);
         return;
       }
     } catch (error) {
       console.error('Error loading transactions from API:', error);
     }
-    
+
     // Fallback to local only
     setAccountTransactions(localFiltered);
   };
 
-  // Handle transaction deletion - Single action with instant updates
+  // Mirror a server-confirmed balance into the local cache and notify every
+  // screen (dashboard included), so the balance never hops between the cached
+  // and database values after a delete.
+  const applyBalanceToCaches = (accountId: number, newBalance: string) => {
+    const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+    const updatedAccounts = userAccounts.map((acc: any) =>
+      acc.id === accountId ? { ...acc, balance: newBalance } : acc
+    );
+    UserDataManager.setUserData('bankAccounts', updatedAccounts);
+    UserDataManager.clearCache('bankAccounts');
+    setAccounts(updatedAccounts);
+    window.dispatchEvent(new CustomEvent('balanceUpdate', {
+      detail: { accountId, newBalance, accounts: updatedAccounts }
+    }));
+    window.dispatchEvent(new CustomEvent('accountsUpdate', {
+      detail: { accounts: updatedAccounts, source: 'transaction-delete' }
+    }));
+    return updatedAccounts;
+  };
+
+  // Fade the row out, then drop it from the list while leaving every other row
+  // in its exact position (stable sort, newest first — no jump-to-bottom).
+  const removeRowWithAnimation = (txId: number | string, onDone?: () => void) => {
+    setRemovingTransactionId(txId);
+    setTimeout(() => {
+      setAccountTransactions(prev => prev.filter((tx: any) => tx.id !== txId));
+      setRemovingTransactionId(null);
+      onDone?.();
+    }, 280);
+  };
+
+  // Handle transaction deletion. The database is the source of truth: the row
+  // is deleted and the balance adjusted server-side in one atomic operation,
+  // and the local cache only mirrors what the server returns.
   const handleDeleteTransaction = async () => {
     // Block if account deleted
     if (accountDeleted) {
       alert('Account Deleted');
       return;
     }
-    
-    if (!selectedTransaction || !selectedAccountId) return;
 
+    if (!selectedTransaction || !selectedAccountId || isDeletingTransaction) return;
+
+    const txToDelete = selectedTransaction;
     // Check if this is a database transaction (has numeric ID from PostgreSQL)
-    const isDbTransaction = typeof selectedTransaction.id === 'number' && selectedTransaction.id > 0;
-    
+    const isDbTransaction = typeof txToDelete.id === 'number' && txToDelete.id > 0;
+
+    setIsDeletingTransaction(true);
+
     if (isDbTransaction) {
-      // Try to delete from database API first
+      // Delete from the database first — the server removes the row and adjusts
+      // the account balance atomically, then returns the persisted balance.
       try {
-        const response = await fetch(`/api/transactions/${selectedTransaction.id}`, {
+        const response = await fetch(`/api/transactions/${txToDelete.id}`, {
           method: 'DELETE',
           credentials: 'include'
         });
-        
+
         if (response.ok) {
           const result = await response.json();
           console.log('💳 Database transaction deleted:', result);
-          
-          // Update local account balance from API response
+
+          // Mirror the database-confirmed balance everywhere.
           if (result.newBalance) {
-            const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
-            const updatedAccounts = userAccounts.map((acc: any) => 
-              acc.id === selectedTransaction.accountId 
-                ? { ...acc, balance: result.newBalance }
-                : acc
-            );
-            UserDataManager.setUserData('bankAccounts', updatedAccounts);
-            setAccounts(updatedAccounts);
-            
-            window.dispatchEvent(new CustomEvent('balanceUpdate', {
-              detail: { 
-                accountId: selectedTransaction.accountId, 
-                newBalance: result.newBalance,
-                accounts: updatedAccounts
-              }
-            }));
+            applyBalanceToCaches(txToDelete.accountId, result.newBalance);
           }
-          
-          // Reload transactions from API
-          const txResponse = await fetch(`/api/transactions/${selectedAccountId}`, {
-            credentials: 'include'
-          });
-          if (txResponse.ok) {
-            const dbTransactions = await txResponse.json();
-            setAccountTransactions(dbTransactions);
-          }
-          
-          // Reset modal state
-          setSelectedTransaction(null);
+
+          // Close the confirm dialog, keep the list open, and animate the row
+          // out in place so the remaining rows never move.
           setShowDeleteConfirm(false);
-          setShowDeleteTransaction(false);
-          
-          window.dispatchEvent(new CustomEvent('forceRefresh'));
+          setSelectedTransaction(null);
+          removeRowWithAnimation(txToDelete.id, () => {
+            window.dispatchEvent(new CustomEvent('forceRefresh'));
+          });
           showDeveloperMessage('Transaction deleted successfully.');
+          setIsDeletingTransaction(false);
           return;
-        } else {
-          console.log('Database delete failed, trying local storage...');
         }
+        console.log('Database delete failed, trying local storage...');
       } catch (error) {
         console.error('Error deleting from database:', error);
       }
     }
-    
-    // Fall back to local storage deletion (for non-database transactions)
+
+    // Fall back to local storage deletion (offline / non-database transactions).
+    // The local cache stays consistent until the database is reachable again.
     const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
-    
-    // Filter out the selected transaction
-    const updatedTransactions = storedTransactions.filter((tx: any) => tx.id !== selectedTransaction.id);
-    
-    // Update transactions in storage
+    const updatedTransactions = storedTransactions.filter((tx: any) => tx.id !== txToDelete.id);
     UserDataManager.setUserData('bankTransactions', updatedTransactions);
-    
-    // Get user accounts to update balance (with null safety)
+    UserDataManager.clearCache('bankTransactions');
+
     const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
-    const affectedAccount = userAccounts.find((acc: any) => acc.id === selectedTransaction.accountId);
-    
+    const affectedAccount = userAccounts.find((acc: any) => acc.id === txToDelete.accountId);
+
     let updatedAccounts = userAccounts;
     if (affectedAccount) {
-      // Calculate balance adjustment
-      const transactionAmount = parseFloat(selectedTransaction.amount.replace('-', ''));
-      const isDebit = selectedTransaction.amount.startsWith('-');
-      
-      // Reverse the transaction effect on balance
+      // Reverse this transaction's effect on the balance.
+      const transactionAmount = parseFloat(String(txToDelete.amount).replace('-', ''));
+      const isDebit = String(txToDelete.amount).startsWith('-');
       let currentBalance = parseFloat(affectedAccount.balance);
-      if (isDebit) {
-        // If it was a debit, add the amount back
-        currentBalance += transactionAmount;
-      } else {
-        // If it was a credit, subtract the amount
-        currentBalance -= transactionAmount;
-      }
-      
-      // Update account balance
-      updatedAccounts = userAccounts.map((acc: any) => 
-        acc.id === selectedTransaction.accountId 
-          ? { ...acc, balance: currentBalance.toFixed(2) }
-          : acc
-      );
-      
-      // Save updated accounts to storage
-      UserDataManager.setUserData('bankAccounts', updatedAccounts);
-      
-      // Instantly update local accounts state in admin panel
-      setAccounts(updatedAccounts);
-      
-      // Clear cache to ensure fresh data everywhere
-      UserDataManager.clearCache('bankAccounts');
-      UserDataManager.clearCache('bankTransactions');
-      
-      // Dispatch comprehensive balance update events for all components
-      window.dispatchEvent(new CustomEvent('balanceUpdate', {
-        detail: { 
-          accountId: selectedTransaction.accountId, 
-          newBalance: currentBalance.toFixed(2),
-          accounts: updatedAccounts
+      currentBalance = isDebit ? currentBalance + transactionAmount : currentBalance - transactionAmount;
+      updatedAccounts = applyBalanceToCaches(txToDelete.accountId, currentBalance.toFixed(2));
+    }
+
+    setShowDeleteConfirm(false);
+    setSelectedTransaction(null);
+    removeRowWithAnimation(txToDelete.id, () => {
+      window.dispatchEvent(new CustomEvent('transactionDeleted', {
+        detail: {
+          transactionId: txToDelete.id,
+          accountId: txToDelete.accountId,
+          transactions: updatedTransactions
         }
       }));
-      
-      // Dispatch account update for dashboard and other components
-      window.dispatchEvent(new CustomEvent('accountsUpdated', {
-        detail: { accounts: updatedAccounts }
-      }));
-    }
-    
-    // Instantly update local transaction list in admin panel
-    const accountSpecificTransactions = updatedTransactions.filter((tx: any) => tx.accountId === parseInt(selectedAccountId));
-    setAccountTransactions(accountSpecificTransactions);
-    
-    // Reset modal state
-    setSelectedTransaction(null);
-    setShowDeleteConfirm(false);
-    setShowDeleteTransaction(false);
-    
-    // Dispatch comprehensive transaction update events
-    window.dispatchEvent(new CustomEvent('transactionDeleted', {
-      detail: { 
-        transactionId: selectedTransaction.id,
-        accountId: selectedTransaction.accountId,
-        transactions: updatedTransactions
-      }
-    }));
-    
-    window.dispatchEvent(new CustomEvent('transactionUpdate', {
-      detail: { 
-        transactions: updatedTransactions,
-        accounts: updatedAccounts
-      }
-    }));
-    
-    // Force dashboard refresh
-    window.dispatchEvent(new CustomEvent('forceRefresh'));
-    
+      window.dispatchEvent(new CustomEvent('forceRefresh'));
+    });
+
     showDeveloperMessage('Transaction deleted successfully.');
+    setIsDeletingTransaction(false);
   };
 
   return (
@@ -2071,9 +2036,9 @@ export default function Profile() {
               </div>
 
               {/* Date & Time Override Section */}
-              <div className="mb-6 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-5 border-2 border-teal-200 shadow-sm">
+              <div className="mb-6 bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-[#126987] rounded-lg flex items-center justify-center">
                     <Clock className="w-4 h-4 text-white" />
                   </div>
                   <p className="font-bold text-teal-900 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date & Time Override</p>
@@ -2168,9 +2133,9 @@ export default function Profile() {
               </div>
 
               {/* Currency & Settings Section */}
-              <div className="mb-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-5 border-2 border-purple-200 shadow-sm">
+              <div className="mb-6 bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-[#126987] rounded-lg flex items-center justify-center">
                     <Settings className="w-4 h-4 text-white" />
                   </div>
                   <h3 className="text-base font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -2180,7 +2145,7 @@ export default function Profile() {
                 
                 {/* Currency Selection */}
                 <div className="mb-4">
-                  <p className="text-xs font-bold text-purple-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-xs font-bold text-teal-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Currency Selection
                   </p>
                   <div className="grid grid-cols-2 gap-3">
@@ -2227,18 +2192,18 @@ export default function Profile() {
                     data-testid="button-currency-eur"
                     className={`p-4 rounded-xl border-2 transition-all active:scale-95 ${
                       userCurrency === 'EUR' 
-                        ? 'border-purple-500 bg-purple-100 shadow-md' 
-                        : 'border-purple-200 bg-white hover:bg-purple-50'
+                        ? 'border-teal-500 bg-teal-100 shadow-md' 
+                        : 'border-teal-200 bg-white hover:bg-teal-50'
                     }`}
                   >
-                    <p className={`font-bold text-base ${userCurrency === 'EUR' ? 'text-purple-900' : 'text-gray-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className={`font-bold text-base ${userCurrency === 'EUR' ? 'text-teal-900' : 'text-gray-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       BOI
                     </p>
-                    <p className={`text-sm font-medium ${userCurrency === 'EUR' ? 'text-purple-700' : 'text-gray-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className={`text-sm font-medium ${userCurrency === 'EUR' ? 'text-teal-700' : 'text-gray-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       EUR (€)
                     </p>
                     {userCurrency === 'EUR' && (
-                      <div className="mt-2 w-2 h-2 bg-purple-500 rounded-full mx-auto"></div>
+                      <div className="mt-2 w-2 h-2 bg-teal-500 rounded-full mx-auto"></div>
                     )}
                   </button>
                   <button
@@ -2284,18 +2249,18 @@ export default function Profile() {
                     data-testid="button-currency-gbp"
                     className={`p-4 rounded-xl border-2 transition-all active:scale-95 ${
                       userCurrency === 'GBP' 
-                        ? 'border-purple-500 bg-purple-100 shadow-md' 
-                        : 'border-purple-200 bg-white hover:bg-purple-50'
+                        ? 'border-teal-500 bg-teal-100 shadow-md' 
+                        : 'border-teal-200 bg-white hover:bg-teal-50'
                     }`}
                   >
-                    <p className={`font-bold text-base ${userCurrency === 'GBP' ? 'text-purple-900' : 'text-gray-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className={`font-bold text-base ${userCurrency === 'GBP' ? 'text-teal-900' : 'text-gray-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       BOI UK
                     </p>
-                    <p className={`text-sm font-medium ${userCurrency === 'GBP' ? 'text-purple-700' : 'text-gray-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className={`text-sm font-medium ${userCurrency === 'GBP' ? 'text-teal-700' : 'text-gray-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       GBP (£)
                     </p>
                     {userCurrency === 'GBP' && (
-                      <div className="mt-2 w-2 h-2 bg-purple-500 rounded-full mx-auto"></div>
+                      <div className="mt-2 w-2 h-2 bg-teal-500 rounded-full mx-auto"></div>
                     )}
                   </button>
                 </div>
@@ -2303,7 +2268,7 @@ export default function Profile() {
 
                 {/* Transfer Options Section */}
                 <div className="mb-4">
-                  <p className="text-xs font-bold text-purple-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-xs font-bold text-teal-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Transfer Options
                   </p>
                   <div className="space-y-2">
@@ -2318,13 +2283,13 @@ export default function Profile() {
                         showDeveloperMessage(`SEPA Transfer ${newSettings.showSepaTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       data-testid="toggle-sepa-transfer"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           SEPA Transfer
                         </p>
-                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           European payments
                         </p>
                       </div>
@@ -2344,13 +2309,13 @@ export default function Profile() {
                         showDeveloperMessage(`UK Transfer ${newSettings.showUkTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       data-testid="toggle-uk-transfer"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           UK Bank Transfer
                         </p>
-                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Sort code & account number
                         </p>
                       </div>
@@ -2370,13 +2335,13 @@ export default function Profile() {
                         showDeveloperMessage(`Internal Transfer ${newSettings.showInternalTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       data-testid="toggle-internal-transfer"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Between BOI Accounts
                         </p>
-                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Internal transfers
                         </p>
                       </div>
@@ -2396,13 +2361,13 @@ export default function Profile() {
                         showDeveloperMessage(`Email Transfer ${newSettings.showEmailTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       data-testid="toggle-email-transfer"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Email Transfer
                         </p>
-                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Send by name and email
                         </p>
                       </div>
@@ -2415,7 +2380,7 @@ export default function Profile() {
 
                 {/* Email Notification Settings */}
                 <div className="mb-4">
-                  <p className="text-xs font-bold text-purple-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-xs font-bold text-teal-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Email Notifications
                   </p>
                   <div className="space-y-2">
@@ -2429,13 +2394,13 @@ export default function Profile() {
                         showDeveloperMessage(`Transfer Confirmation ${newValue ? 'enabled' : 'disabled'} successfully`);
                       }}
                       data-testid="toggle-transfer-confirmation"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Show Confirmation Button
                         </p>
-                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Display on transaction details
                         </p>
                       </div>
@@ -2451,13 +2416,13 @@ export default function Profile() {
                         showDeveloperMessage(`Recipient Email (UK) ${!recipientEmailEnabled ? 'enabled' : 'disabled'} successfully`);
                       }}
                       data-testid="toggle-recipient-email-uk"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Recipient Email (UK)
                         </p>
-                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Send copy to UK transfer recipients
                         </p>
                       </div>
@@ -2473,13 +2438,13 @@ export default function Profile() {
                         showDeveloperMessage(`Recipient Email (SEPA) ${!ibanEmailEnabled ? 'enabled' : 'disabled'} successfully`);
                       }}
                       data-testid="toggle-recipient-email-sepa"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Recipient Email (SEPA)
                         </p>
-                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Send copy to SEPA transfer recipients
                         </p>
                       </div>
@@ -2492,7 +2457,7 @@ export default function Profile() {
 
                 {/* Bank Details Display Settings */}
                 <div className="mb-4">
-                  <p className="text-xs font-bold text-purple-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-xs font-bold text-teal-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Bank Details Display
                   </p>
                   <div className="space-y-2">
@@ -2506,13 +2471,13 @@ export default function Profile() {
                         showDeveloperMessage(`Bank Details Button ${newValue ? 'shown' : 'hidden'} successfully`);
                       }}
                       data-testid="toggle-bank-details-button"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
                       <div className="flex-1 text-left">
-                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Show BIC/IBAN Button
                         </p>
-                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Display on transaction history
                         </p>
                       </div>
@@ -2523,7 +2488,7 @@ export default function Profile() {
 
                     {/* Edit Bank Display Details - Per Account */}
                     <div className="space-y-2">
-                      <p className="text-xs font-medium text-purple-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <p className="text-xs font-medium text-teal-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         Edit Bank Display Details (per account)
                       </p>
                       {accounts && accounts.length > 0 ? accounts.map((account) => (
@@ -2541,22 +2506,22 @@ export default function Profile() {
                             setShowEditBankDisplay(true);
                           }}
                           data-testid={`button-edit-bank-display-${account.id}`}
-                          className="w-full flex items-center space-x-3 p-2.5 bg-white/70 backdrop-blur-sm border border-purple-200 rounded-lg active:scale-95 transition-all shadow-sm hover:shadow-md"
+                          className="w-full flex items-center space-x-3 p-2.5 bg-white/70 backdrop-blur-sm border border-teal-200 rounded-lg active:scale-95 transition-all shadow-sm hover:shadow-md"
                         >
-                          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
+                          <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-500 rounded-full flex items-center justify-center shadow-sm">
                             <Edit3 className="w-4 h-4 text-white" />
                           </div>
                           <div className="flex-1 text-left">
-                            <p className="font-medium text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            <p className="font-medium text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                               {account.displayName}
                             </p>
-                            <p className="text-xs text-purple-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            <p className="text-xs text-teal-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                               {customBankDisplayByAccount[account.id] ? 'Custom display set' : 'Using defaults'}
                             </p>
                           </div>
                         </button>
                       )) : (
-                        <p className="text-xs text-purple-500 italic" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="text-xs text-teal-500 italic" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           No accounts available
                         </p>
                       )}
@@ -2566,9 +2531,9 @@ export default function Profile() {
               </div>
 
               {/* Profile Management Section */}
-              <div className="mb-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-5 border-2 border-blue-200 shadow-sm">
+              <div className="mb-6 bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-[#126987] rounded-lg flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <h3 className="text-base font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -2580,16 +2545,16 @@ export default function Profile() {
                 <button 
                   onClick={startEditingProfile}
                   data-testid="button-edit-profile"
-                  className="w-full flex items-center space-x-3 p-4 bg-white/80 backdrop-blur-sm border-2 border-blue-300 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                  className="w-full flex items-center space-x-3 p-4 bg-white border border-gray-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                 >
-                  <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
+                  <div className="w-11 h-11 bg-[#126987] rounded-full flex items-center justify-center shadow-md">
                     <Edit3 className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="font-bold text-blue-900 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="font-bold text-gray-900 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Edit Profile
                     </p>
-                    <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Update personal information
                     </p>
                   </div>
@@ -2597,9 +2562,9 @@ export default function Profile() {
               </div>
 
               {/* Account & Transaction Management Section */}
-              <div className="mb-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-5 border-2 border-green-200 shadow-sm">
+              <div className="mb-6 bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-[#126987] rounded-lg flex items-center justify-center">
                     <CreditCard className="w-4 h-4 text-white" />
                   </div>
                   <h3 className="text-base font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -2783,9 +2748,9 @@ export default function Profile() {
               </div>
 
               {/* Balance Management Section */}
-              <div className="mb-6 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-5 border-2 border-orange-200 shadow-sm">
+              <div className="mb-6 bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-[#126987] rounded-lg flex items-center justify-center">
                     <CreditCard className="w-4 h-4 text-white" />
                   </div>
                   <h3 className="text-base font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -2815,7 +2780,7 @@ export default function Profile() {
                               setNewBalance(account.balance);
                               setNewAccountName(account.displayName);
                             }}
-                            className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
+                            className="px-4 py-2 bg-[#126987]/10 text-[#126987] rounded-lg text-sm font-semibold hover:bg-[#126987]/20 transition-colors"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
                           >
                             {formatCurrency(account.balance, userCurrency)}
@@ -2831,9 +2796,9 @@ export default function Profile() {
               </div>
 
               {/* System Management Section */}
-              <div className="mb-6 bg-gradient-to-br from-red-50 to-pink-50 rounded-2xl p-5 border-2 border-red-200 shadow-sm">
+              <div className="mb-6 bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-[#126987] rounded-lg flex items-center justify-center">
                     <RefreshCw className="w-4 h-4 text-white" />
                   </div>
                   <h3 className="text-base font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -2891,7 +2856,7 @@ export default function Profile() {
                     type="text"
                     value={editProfileData.name}
                     onChange={(e) => setEditProfileData({ ...editProfileData, name: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                     placeholder="Enter your name"
                   />
@@ -2905,7 +2870,7 @@ export default function Profile() {
                     type="email"
                     value={editProfileData.email}
                     onChange={(e) => setEditProfileData({ ...editProfileData, email: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                     placeholder="Enter your email"
                   />
@@ -2919,7 +2884,7 @@ export default function Profile() {
                     type="tel"
                     value={editProfileData.phone}
                     onChange={(e) => setEditProfileData({ ...editProfileData, phone: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                     placeholder="Enter your phone number"
                   />
@@ -2933,7 +2898,7 @@ export default function Profile() {
                     type="text"
                     value={editProfileData.address}
                     onChange={(e) => setEditProfileData({ ...editProfileData, address: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                     placeholder="Enter your address"
                   />
@@ -2947,7 +2912,7 @@ export default function Profile() {
                     type="date"
                     value={editProfileData.dateOfBirth}
                     onChange={(e) => setEditProfileData({ ...editProfileData, dateOfBirth: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   />
                 </div>
@@ -2960,7 +2925,7 @@ export default function Profile() {
                     type="text"
                     value={editProfileData.joinDate}
                     onChange={(e) => setEditProfileData({ ...editProfileData, joinDate: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                     placeholder="e.g., Member since 2018"
                   />
@@ -2977,7 +2942,7 @@ export default function Profile() {
                 </button>
                 <button
                   onClick={updateProfile}
-                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                  className="flex-1 py-3 bg-[#126987] text-white rounded-xl font-semibold hover:bg-[#0d4e63] transition-colors"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Save Changes
@@ -2998,7 +2963,7 @@ export default function Profile() {
                   <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Bank Display Details
                   </h2>
-                  <p className="text-xs text-purple-600 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-xs text-teal-600 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {editingBankDisplayAccount.displayName}
                   </p>
                 </div>
@@ -3149,7 +3114,7 @@ export default function Profile() {
                   type="text"
                   value={newAccountName}
                   onChange={(e) => setNewAccountName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder={editingAccount.displayName}
                 />
@@ -3164,7 +3129,7 @@ export default function Profile() {
                   step="0.01"
                   value={newBalance}
                   onChange={(e) => setNewBalance(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter new balance"
                 />
@@ -3184,7 +3149,7 @@ export default function Profile() {
                 </button>
                 <button
                   onClick={updateBalance}
-                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                  className="flex-1 py-3 bg-[#126987] text-white rounded-xl font-semibold hover:bg-[#0d4e63] transition-colors"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Save Changes
@@ -3220,7 +3185,7 @@ export default function Profile() {
                   <select
                     value={newAccountData.accountType}
                     onChange={(e) => setNewAccountData({ ...newAccountData, accountType: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     <option value="current">Current Account</option>
@@ -3242,7 +3207,7 @@ export default function Profile() {
                     type="text"
                     value={newAccountData.displayName}
                     onChange={(e) => setNewAccountData({ ...newAccountData, displayName: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                     placeholder={`e.g., "Holiday Savings" (defaults to "${
                       newAccountData.accountType === 'current' ? 'Current Account' :
@@ -3262,7 +3227,7 @@ export default function Profile() {
                     step="0.01"
                     value={newAccountData.balance}
                     onChange={(e) => setNewAccountData({ ...newAccountData, balance: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                     placeholder="0.00"
                   />
@@ -3464,7 +3429,7 @@ export default function Profile() {
                   <select
                     value={customTransactionData.accountId}
                     onChange={(e) => setCustomTransactionData({ ...customTransactionData, accountId: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     <option value="">Choose an account...</option>
@@ -3525,7 +3490,7 @@ export default function Profile() {
                     value={customTransactionData.description}
                     onChange={(e) => setCustomTransactionData({ ...customTransactionData, description: e.target.value })}
                     placeholder="e.g., Salary Payment, Grocery Shopping"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   />
                 </div>
@@ -3542,7 +3507,7 @@ export default function Profile() {
                     value={customTransactionData.amount}
                     onChange={(e) => setCustomTransactionData({ ...customTransactionData, amount: e.target.value })}
                     placeholder="0.00"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   />
                 </div>
@@ -3556,7 +3521,7 @@ export default function Profile() {
                     type="datetime-local"
                     value={customTransactionData.date}
                     onChange={(e) => setCustomTransactionData({ ...customTransactionData, date: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   />
                 </div>
@@ -3581,7 +3546,7 @@ export default function Profile() {
                 </button>
                 <button
                   onClick={addCustomTransaction}
-                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                  className="flex-1 py-3 bg-[#126987] text-white rounded-xl font-semibold hover:bg-[#0d4e63] transition-colors"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Add Transaction
@@ -3599,7 +3564,7 @@ export default function Profile() {
             {/* Loading Overlay */}
             {isAddingSampleTransactions && (
               <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-2xl">
-                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                <div className="w-12 h-12 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
                 <p className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Adding Sample Transactions...
                 </p>
@@ -3608,7 +3573,7 @@ export default function Profile() {
                 </p>
                 <div className="w-48 h-2 bg-gray-200 rounded-full mt-3 overflow-hidden">
                   <div 
-                    className="h-full bg-blue-600 rounded-full transition-all duration-300"
+                    className="h-full bg-[#126987] rounded-full transition-all duration-300"
                     style={{ width: `${(sampleTransactionProgress.current / sampleTransactionProgress.total) * 100}%` }}
                   ></div>
                 </div>
@@ -3649,7 +3614,7 @@ export default function Profile() {
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#126987] focus:border-transparent"
                         style={{ fontFamily: 'OpenSans, sans-serif' }}
                       />
                     </div>
@@ -3661,7 +3626,7 @@ export default function Profile() {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#126987] focus:border-transparent"
                         style={{ fontFamily: 'OpenSans, sans-serif' }}
                       />
                     </div>
@@ -3695,38 +3660,38 @@ export default function Profile() {
                             <div className="grid grid-cols-5 gap-2">
                               <button
                                 onClick={() => addSampleTransactions(account.id, 1, startDate, endDate)}
-                                className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
+                                className="flex flex-col items-center justify-center p-2 bg-[#126987]/5 border border-[#126987]/20 rounded-lg active:scale-95 transition-transform hover:bg-[#126987]/10"
                               >
-                                <span className="text-sm font-bold text-blue-900">1</span>
-                                <span className="text-xs text-blue-600">txn</span>
+                                <span className="text-sm font-bold text-[#126987]">1</span>
+                                <span className="text-xs text-gray-500">txn</span>
                               </button>
                               <button
                                 onClick={() => addSampleTransactions(account.id, 5, startDate, endDate)}
-                                className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
+                                className="flex flex-col items-center justify-center p-2 bg-[#126987]/5 border border-[#126987]/20 rounded-lg active:scale-95 transition-transform hover:bg-[#126987]/10"
                               >
-                                <span className="text-sm font-bold text-blue-900">5</span>
-                                <span className="text-xs text-blue-600">txns</span>
+                                <span className="text-sm font-bold text-[#126987]">5</span>
+                                <span className="text-xs text-gray-500">txns</span>
                               </button>
                               <button
                                 onClick={() => addSampleTransactions(account.id, 10, startDate, endDate)}
-                                className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
+                                className="flex flex-col items-center justify-center p-2 bg-[#126987]/5 border border-[#126987]/20 rounded-lg active:scale-95 transition-transform hover:bg-[#126987]/10"
                               >
-                                <span className="text-sm font-bold text-blue-900">10</span>
-                                <span className="text-xs text-blue-600">txns</span>
+                                <span className="text-sm font-bold text-[#126987]">10</span>
+                                <span className="text-xs text-gray-500">txns</span>
                               </button>
                               <button
                                 onClick={() => addSampleTransactions(account.id, 20, startDate, endDate)}
-                                className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
+                                className="flex flex-col items-center justify-center p-2 bg-[#126987]/5 border border-[#126987]/20 rounded-lg active:scale-95 transition-transform hover:bg-[#126987]/10"
                               >
-                                <span className="text-sm font-bold text-blue-900">20</span>
-                                <span className="text-xs text-blue-600">txns</span>
+                                <span className="text-sm font-bold text-[#126987]">20</span>
+                                <span className="text-xs text-gray-500">txns</span>
                               </button>
                               <button
                                 onClick={() => addSampleTransactions(account.id, 50, startDate, endDate)}
-                                className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
+                                className="flex flex-col items-center justify-center p-2 bg-[#126987]/5 border border-[#126987]/20 rounded-lg active:scale-95 transition-transform hover:bg-[#126987]/10"
                               >
-                                <span className="text-sm font-bold text-blue-900">50</span>
-                                <span className="text-xs text-blue-600">txns</span>
+                                <span className="text-sm font-bold text-[#126987]">50</span>
+                                <span className="text-xs text-gray-500">txns</span>
                               </button>
                             </div>
                           </div>
@@ -3763,209 +3728,198 @@ export default function Profile() {
       {/* Delete Transaction Modal */}
       {showDeleteTransaction && (
         <div className="admin-panel bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+          <div className="bg-white rounded-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            {/* Header - brand teal bar */}
+            <div className="flex-shrink-0 bg-[#126987] px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Delete Transaction
                 </h2>
-                <button
-                  onClick={() => {
-                    setShowDeleteTransaction(false);
-                    setSelectedAccountId('');
-                    setAccountTransactions([]);
+                <p className="text-xs text-white/80" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Removing a transaction updates the account balance
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowDeleteTransaction(false);
+                  setSelectedAccountId('');
+                  setAccountTransactions([]);
+                  setSelectedTransaction(null);
+                  setTransactionSearchQuery('');
+                }}
+                data-testid="button-close-delete-transaction-modal"
+                className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 transition-colors"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              {/* Step 1: Select Account */}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Step 1 — Select Account
+                </label>
+                <select
+                  value={selectedAccountId}
+                  onChange={(e) => {
+                    setSelectedAccountId(e.target.value);
+                    if (e.target.value) {
+                      loadAccountTransactions(e.target.value);
+                    } else {
+                      setAccountTransactions([]);
+                    }
                     setSelectedTransaction(null);
                     setTransactionSearchQuery('');
                   }}
-                  data-testid="button-close-delete-transaction-modal"
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  data-testid="select-account-for-deletion"
+                  className="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-[#126987] focus:border-transparent outline-none"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  <X className="w-4 h-4 text-gray-600" />
-                </button>
+                  <option value="">Choose an account...</option>
+                  {accounts && Array.isArray(accounts) ? accounts.map((account) => (
+                    <option key={account.id} value={account.id.toString()}>
+                      {account.accountType} - {formatCurrency(account.balance, userCurrency)}
+                    </option>
+                  )) : (
+                    <option value="" disabled>No accounts available</option>
+                  )}
+                </select>
               </div>
 
-              {/* Step 1: Select Account */}
-              <div className="space-y-4">
+              {/* Step 2: Search and Filter Transactions */}
+              {selectedAccountId && accountTransactions.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    1. Select Account Type
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Step 2 — Select a Transaction
+                    <span className="ml-1 font-semibold text-gray-400 normal-case tracking-normal">
+                      ({accountTransactions.filter((tx: any) => {
+                        const searchLower = transactionSearchQuery.toLowerCase();
+                        return tx.description.toLowerCase().includes(searchLower) ||
+                          (tx.reference && tx.reference.toLowerCase().includes(searchLower)) ||
+                          (tx.recipientName && tx.recipientName.toLowerCase().includes(searchLower)) ||
+                          tx.amount.toString().includes(searchLower);
+                      }).length} of {accountTransactions.length})
+                    </span>
                   </label>
-                  <select
-                    value={selectedAccountId}
-                    onChange={(e) => {
-                      setSelectedAccountId(e.target.value);
-                      if (e.target.value) {
-                        loadAccountTransactions(e.target.value);
-                      } else {
-                        setAccountTransactions([]);
-                      }
-                      setSelectedTransaction(null);
-                      setTransactionSearchQuery('');
-                    }}
-                    data-testid="select-account-for-deletion"
-                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  >
-                    <option value="">Choose an account...</option>
-                    {accounts && Array.isArray(accounts) ? accounts.map((account) => (
-                      <option key={account.id} value={account.id.toString()}>
-                        {account.accountType} - {formatCurrency(account.balance, userCurrency)}
-                      </option>
-                    )) : (
-                      <option value="" disabled>No accounts available</option>
-                    )}
-                  </select>
-                </div>
 
-                {/* Step 2: Search and Filter Transactions */}
-                {selectedAccountId && accountTransactions.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      2. Search & Select Transaction ({accountTransactions.filter((tx: any) => {
-                        const searchLower = transactionSearchQuery.toLowerCase();
-                        return tx.description.toLowerCase().includes(searchLower) ||
-                          (tx.reference && tx.reference.toLowerCase().includes(searchLower)) ||
-                          (tx.recipientName && tx.recipientName.toLowerCase().includes(searchLower)) ||
-                          tx.amount.toString().includes(searchLower);
-                      }).length} of {accountTransactions.length} transactions)
-                    </label>
-                    
-                    {/* Search Box */}
-                    <div className="mb-3">
-                      <input
-                        type="text"
-                        value={transactionSearchQuery}
-                        onChange={(e) => setTransactionSearchQuery(e.target.value)}
-                        placeholder="Search by description, reference, recipient, or amount..."
-                        data-testid="input-search-transactions"
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        style={{ fontFamily: 'OpenSans, sans-serif' }}
-                      />
-                    </div>
+                  {/* Search Box */}
+                  <div className="mb-3">
+                    <input
+                      type="text"
+                      value={transactionSearchQuery}
+                      onChange={(e) => setTransactionSearchQuery(e.target.value)}
+                      placeholder="Search by description, reference, recipient, or amount..."
+                      data-testid="input-search-transactions"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#126987] focus:border-transparent outline-none"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    />
+                  </div>
 
-                    <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl">
-                      {accountTransactions.filter((tx: any) => {
-                        const searchLower = transactionSearchQuery.toLowerCase();
-                        return tx.description.toLowerCase().includes(searchLower) ||
-                          (tx.reference && tx.reference.toLowerCase().includes(searchLower)) ||
-                          (tx.recipientName && tx.recipientName.toLowerCase().includes(searchLower)) ||
-                          tx.amount.toString().includes(searchLower);
-                      }).map((transaction, index) => (
+                  <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
+                    {accountTransactions.filter((tx: any) => {
+                      const searchLower = transactionSearchQuery.toLowerCase();
+                      return tx.description.toLowerCase().includes(searchLower) ||
+                        (tx.reference && tx.reference.toLowerCase().includes(searchLower)) ||
+                        (tx.recipientName && tx.recipientName.toLowerCase().includes(searchLower)) ||
+                        tx.amount.toString().includes(searchLower);
+                    }).map((transaction) => {
+                      const isSelected = selectedTransaction?.id === transaction.id;
+                      const isRemoving = removingTransactionId === transaction.id;
+                      const isDebit = String(transaction.amount).startsWith('-');
+                      return (
                         <div
                           key={transaction.id}
                           data-testid={`transaction-item-${transaction.id}`}
-                          className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                            selectedTransaction?.id === transaction.id ? 'bg-red-50 border-2 border-red-300 shadow-md' : ''
-                          }`}
+                          className={`overflow-hidden transition-all duration-300 ease-out cursor-pointer ${
+                            isRemoving ? 'max-h-0 opacity-0' : 'max-h-60 opacity-100'
+                          } ${isSelected ? 'bg-[#126987]/5' : 'hover:bg-gray-50'}`}
                           onClick={() => setSelectedTransaction(transaction)}
                         >
-                          <div className="flex justify-between items-start gap-4">
-                            <div className="flex-1 min-w-0">
-                              {/* Date - Made more prominent */}
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="font-bold text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                  {new Date(transaction.timestamp).toLocaleDateString('en-GB', { 
-                                    day: '2-digit', 
-                                    month: 'short', 
-                                    year: 'numeric' 
-                                  })}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {new Date(transaction.timestamp).toLocaleTimeString('en-GB', { 
-                                    hour: '2-digit', 
-                                    minute: '2-digit' 
-                                  })}
-                                </span>
+                          <div className={`p-4 border-l-4 ${isSelected ? 'border-[#126987]' : 'border-transparent'}`}>
+                            <div className="flex justify-between items-start gap-4">
+                              <div className="flex-1 min-w-0">
+                                {/* Description */}
+                                <p className="font-semibold text-gray-900 mb-1 truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  {transaction.description}
+                                </p>
+                                {/* Date */}
+                                <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  {new Date(transaction.timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  {' · '}
+                                  {new Date(transaction.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                                {/* Meta: payment method + reference + recipient */}
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {transaction.paymentMethod && (
+                                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#126987]/10 text-[#126987]">
+                                      {transaction.paymentMethod}
+                                    </span>
+                                  )}
+                                  {transaction.recipientName && (
+                                    <span className="text-xs text-gray-500 truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                      To: {transaction.recipientName}
+                                    </span>
+                                  )}
+                                  {transaction.reference && (
+                                    <span className="text-xs text-gray-400 truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                      Ref: {transaction.reference}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                              
-                              {/* Payment Method Badge */}
-                              <div className="mb-2">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  transaction.paymentMethod === 'UK Transfer' ? 'bg-blue-100 text-blue-800' :
-                                  transaction.paymentMethod === 'SEPA Transfer' ? 'bg-green-100 text-green-800' :
-                                  transaction.paymentMethod === 'BOI Transfer' ? 'bg-purple-100 text-purple-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {transaction.paymentMethod || 'Other'}
-                                </span>
-                              </div>
-                              
-                              {/* Description */}
-                              <p className="font-semibold text-gray-900 mb-1 truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                {transaction.description}
-                              </p>
-                              
-                              {/* Reference and Recipient */}
-                              <div className="space-y-1">
-                                {transaction.reference && (
-                                  <p className="text-sm text-gray-600 truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                    Ref: {transaction.reference}
-                                  </p>
-                                )}
-                                {transaction.recipientName && (
-                                  <p className="text-sm text-gray-600 truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                    To: {transaction.recipientName}
-                                  </p>
-                                )}
+
+                              {/* Amount */}
+                              <div className="text-right flex-shrink-0">
+                                <p className={`font-bold text-lg whitespace-nowrap ${isDebit ? 'text-red-600' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  {isDebit ? '-' : '+'}{formatCurrency(Math.abs(parseFloat(transaction.amount)), userCurrency)}
+                                </p>
+                                <p className="text-xs text-gray-400" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  {isDebit ? 'Debit' : 'Credit'}
+                                </p>
                               </div>
                             </div>
-                            
-                            {/* Amount and Delete Button */}
-                            <div className="text-right flex flex-col items-end justify-between space-y-2 flex-shrink-0">
-                              <div>
-                                <p className={`font-bold text-lg whitespace-nowrap ${
-                                  transaction.amount.startsWith('-') ? 'text-red-600' : 'text-green-600'
-                                }`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                  {formatCurrency(Math.abs(parseFloat(transaction.amount)), userCurrency)}
-                                </p>
-                                <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                  {transaction.amount.startsWith('-') ? 'Debit' : 'Credit'}
-                                </p>
-                              </div>
-                              {selectedTransaction?.id === transaction.id && (
+
+                            {/* Inline delete action for the selected row */}
+                            {isSelected && (
+                              <div className="mt-3 flex justify-end">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setShowDeleteConfirm(true);
                                   }}
+                                  disabled={isDeletingTransaction}
                                   data-testid="button-confirm-delete-transaction"
-                                  className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm active:scale-95"
+                                  className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-sm active:scale-95 disabled:opacity-60"
                                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                                 >
-                                  Delete
+                                  Delete this transaction
                                 </button>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
+              )}
 
-                {selectedAccountId && accountTransactions.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      No transactions found for this account.
-                    </p>
-                  </div>
-                )}
+              {selectedAccountId && accountTransactions.length === 0 && (
+                <div className="text-center py-10 border border-dashed border-gray-200 rounded-xl">
+                  <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    No transactions found for this account.
+                  </p>
+                </div>
+              )}
 
-                {/* Instructions */}
-                {selectedAccountId && accountTransactions.length > 0 && (
-                  <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
-                    <p className="text-sm text-blue-900 font-medium mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      <strong>✨ Quick Guide:</strong>
-                    </p>
-                    <ul className="text-sm text-blue-800 space-y-1 ml-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      <li>• Latest transactions appear first at the top</li>
-                      <li>• Use the search box to filter by description, reference, recipient, or amount</li>
-                      <li>• Click any transaction to select it - it will highlight in red</li>
-                      <li>• Click the Delete button to remove the transaction</li>
-                    </ul>
-                  </div>
-                )}
-              </div>
+              {/* Helper note */}
+              {selectedAccountId && accountTransactions.length > 0 && (
+                <p className="text-xs text-gray-400 text-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Newest transactions appear first. Tap a transaction to select it, then confirm to delete.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -3974,30 +3928,53 @@ export default function Profile() {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && selectedTransaction && (
         <div className="admin-panel bg-black bg-opacity-60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md mx-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4 overflow-hidden shadow-2xl">
             <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Confirm Transaction Deletion
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Delete this transaction?
               </h3>
-              <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Are you sure you want to delete this transaction? This action cannot be undone and will update the account balance accordingly.
+              <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                This can't be undone. The account balance will be updated accordingly.
               </p>
-              <div className="flex space-x-3">
+
+              {/* Summary of the transaction being deleted */}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
+                <div className="flex justify-between items-start gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {selectedTransaction.description}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {new Date(selectedTransaction.timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <p className={`font-bold whitespace-nowrap ${String(selectedTransaction.amount).startsWith('-') ? 'text-red-600' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {String(selectedTransaction.amount).startsWith('-') ? '-' : '+'}{formatCurrency(Math.abs(parseFloat(selectedTransaction.amount)), userCurrency)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isDeletingTransaction}
                   data-testid="button-cancel-delete-confirmation"
-                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 rounded-xl font-medium hover:bg-gray-300 transition-colors active:scale-95"
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-800 rounded-xl font-semibold hover:bg-gray-200 transition-colors active:scale-95 disabled:opacity-60"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteTransaction}
+                  disabled={isDeletingTransaction}
                   data-testid="button-final-delete-transaction"
-                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors active:scale-95"
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors active:scale-95 disabled:opacity-60"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  Delete Transaction
+                  {isDeletingTransaction ? 'Deleting…' : 'Delete'}
                 </button>
               </div>
             </div>
