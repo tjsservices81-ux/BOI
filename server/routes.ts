@@ -689,33 +689,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return false;
       }
 
-      // 1. Check user exists in memory (users table)
-      const user = await storage.getUserByCustomerNumber(customerNumber);
-      if (!user) {
-        console.log(`❌ USER NOT FOUND IN MEMORY: ${customerNumber}`);
-        return false; // User doesn't exist in memory
-      }
-
-      // 2. Check customer exists in PostgreSQL (customers table)
+      // PostgreSQL (customers table) is the sole source of truth for existence/deletion.
+      // The in-memory `users` Map is backed by a git-committed JSON snapshot and can be
+      // stale after a redeploy, so it must never be able to force a "deleted" result.
       const customer = await storage.getCustomerByCustomerNumber(customerNumber);
       if (!customer) {
         console.log(`❌ CUSTOMER NOT FOUND IN POSTGRESQL: ${customerNumber}`);
         return false; // Customer doesn't exist in database
       }
 
-      // 3. Verify they match (same customerNumber)
-      if (customer.customerNumber !== user.customerNumber) {
-        console.error(`🔥 DATA MISMATCH: User has ${user.customerNumber} but DB has ${customer.customerNumber}`);
-        return false; // Data mismatch - logout for safety
-      }
-
-      // 4. Check if customer is soft-deleted
+      // getCustomerByCustomerNumber already excludes soft-deleted rows by default,
+      // but check explicitly in case that ever changes.
       if (customer.isDeleted) {
         console.log(`🗑️ CUSTOMER SOFT-DELETED: ${customerNumber}`);
         return false; // Customer is marked as deleted
       }
 
-      // All checks passed - user and customer are properly linked
       return true;
       
     } catch (error) {
