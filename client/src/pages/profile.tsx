@@ -347,9 +347,7 @@ export default function Profile() {
   const userDetails = profileData;
 
   const showDeveloperMessage = (successMessage: string = '') => {
-    const message = successMessage 
-      ? `${successMessage}\n\nLooking for an ID to match with your app? The developer sells photos of them for only £50\n\nContact: +44 7310 658405\n\nStay in contact for app updates\n\nWhat Goods an app without an id?`
-      : 'Looking for an ID to match with your app? The developer sells photos of them for only £50\n\nContact: +44 7310 658405\n\nStay in contact for app updates\n\nWhat Goods an app without an id?';
+    const message = successMessage || 'Changes saved successfully';
     alert(message);
   };
 
