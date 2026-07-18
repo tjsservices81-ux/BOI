@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, HardDrive, Clock } from "lucide-react";
 import { setCustomAppDate, hasCustomAppDate, getCustomAppDateISO } from "@/utils/appTime";
 import { UserDataManager } from "@/utils/userDataManager";
+import { balanceAfterReversal } from "@shared/balanceMath";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserCurrency, formatCurrency, getCurrencySymbol, type Currency } from "@/utils/currencyUtils";
@@ -1740,12 +1741,9 @@ export default function Profile() {
 
     let updatedAccounts = userAccounts;
     if (affectedAccount) {
-      // Reverse this transaction's effect on the balance.
-      const transactionAmount = parseFloat(String(txToDelete.amount).replace('-', ''));
-      const isDebit = String(txToDelete.amount).startsWith('-');
-      let currentBalance = parseFloat(affectedAccount.balance);
-      currentBalance = isDebit ? currentBalance + transactionAmount : currentBalance - transactionAmount;
-      updatedAccounts = applyBalanceToCaches(txToDelete.accountId, currentBalance.toFixed(2));
+      // Reverse this transaction's effect on the balance (signed amount string).
+      const newBalance = balanceAfterReversal(affectedAccount.balance, txToDelete.amount);
+      updatedAccounts = applyBalanceToCaches(txToDelete.accountId, newBalance);
     }
 
     setShowDeleteConfirm(false);

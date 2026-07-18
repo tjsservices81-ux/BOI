@@ -6,6 +6,7 @@ import {
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee,
   type InsertChatMessage, type InsertChatResponse, type InsertChatSession, type InsertCustomer
 } from "@shared/schema";
+import { balanceAfterReversal } from "@shared/balanceMath";
 import { PersistentDataManager } from "./persistentStorage";
 
 // Re-export types for use in other files
@@ -1021,12 +1022,11 @@ class MemStorage implements IStorage {
         return { success: false as const };
       }
 
-      const transactionAmount = Math.abs(parseFloat(existingTransaction.amount));
-      const currentBalance = parseFloat(account.balance);
-      const newBalance = existingTransaction.type === 'credit'
-        ? currentBalance - transactionAmount
-        : currentBalance + transactionAmount;
-      const newBalanceStr = newBalance.toFixed(2);
+      const newBalanceStr = balanceAfterReversal(
+        account.balance,
+        existingTransaction.amount,
+        existingTransaction.type as 'credit' | 'debit'
+      );
 
       await tx.delete(transactions).where(eq(transactions.id, transactionId));
       await tx.update(accounts).set({ balance: newBalanceStr }).where(eq(accounts.id, account.id));
