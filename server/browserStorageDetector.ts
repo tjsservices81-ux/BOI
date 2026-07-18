@@ -39,11 +39,13 @@ export class BrowserStorageDetector {
       const fs = await import('fs');
       const path = await import('path');
       
+      // These debug pages now live in archive/debug-pages/ (root cleanup);
+      // the existsSync guard below makes missing files a silent no-op.
       const testFiles = [
-        'auth-monitor.html',
-        'client-side-test.html', 
-        'frontend-persistence-test.html',
-        'test-permanent-login.html'
+        'archive/debug-pages/auth-monitor.html',
+        'archive/debug-pages/client-side-test.html',
+        'archive/debug-pages/frontend-persistence-test.html',
+        'archive/debug-pages/test-permanent-login.html'
       ];
       
       for (const file of testFiles) {
