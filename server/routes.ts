@@ -3224,6 +3224,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .ctrl-btn{background:rgba(102,126,234,0.1);color:#8b8ba5;border:1px solid rgba(102,126,234,0.2);padding:8px 12px;border-radius:6px;font-size:11px;white-space:nowrap;cursor:pointer;transition:all 0.2s;font-weight:600}
 .ctrl-btn.active{background:#667eea;color:#fff;border-color:#667eea}
 .ctrl-btn:hover{background:rgba(102,126,234,0.3);color:#fff}
+.ctrl-group{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ctrl-label{font-size:9px;color:#6b6b85;text-transform:uppercase;font-weight:800;letter-spacing:0.6px;padding-right:2px;white-space:nowrap}
+.ctrl-divider{width:1px;height:22px;background:rgba(255,255,255,0.12);flex-shrink:0;margin:0 2px}
+.ctrl-btn.danger.active{background:#dc3545;color:#fff;border-color:#dc3545}
+.hint-bar{padding:9px 20px;background:rgba(102,126,234,0.06);border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;color:#8b8ba5;display:flex;align-items:center;gap:8px;line-height:1.4}
+.hint-bar b{color:#a9b4ff;font-weight:700}
+.hint-bar.warn{background:rgba(220,53,69,0.08)}
+.hint-bar.warn b{color:#ff8a95}
 .srch{padding:12px 20px;background:rgba(20,20,35,0.9);border-bottom:1px solid rgba(255,255,255,0.05)}
 .srch input{width:100%;padding:12px 16px;border:1px solid rgba(102,126,234,0.25);border-radius:10px;font-size:14px;background:rgba(102,126,234,0.05);color:#fff;transition:all 0.2s}
 .srch input::placeholder{color:#6b6b85}
@@ -3341,17 +3349,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 </div>
 <div class="controls">
+<div class="ctrl-group">
+<span class="ctrl-label">Show</span>
 <button class="ctrl-btn active" onclick="setFilter('active',this)">Active</button>
 <button class="ctrl-btn" onclick="setFilter('today',this)">Today</button>
 <button class="ctrl-btn" onclick="setFilter('developer',this)">Developer</button>
 <button class="ctrl-btn" onclick="setFilter('flagged',this)">Flagged</button>
-<button class="ctrl-btn" onclick="setFilter('deleted',this)">Deleted</button>
+<button class="ctrl-btn danger" onclick="setFilter('deleted',this)">Deleted</button>
+</div>
+<span class="ctrl-divider"></span>
+<div class="ctrl-group">
+<span class="ctrl-label">Sort by</span>
+<button class="ctrl-btn active" onclick="setSort('number',this)">Number</button>
 <button class="ctrl-btn" onclick="setSort('name',this)">Name</button>
-<button class="ctrl-btn" onclick="setSort('number',this)">Number</button>
 <button class="ctrl-btn" onclick="setSort('date',this)">Date</button>
 <button class="ctrl-btn" onclick="setSort('activity',this)">Most Active</button>
-<button class="ctrl-btn" onclick="exportData()">Export</button>
 </div>
+<span class="ctrl-divider"></span>
+<div class="ctrl-group">
+<button class="ctrl-btn" onclick="exportData()">⬇ Export CSV</button>
+</div>
+</div>
+<div class="hint-bar" id="hintBar"></div>
 <div class="srch">
 <input type="text" id="srch" placeholder="Search by name, alias, or customer number..." oninput="flt()" onfocus="pauseRefresh()" onblur="resumeRefresh()">
 </div>
@@ -3470,6 +3489,26 @@ if(btn)btn.classList.add('active');
 applyFiltersAndSort();
 }
 function flt(){applyFiltersAndSort()}
+function updateHint(count){
+const bar=document.getElementById('hintBar');
+if(!bar)return;
+const n=(typeof count==='number')?count:0;
+let cls='hint-bar',msg='';
+if(currentFilter==='deleted'){
+cls='hint-bar warn';
+msg='<b>Step 2 of delete.</b> Showing '+n+' deleted customer(s). Open a card to <b>♻️ Restore</b> them or <b>🔥 Permanent Delete</b> (cannot be undone).';
+}else if(currentFilter==='flagged'){
+msg='Showing '+n+' customer(s) flagged for a notification violation.';
+}else if(currentFilter==='developer'){
+msg='Showing '+n+' test/demo account(s) — name or alias contains dev, test, demo or sample.';
+}else if(currentFilter==='today'){
+msg='Showing '+n+' customer(s) active since midnight today.';
+}else{
+msg='Showing '+n+' active customer(s). Open a card and tap <b>🗑️ Delete</b> to move someone to the <b>Deleted</b> tab (reversible), then erase them there.';
+}
+bar.className=cls;
+bar.innerHTML=msg;
+}
 function applyFiltersAndSort(){
 let filtered=allCust;
 if(currentFilter==='active')filtered=filtered.filter(c=>!c.isDeleted);
@@ -3483,6 +3522,7 @@ if(currentSort==='name')filtered.sort((a,b)=>a.name.localeCompare(b.name));
 else if(currentSort==='number')filtered.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
 else if(currentSort==='date')filtered.sort((a,b)=>new Date(b.joinDate||0)-new Date(a.joinDate||0));
 else if(currentSort==='activity')filtered.sort((a,b)=>getActivityCount(b)-getActivityCount(a));
+updateHint(filtered.length);
 render(filtered);
 }
 function render(data){
@@ -3618,18 +3658,19 @@ headers:{'Content-Type':'application/json'},
 body:JSON.stringify({reason:reason||'Deleted by admin'})
 });
 const d=await r.json();
-if(r.ok){alert('Deleted: '+nm);ld()}
-else{alert('Failed: '+d.message)}
+if(r.ok){alert('"'+nm+'" moved to the Deleted tab.\\n\\nThey are logged out now. To permanently erase them, open the "Deleted" tab and use 🔥 Permanent Delete.');ld()}
+else{alert('Could not delete "'+nm+'": '+(d.message||'unknown error'))}
 }catch(e){alert('Error: '+e.message)}
 }
 async function eraseCustomer(n,nm){
-if(!confirm('PERMANENTLY DELETE '+nm+'?\\n\\nThis cannot be undone!'))return;
-if(!confirm('Final confirmation - erase all data for '+nm+'?'))return;
+if(!confirm('PERMANENTLY DELETE '+nm+'?\\n\\nThis erases all their data and cannot be undone.'))return;
+if(!confirm('Final confirmation — erase all data for '+nm+'?'))return;
 try{
 const r=await fetch('/api/customers/'+encodeURIComponent(n)+'/permanent',{method:'DELETE'});
 const d=await r.json();
-if(r.ok){alert('Permanently deleted: '+nm);ld()}
-else{alert('Failed: '+d.message)}
+if(r.ok){alert('"'+nm+'" was permanently erased.');ld()}
+else if(r.status===400){alert('"'+nm+'" must be in the Deleted tab first.\\n\\nUse 🗑️ Delete Customer on them, then come back to the Deleted tab to permanently erase.')}
+else{alert('Could not permanently erase "'+nm+'": '+(d.message||'unknown error'))}
 }catch(e){alert('Error: '+e.message)}
 }
 async function restoreCustomer(n,nm){

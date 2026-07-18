@@ -554,41 +554,60 @@ class MemStorage implements IStorage {
     const { db } = await import('./db');
     const { eq } = await import('drizzle-orm');
     const { sql } = await import('drizzle-orm');
-    
+
+    // Best-effort cleanup of a related table. Several of these tables are
+    // optional and are NOT part of the Drizzle schema (e.g. access_codes lives
+    // in JSON storage, permanent_tokens / permanent_user_sessions may not exist
+    // in every deployment). A missing table must NOT abort the erase, otherwise
+    // the whole operation fails before the authoritative customers-row delete
+    // ever runs and permanent delete never works. So we swallow "relation does
+    // not exist" errors and log anything else, then keep going.
+    const safeExec = async (label: string, query: any) => {
+      try {
+        await db.execute(query);
+      } catch (err: any) {
+        const msg = err?.message || String(err);
+        if (err?.code === '42P01' || /does not exist/i.test(msg)) {
+          console.warn(`⏭️  Skipping ${label}: table not present`);
+        } else {
+          console.error(`⚠️  Error clearing ${label} during erase:`, msg);
+        }
+      }
+    };
+
     try {
       // Get customer from PostgreSQL (user already deleted from memory during soft-delete)
       const customer = await this.getCustomerByCustomerNumber(customerNumber, true);
       const userId = customer?.id; // Use customer ID from PostgreSQL
-      
-      // Delete from ALL tables that reference this customer
+
+      // Delete related data first (child rows before parents). Each is
+      // best-effort so an optional/missing table can't block the erase.
       if (userId) {
-        // Delete user-related data from PostgreSQL tables
-        await db.execute(sql`DELETE FROM access_codes WHERE user_id = ${userId}`);
+        await safeExec('access_codes', sql`DELETE FROM access_codes WHERE user_id = ${userId}`);
         // Delete statements and transactions BEFORE deleting accounts (they reference account_id)
-        await db.execute(sql`DELETE FROM transactions WHERE account_id IN (SELECT id FROM accounts WHERE user_id = ${userId})`);
-        await db.execute(sql`DELETE FROM statements WHERE account_id IN (SELECT id FROM accounts WHERE user_id = ${userId})`);
+        await safeExec('transactions', sql`DELETE FROM transactions WHERE account_id IN (SELECT id FROM accounts WHERE user_id = ${userId})`);
+        await safeExec('statements', sql`DELETE FROM statements WHERE account_id IN (SELECT id FROM accounts WHERE user_id = ${userId})`);
         // Now safe to delete accounts
-        await db.execute(sql`DELETE FROM accounts WHERE user_id = ${userId}`);
-        await db.execute(sql`DELETE FROM chat_messages WHERE user_id = ${userId}`);
-        await db.execute(sql`DELETE FROM payees WHERE user_id = ${userId}`);
-        await db.execute(sql`DELETE FROM permanent_tokens WHERE user_id = ${userId}`);
-        // Delete user sessions by user_id first
-        await db.execute(sql`DELETE FROM permanent_user_sessions WHERE user_id = ${userId}`);
-        // Then delete any remaining sessions by customer_number
-        await db.execute(sql`DELETE FROM permanent_user_sessions WHERE customer_number = ${customerNumber}`);
-        await db.execute(sql`DELETE FROM scheduled_payments WHERE user_id = ${userId}`);
-        
-        console.log(`🔥 Deleted all related data for user ${userId} (${customerNumber})`);
+        await safeExec('accounts', sql`DELETE FROM accounts WHERE user_id = ${userId}`);
+        await safeExec('chat_messages', sql`DELETE FROM chat_messages WHERE user_id = ${userId}`);
+        await safeExec('payees', sql`DELETE FROM payees WHERE user_id = ${userId}`);
+        await safeExec('permanent_tokens', sql`DELETE FROM permanent_tokens WHERE user_id = ${userId}`);
+        await safeExec('permanent_user_sessions (user_id)', sql`DELETE FROM permanent_user_sessions WHERE user_id = ${userId}`);
+        await safeExec('permanent_user_sessions (customer_number)', sql`DELETE FROM permanent_user_sessions WHERE customer_number = ${customerNumber}`);
+        await safeExec('scheduled_payments', sql`DELETE FROM scheduled_payments WHERE user_id = ${userId}`);
+
+        console.log(`🔥 Cleared related data for user ${userId} (${customerNumber})`);
       }
-      
-      // Delete from customers table (main record)
+
+      // Delete from customers table (main record) — this is the authoritative
+      // operation and its result determines success.
       const result = await db.delete(customers).where(eq(customers.customerNumber, customerNumber)).returning();
-      
-      // Also delete from session tables (using parameterized LIKE queries)
+
+      // Also delete from session tables (best-effort, using parameterized LIKE queries)
       const pattern = `%${customerNumber}%`;
-      await db.execute(sql`DELETE FROM user_sessions WHERE sess::text LIKE ${pattern}`);
-      await db.execute(sql`DELETE FROM sessions WHERE sess::text LIKE ${pattern}`);
-      
+      await safeExec('user_sessions', sql`DELETE FROM user_sessions WHERE sess::text LIKE ${pattern}`);
+      await safeExec('sessions', sql`DELETE FROM sessions WHERE sess::text LIKE ${pattern}`);
+
       return result.length > 0;
     } catch (error) {
       console.error('Error permanently erasing customer:', error);
