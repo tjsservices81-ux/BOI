@@ -133,6 +133,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .save-btn{background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
 .save-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(40,167,69,0.3)}
 .action-btns{display:flex;gap:8px;margin-top:14px}
+.link-btn{width:100%;background:rgba(102,126,234,0.15);color:#a9b4ff;border:1px solid rgba(102,126,234,0.4);padding:11px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.link-btn:hover{background:#667eea;color:#fff}
+.link-result{margin-top:10px;background:rgba(102,126,234,0.06);border:1px solid rgba(102,126,234,0.2);border-radius:8px;padding:10px}
+.link-url{width:100%;background:rgba(15,15,25,0.8);border:1px solid rgba(102,126,234,0.3);border-radius:6px;color:#fff;font-size:11px;padding:8px;font-family:'SF Mono',Monaco,monospace;margin-bottom:8px}
+.copy-btn{background:#667eea;color:#fff;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
+.copy-btn:hover{background:#5568d3}
+.link-exp{font-size:10px;color:#8b8ba5;margin-top:8px;line-height:1.4}
 .delete-btn{flex:1;background:rgba(220,53,69,0.15);color:#dc3545;border:1px solid rgba(220,53,69,0.3);padding:12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
 .delete-btn:hover{background:#dc3545;color:#fff}
 .restore-btn{flex:1;background:rgba(40,167,69,0.15);color:#28a745;border:1px solid rgba(40,167,69,0.3);padding:12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
@@ -469,6 +476,11 @@ h+=\`<div class="cust-card">
 <button class="save-btn" onclick="saveAdmin('\${escapeHtml(c.customerNumber)}','\${id}')">Save</button>
 </div>
 </div>
+<div class="admin-field">
+<div class="admin-field-label">Login Link — one person, single use</div>
+<button class="link-btn" onclick="generateLink('\${escapeHtml(c.customerNumber)}','\${id}')">🔗 Generate Login Link</button>
+<div id="link-\${id}" class="link-result" style="display:none"></div>
+</div>
 <div class="action-btns">
 \${c.isDeleted?\`
 <button class="restore-btn" onclick="restoreCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore</button>
@@ -543,6 +555,32 @@ allCust=allCust.map(c=>c.customerNumber===n?{...c,adminAlias:alias,adminPhone:ph
 applyFiltersAndSort();
 }else{const d=await r.json();alert('Failed: '+d.message)}
 }catch(e){alert('Error saving')}
+}
+async function generateLink(n,id){
+try{
+const alias=document.getElementById('alias-'+id).value;
+const rep=parseInt(document.getElementById('rep-'+id).value);
+const r=await fetch('/api/admin/invite/create',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({customerNumber:n,adminAlias:alias,appReplacement:rep})
+});
+const d=await r.json();
+if(r.ok&&d.link){
+allCust=allCust.map(c=>c.customerNumber===n?{...c,adminAlias:alias,appReplacement:rep}:c);
+const box=document.getElementById('link-'+id);
+box.style.display='block';
+box.innerHTML='<input class="link-url" readonly value="'+escapeHtml(d.link)+'"><button class="copy-btn" onclick="copyLink(this)">Copy link</button><div class="link-exp">Send this to one person. It works once, on the first phone that opens it, and expires '+new Date(d.expiresAt).toLocaleString('en-GB')+'.</div>';
+}else{alert('Could not create link: '+(d.message||'error'))}
+}catch(e){alert('Error creating link')}
+}
+function copyLink(btn){
+const el=btn.previousElementSibling;
+if(!el)return;
+el.select();el.setSelectionRange(0,99999);
+const done=()=>{btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy link'},1500)};
+if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(el.value).then(done).catch(()=>{try{document.execCommand('copy');done()}catch(e){alert('Long-press the link to copy')}})}
+else{try{document.execCommand('copy');done()}catch(e){alert('Long-press the link to copy')}}
 }
 function exportData(){
 let filtered=allCust;

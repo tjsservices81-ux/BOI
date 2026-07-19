@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { renderAdminLoginPage, renderAdminDashboardPage } from "./adminOversightPage";
+import { inviteService } from "./inviteService";
 import { loginSchema, transferSchema, type InsertUser } from "@shared/schema";
 import { z } from "zod";
 import { otcService } from "./otcService";
@@ -967,6 +968,127 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: error.errors[0].message });
       }
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // ===== One-person login links (invite tokens) — additive, does not change
+  // the existing login/session/device-lock behaviour for current users. =====
+
+  // Admin: generate a single-use login link for a customer, and (matching the
+  // existing oversight fields) save the admin alias/notes and app-replacement
+  // level 0-5 at the same time.
+  app.post("/api/admin/invite/create", async (req, res) => {
+    try {
+      const { customerNumber, adminAlias, appReplacement } = req.body || {};
+      if (!customerNumber) {
+        return res.status(400).json({ success: false, message: "customerNumber is required" });
+      }
+      const customer = await storage.getCustomerByCustomerNumber(customerNumber, true);
+      if (!customer) {
+        return res.status(404).json({ success: false, message: "Customer not found" });
+      }
+
+      const updates: any = {};
+      if (adminAlias !== undefined) updates.adminAlias = adminAlias;
+      if (appReplacement !== undefined) {
+        const val = parseInt(appReplacement);
+        if (!isNaN(val) && val >= 0 && val <= 5) updates.appReplacement = val;
+      }
+      if (Object.keys(updates).length > 0) {
+        await storage.updateCustomer(customerNumber, updates);
+      }
+
+      const record = inviteService.createInvite(customerNumber);
+      const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
+      const host = req.get('host');
+      const link = `${proto}://${host}/invite/${record.token}`;
+
+      res.json({
+        success: true,
+        link,
+        token: record.token,
+        expiresAt: new Date(record.expiresAt).toISOString(),
+        customerNumber,
+      });
+    } catch (error) {
+      console.error('Error creating invite link:', error);
+      res.status(500).json({ success: false, message: "Failed to create invite link" });
+    }
+  });
+
+  // Public: check an invite's status (used by the invite landing page).
+  app.get("/api/invite/status/:token", (req, res) => {
+    const { status, record } = inviteService.peek(req.params.token);
+    res.json({ status, expiresAt: record ? new Date(record.expiresAt).toISOString() : null });
+  });
+
+  // Public: claim an invite. Establishes the session + device lock on THIS
+  // device just like a normal login, then returns the customer's profile so the
+  // app can seed local state and switch on Face ID.
+  app.post("/api/invite/claim", async (req, res) => {
+    try {
+      const { token } = req.body || {};
+      if (!token) return res.status(400).json({ success: false, message: "token required" });
+
+      const peek = inviteService.peek(token);
+      if (peek.status !== 'valid') {
+        return res.status(410).json({
+          success: false,
+          reason: peek.status,
+          message:
+            peek.status === 'claimed' ? "This link has already been used." :
+            peek.status === 'expired' ? "This link has expired." :
+            "This link is not valid.",
+        });
+      }
+
+      const customerNumber = peek.record!.customerNumber;
+      const user = await storage.getUserByCustomerNumber(customerNumber);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "Account not found" });
+      }
+
+      const userAgent = req.headers['user-agent'] || 'Unknown Device';
+      const ipAddress = req.ip || (req.connection as any)?.remoteAddress || 'Unknown IP';
+      const isTouchDevice = Number(req.body?.maxTouchPoints) > 0;
+      let deviceModel = 'Browser';
+      if (userAgent.includes('iPhone')) deviceModel = 'iPhone';
+      else if (userAgent.includes('iPad')) deviceModel = 'iPad';
+      else if (userAgent.includes('Android')) deviceModel = 'Android Device';
+
+      // Admin-authorised (re)bind: clear any previous device lock, then lock to
+      // this device — this is how the invite authorises a new phone.
+      removeUserDeviceSession(user.id);
+      const deviceSessionId = addDeviceSession({ deviceModel, ipAddress, userAgent, customerNumber: user.customerNumber });
+      setUserDeviceSession({
+        userId: user.id,
+        deviceSessionId,
+        deviceModel,
+        ipAddress,
+        loginTime: new Date().toISOString(),
+        userAgent,
+        isTouchDevice,
+        permanentLock: true,
+      });
+
+      inviteService.consume(token, deviceModel);
+
+      (req as any).session.userId = user.id;
+      (req as any).session.customerNumber = user.customerNumber;
+      (req as any).session.user = { id: user.id, name: user.name, email: user.email, customerNumber: user.customerNumber };
+      (req as any).session.deviceSessionId = deviceSessionId;
+      addUserSession(req.sessionID, user.customerNumber, user.id);
+
+      (req as any).session.save((err: any) => {
+        if (err) console.error('Invite claim session save error:', err);
+        res.json({
+          success: true,
+          user: { id: user.id, name: user.name, email: user.email, customerNumber: user.customerNumber },
+        });
+      });
+    } catch (error) {
+      console.error('Error claiming invite:', error);
+      res.status(500).json({ success: false, message: "Failed to claim link" });
     }
   });
 

@@ -24,6 +24,7 @@ import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
 const More = lazy(() => import("@/pages/more"));
+const Invite = lazy(() => import("@/pages/invite"));
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const Payments = lazy(() => import("@/pages/payments"));
 const Apply = lazy(() => import("@/pages/apply"));
@@ -431,6 +432,7 @@ function AppRoutes() {
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
+            <Route path="/invite/:token" component={Invite} />
             <Route path="/more" component={More} />
             <Route path="/">
               {(() => {
