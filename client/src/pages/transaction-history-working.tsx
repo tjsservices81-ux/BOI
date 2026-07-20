@@ -37,6 +37,9 @@ export default function TransactionHistoryWorking() {
   };
 
   const [transactions, setTransactions] = useState<any[]>([]);
+  // True until the first load has run, so the transactions area shows a spinner
+  // instead of briefly flashing "No transactions found" on entry.
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
   const [balance, setBalance] = useState<string>(() => getCachedAccount()?.balance || '0.00');
   const [accountInfo, setAccountInfo] = useState<any>(() => getCachedAccount());
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
@@ -577,7 +580,9 @@ export default function TransactionHistoryWorking() {
       // Display cached transactions immediately
       const processedTransactions = displayTransactions(storedTransactions);
       UserDataManager.setUserData('bankTransactions', processedTransactions);
-      
+      // Transactions are now displayed - stop showing the loading spinner.
+      setIsLoadingTransactions(false);
+
       console.log('Loaded transactions for account', accountId);
       
       // THEN sync from database in the background (non-blocking)
@@ -1649,9 +1654,17 @@ export default function TransactionHistoryWorking() {
               }
               
               return true;
-            }).length === 0 && (
+            }).length === 0 && !isLoadingTransactions && (
             <div className="px-4 py-12 text-center" style={{ color: styles.colors.textMuted }}>
               <p>{activeFilters ? 'No transactions match your filter criteria' : 'No transactions found'}</p>
+            </div>
+          )}
+
+          {/* Loading spinner - only in the transactions area, shown until the
+              first load finishes (prevents the "No transactions found" flash) */}
+          {isLoadingTransactions && (
+            <div className="px-4 py-16 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-gray-200 border-t-[#1a5276] rounded-full animate-spin"></div>
             </div>
           )}
         </div>
