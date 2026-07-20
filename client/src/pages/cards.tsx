@@ -131,7 +131,7 @@ export default function Cards() {
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-fade-in">
       
       {/* Header */}
-      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
+      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0 relative z-10" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
         <button
           onClick={() => navigate("/dashboard")}
           className="flex items-center justify-center text-white active:scale-95 transition-transform"

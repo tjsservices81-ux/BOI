@@ -307,12 +307,9 @@ export default function Apply() {
   return (
     <div className="h-screen flex flex-col bg-white" style={{ maxWidth: '100%', width: '100%', margin: '0 auto' }}>
       {/* Header - Fixed on top */}
-      <div 
-        className="flex items-center px-4 py-3 flex-shrink-0 relative z-10"
-        style={{ 
-          backgroundColor: '#126987',
-          paddingTop: 'env(safe-area-inset-top, 12px)'
-        }}
+      <div
+        className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0 relative z-10"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
       >
         <button
           onClick={() => navigate("/dashboard")}
