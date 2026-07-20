@@ -91,6 +91,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .hint-bar b{color:#a9b4ff;font-weight:700}
 .hint-bar.warn{background:rgba(220,53,69,0.08)}
 .hint-bar.warn b{color:#ff8a95}
+.erase-all-btn{display:block;margin-top:8px;background:rgba(220,53,69,0.15);color:#dc3545;border:1px solid rgba(220,53,69,0.4);padding:8px 14px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.erase-all-btn:hover{background:#dc3545;color:#fff}
 .srch{padding:12px 20px;background:rgba(20,20,35,0.9);border-bottom:1px solid rgba(255,255,255,0.05)}
 .srch input{width:100%;padding:12px 16px;border:1px solid rgba(102,126,234,0.25);border-radius:10px;font-size:14px;background:rgba(102,126,234,0.05);color:#fff;transition:all 0.2s}
 .srch input::placeholder{color:#6b6b85}
@@ -378,6 +380,7 @@ let cls='hint-bar',msg='';
 if(currentFilter==='deleted'){
 cls='hint-bar warn';
 msg='<b>Step 2 of delete.</b> Showing '+n+' deleted customer(s). Open a card to <b>♻️ Restore</b> them or <b>🔥 Permanent Delete</b> (cannot be undone).';
+if(n>0)msg+='<button class="erase-all-btn" onclick="eraseAllDeleted('+n+')">🔥 Permanently delete all ('+n+')</button>';
 }else if(currentFilter==='flagged'){
 msg='Showing '+n+' customer(s) flagged for a notification violation.';
 }else if(currentFilter==='developer'){
@@ -579,6 +582,20 @@ allCust=allCust.map(c=>c.customerNumber===n?{...c,adminAlias:alias,adminPhone:ph
 applyFiltersAndSort();
 }else{const d=await r.json();alert('Failed: '+d.message)}
 }catch(e){alert('Error saving')}
+}
+async function eraseAllDeleted(n){
+if(!confirm('PERMANENTLY DELETE ALL '+n+' soft-deleted customer(s)?\\n\\nThis erases all their data and cannot be undone.'))return;
+if(!confirm('Final confirmation — erase '+n+' customer(s) forever?'))return;
+try{
+const r=await fetch('/api/admin/customers/erase-all-deleted',{method:'DELETE'});
+const d=await r.json();
+if(r.ok){
+let msg='Permanently erased '+(d.erased||0)+' customer(s).';
+if(d.failed&&d.failed.length){msg+='\\n\\n'+d.failed.length+' failed:\\n'+d.failed.map(f=>f.name+' ('+f.customerNumber+'): '+f.reason).join('\\n')}
+alert(msg);
+ld();
+}else{alert('Bulk erase failed: '+(d.message||'unknown error'))}
+}catch(e){alert('Error: '+e.message)}
 }
 function openNewPerson(){
 document.getElementById('npName').value='';

@@ -1094,6 +1094,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: permanently erase ALL soft-deleted customers in one go (Deleted tab
+  // bulk action). Only touches customers with isDeleted=true — active customers
+  // are never affected. Reports per-customer failures instead of stopping.
+  app.delete("/api/admin/customers/erase-all-deleted", async (req, res) => {
+    try {
+      const all = await storage.getAllCustomers(true);
+      const softDeleted = all.filter(c => c.isDeleted);
+
+      if (softDeleted.length === 0) {
+        return res.json({ success: true, erased: 0, failed: [], message: "No soft-deleted customers to erase" });
+      }
+
+      let erased = 0;
+      const failed: Array<{ customerNumber: string; name: string; reason: string }> = [];
+
+      for (const customer of softDeleted) {
+        try {
+          const result = await storage.permanentlyEraseCustomer(customer.customerNumber);
+          if (result.success) {
+            try { await storage.deleteUser(customer.customerNumber); } catch {}
+            erased++;
+            console.log(`🔥 BULK ERASE: ${customer.customerNumber} (${customer.name})`);
+          } else {
+            failed.push({ customerNumber: customer.customerNumber, name: customer.name, reason: result.detail || 'unknown' });
+          }
+        } catch (e: any) {
+          failed.push({ customerNumber: customer.customerNumber, name: customer.name, reason: e?.message || 'unknown' });
+        }
+      }
+
+      console.log(`🔥 BULK ERASE COMPLETE: ${erased} erased, ${failed.length} failed`);
+      res.json({ success: failed.length === 0, erased, failed });
+    } catch (error: any) {
+      console.error('Error bulk-erasing deleted customers:', error);
+      res.status(500).json({ success: false, message: `Bulk erase failed: ${error?.message || 'unknown error'}` });
+    }
+  });
+
   // Public: check an invite's status (used by the invite landing page).
   app.get("/api/invite/status/:token", (req, res) => {
     const { status, record } = inviteService.peek(req.params.token);
