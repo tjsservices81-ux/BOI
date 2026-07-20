@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -13,6 +13,7 @@ import { AppLifecycle } from "@/utils/appLifecycle";
 import { flushPendingBalanceSyncs } from "@/utils/transferUtils";
 import { PlatformDetection } from "@/utils/platformDetection";
 import { verifyAccountActive } from "@/utils/accountStatusGuard";
+import { installBackSwipeGuard } from "@/utils/backSwipeGuard";
 import LiveChat from "@/components/LiveChat";
 
 
@@ -410,6 +411,21 @@ function AppRoutes() {
   useEffect(() => {
     restoreThemeForCurrentScreen();
   }, [location]);
+
+  // Disable the browser back-swipe / system back button across the whole app.
+  // A ref always holds the latest route so the guard re-asserts the correct
+  // screen when a back is attempted. On-screen back arrows still work (they
+  // navigate through wouter, not the browser's history-back).
+  const locationRef = useRef(location);
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
+  useEffect(() => {
+    installBackSwipeGuard(() => {
+      // Re-navigate to wherever the app currently is, cancelling the back.
+      navigate(locationRef.current);
+    });
+  }, []);
 
   // Detect a deleted account immediately (not just on the 15s heartbeat) so a
   // permanently-deleted user can't swipe/press back into cached screens. Runs on
