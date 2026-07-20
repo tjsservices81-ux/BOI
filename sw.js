@@ -2,12 +2,13 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  *
- * VERSION: 5.0.0 - Network-first navigation so deploys are never invisible;
- * old caches purged immediately on activate instead of a delayed cleanup.
+ * VERSION: 5.1.0 - Admin oversight page bypasses the SW entirely (fixed URL,
+ * no hashed filename) so its redesign can never be masked by a stale cache;
+ * bumping the version also purges every old cache on activate.
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '5.0.0';
+const SW_VERSION = '5.1.0';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
@@ -198,7 +199,16 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== location.origin) {
     return;
   }
-  
+
+  // The admin oversight page is server-rendered at a fixed URL with no hashed
+  // filename to bust caches. Never let the service worker touch it - go
+  // straight to the network - so a stale cached copy can never hide a redeploy
+  // of the admin UI. (Returning without respondWith lets the browser handle
+  // the request directly, bypassing all SW caching.)
+  if (url.pathname === '/admin-oversight') {
+    return;
+  }
+
   event.respondWith(handleFetch(request));
 });
 

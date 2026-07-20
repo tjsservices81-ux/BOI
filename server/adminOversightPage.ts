@@ -23,6 +23,8 @@ export function renderAdminLoginPage(hasError: boolean): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <title>Admin Login</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -63,6 +65,8 @@ export function renderAdminDashboardPage(): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <title>Admin Oversight</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}

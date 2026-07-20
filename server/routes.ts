@@ -3406,8 +3406,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { pin } = req.body;
       
       if (pin === "JohnDoe321!") {
-        // Redirect with auth token in URL
-        res.redirect('/admin-oversight?auth=verified');
+        // Redirect with auth token in URL. The extra timestamp makes the
+        // dashboard URL unique per login, so no browser/proxy cache can ever
+        // serve a stale copy of the (fixed-URL, server-rendered) admin page.
+        res.redirect(`/admin-oversight?auth=verified&v=${Date.now()}`);
       } else {
         res.redirect('/admin-oversight?error=invalid');
       }
