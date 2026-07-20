@@ -308,7 +308,7 @@ export default function InternalTransfer() {
       <div className="h-screen flex flex-col bg-white page-slide-in-right">
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => navigate('/payments')} className="flex items-center text-white">
-            <ChevronLeft className="w-5 h-5 mr-2" />
+            <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Complete</span>
           </button>
         </div>
@@ -370,7 +370,7 @@ export default function InternalTransfer() {
       <div className="h-screen overflow-hidden flex flex-col bg-white page-slide-in-right">
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
-            <ChevronLeft className="w-5 h-5 mr-2" />
+            <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
           </button>
         </div>
@@ -514,7 +514,7 @@ export default function InternalTransfer() {
     <div className="h-screen flex flex-col bg-white page-slide-in-right">
       <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
-          <ChevronLeft className="w-5 h-5 mr-2" />
+          <ChevronLeft className="w-6 h-6 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>Between BOI Accounts</span>
         </button>
       </div>

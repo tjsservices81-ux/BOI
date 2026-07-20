@@ -316,14 +316,14 @@ export default function Apply() {
       >
         <button
           onClick={() => navigate("/dashboard")}
-          className="w-10 h-10 flex items-center justify-center text-white active:scale-95 transition-transform"
+          className="flex items-center justify-center text-white active:scale-95 transition-transform"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <h1 className="flex-1 text-center text-white text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>Apply</h1>
         <button
           onClick={() => navigate("/profile")}
-          className="w-10 h-10 flex items-center justify-center text-white active:scale-95 transition-transform"
+          className="flex items-center justify-center text-white active:scale-95 transition-transform"
         >
           <User className="w-6 h-6" />
         </button>

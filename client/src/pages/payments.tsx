@@ -233,7 +233,7 @@ export default function Payments() {
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button
           onClick={() => navigate("/dashboard")}
-          className="w-10 h-10 flex items-center justify-center text-white active:scale-95 transition-transform"
+          className="flex items-center justify-center text-white active:scale-95 transition-transform"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -242,7 +242,7 @@ export default function Payments() {
         </h1>
         <button
           onClick={() => navigate("/profile")}
-          className="w-10 h-10 flex items-center justify-center text-white active:scale-95 transition-transform"
+          className="flex items-center justify-center text-white active:scale-95 transition-transform"
         >
           <User className="w-6 h-6" />
         </button>

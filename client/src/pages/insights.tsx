@@ -13,7 +13,7 @@ export default function Insights() {
             onClick={() => setLocation('/dashboard')}
             className="mr-3 p-1 hover:bg-white/20 rounded-full transition-colors haptic-feedback"
           >
-            <ChevronLeft className="h-5 w-5 text-white" />
+            <ChevronLeft className="w-6 h-6 text-white" />
           </button>
           <div className="flex-1">
             <h1 className="text-lg font-medium text-white boi-regular-font">Insights</h1>
