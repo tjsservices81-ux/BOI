@@ -505,11 +505,6 @@ h+=\`<div class="cust-card">
 <button class="save-btn" onclick="saveAdmin('\${escapeHtml(c.customerNumber)}','\${id}')">Save</button>
 </div>
 </div>
-<div class="admin-field">
-<div class="admin-field-label">Login Link — one person, single use</div>
-<button class="link-btn" onclick="generateLink('\${escapeHtml(c.customerNumber)}','\${id}')">🔗 Generate Login Link</button>
-<div id="link-\${id}" class="link-result" style="display:none"></div>
-</div>
 <div class="action-btns">
 \${c.isDeleted?\`
 <button class="restore-btn" onclick="restoreCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore</button>
@@ -584,24 +579,6 @@ allCust=allCust.map(c=>c.customerNumber===n?{...c,adminAlias:alias,adminPhone:ph
 applyFiltersAndSort();
 }else{const d=await r.json();alert('Failed: '+d.message)}
 }catch(e){alert('Error saving')}
-}
-async function generateLink(n,id){
-try{
-const alias=document.getElementById('alias-'+id).value;
-const rep=parseInt(document.getElementById('rep-'+id).value);
-const r=await fetch('/api/admin/invite/create',{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({customerNumber:n,adminAlias:alias,appReplacement:rep})
-});
-const d=await r.json();
-if(r.ok&&d.link){
-allCust=allCust.map(c=>c.customerNumber===n?{...c,adminAlias:alias,appReplacement:rep}:c);
-const box=document.getElementById('link-'+id);
-box.style.display='block';
-box.innerHTML='<input class="link-url" readonly value="'+escapeHtml(d.link)+'"><button class="copy-btn" onclick="copyLink(this)">Copy link</button><div class="link-exp">Send this to one person. It works once, on the first phone that opens it, and expires '+new Date(d.expiresAt).toLocaleString('en-GB')+'.</div>';
-}else{alert('Could not create link: '+(d.message||'error'))}
-}catch(e){alert('Error creating link')}
 }
 function openNewPerson(){
 document.getElementById('npName').value='';

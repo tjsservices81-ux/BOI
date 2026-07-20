@@ -3514,37 +3514,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { customerNumber } = req.params;
       
-      // Check if customer exists and is already soft-deleted
       const customer = await storage.getCustomerByCustomerNumber(customerNumber, true);
       if (!customer) {
-        return res.status(404).json({ 
-          success: false, 
-          message: "Customer not found" 
+        return res.status(404).json({
+          success: false,
+          message: "Customer not found"
         });
       }
-      
-      if (!customer.isDeleted) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Customer must be soft-deleted before permanent erasure" 
-        });
-      }
-      
-      // Permanent erase from customers table
-      const erased = await storage.permanentlyEraseCustomer(customerNumber);
-      
-      if (erased) {
-        // Safety: Delete user from memory if still present (should already be deleted during soft-delete)
-        const userDeleted = await storage.deleteUser(customerNumber);
-        
-        console.log(`🔥 CUSTOMER PERMANENTLY ERASED FROM POSTGRESQL: ${customerNumber}`);
-        if (userDeleted) {
-          console.log(`🔥 USER ALSO DELETED FROM MEMORY (was still present): ${customerNumber}`);
-        }
-        
-        // Send force disconnect flag to trigger PWA wipe
-        res.json({ 
-          success: true, 
+
+      // One-step permanent erase — no longer requires a soft-delete first, so it
+      // always works whether the customer is active or already in the Deleted tab.
+      const result = await storage.permanentlyEraseCustomer(customerNumber);
+
+      if (result.success) {
+        // Safety: also drop the in-memory/JSON user if anything is still present.
+        try { await storage.deleteUser(customerNumber); } catch {}
+
+        console.log(`🔥 CUSTOMER PERMANENTLY ERASED: ${customerNumber}`);
+        res.json({
+          success: true,
           message: "Customer permanently erased",
           customerNumber: customerNumber,
           name: customer.name,
@@ -3552,16 +3540,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           logout: true // Force logout
         });
       } else {
-        res.status(500).json({ 
-          success: false, 
-          message: "Failed to permanently erase customer" 
+        // Surface the real reason so the admin knows what actually failed.
+        res.status(500).json({
+          success: false,
+          message: result.detail
+            ? `Failed to permanently erase customer: ${result.detail}`
+            : "Failed to permanently erase customer"
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error permanently erasing customer:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to permanently erase customer" 
+      res.status(500).json({
+        success: false,
+        message: `Failed to permanently erase customer: ${error?.message || 'unknown error'}`
       });
     }
   });

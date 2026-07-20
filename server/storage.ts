@@ -551,7 +551,7 @@ class MemStorage implements IStorage {
   }
 
   // Permanent erase customer (destructive, irreversible) - DELETE FROM ALL TABLES
-  async permanentlyEraseCustomer(customerNumber: string): Promise<boolean> {
+  async permanentlyEraseCustomer(customerNumber: string): Promise<{ success: boolean; detail?: string }> {
     const { db } = await import('./db');
     const { eq } = await import('drizzle-orm');
     const { sql } = await import('drizzle-orm');
@@ -600,19 +600,49 @@ class MemStorage implements IStorage {
         console.log(`🔥 Cleared related data for user ${userId} (${customerNumber})`);
       }
 
-      // Delete from customers table (main record) — this is the authoritative
-      // operation and its result determines success.
-      const result = await db.delete(customers).where(eq(customers.customerNumber, customerNumber)).returning();
+      // Delete the customer row itself — the authoritative operation. If THIS
+      // throws, report exactly why so the admin sees the real reason instead of
+      // a generic failure.
+      try {
+        await db.delete(customers).where(eq(customers.customerNumber, customerNumber));
+      } catch (delErr: any) {
+        const detail = delErr?.message || String(delErr);
+        console.error('Customer row delete failed during erase:', detail);
+        return { success: false, detail };
+      }
 
-      // Also delete from session tables (best-effort, using parameterized LIKE queries)
+      // Best-effort session-table cleanup.
       const pattern = `%${customerNumber}%`;
       await safeExec('user_sessions', sql`DELETE FROM user_sessions WHERE sess::text LIKE ${pattern}`);
       await safeExec('sessions', sql`DELETE FROM sessions WHERE sess::text LIKE ${pattern}`);
 
-      return result.length > 0;
-    } catch (error) {
+      // Clear any in-memory copies so the customer can't linger or reappear on
+      // this running instance (the admin list is DB-driven, but the user map is
+      // held in memory / JSON).
+      try {
+        if (userId != null) {
+          for (const acc of Array.from(this.accounts.values()).filter(a => a.userId === userId)) {
+            for (const tx of Array.from(this.transactions.values()).filter(t => t.accountId === acc.id)) {
+              this.transactions.delete(tx.id);
+            }
+            this.accounts.delete(acc.id);
+          }
+          for (const p of Array.from(this.payees.values()).filter(p => p.userId === userId)) {
+            this.payees.delete(p.id);
+          }
+        }
+        for (const u of Array.from(this.users.values()).filter(u => u.customerNumber === customerNumber)) {
+          this.users.delete(u.id);
+        }
+        await this.saveData();
+      } catch (memErr: any) {
+        console.warn('Memory cleanup during erase had an issue:', memErr?.message || memErr);
+      }
+
+      return { success: true };
+    } catch (error: any) {
       console.error('Error permanently erasing customer:', error);
-      return false;
+      return { success: false, detail: error?.message || String(error) };
     }
   }
 
