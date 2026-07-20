@@ -3433,6 +3433,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin Oversight - iPhone Optimized
   app.get("/admin-oversight", async (req, res) => {
+    // Never cache the admin page (browser or PWA), so a redeploy is always
+    // visible immediately instead of showing a stale cached version.
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
     const isAuthenticated = req.query.auth === 'verified';
     const hasError = req.query.error === 'invalid';
     if (!isAuthenticated) {

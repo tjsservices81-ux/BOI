@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -16,34 +16,33 @@ import LiveChat from "@/components/LiveChat";
 
 
 
-// Splash, Login and NotFound stay eager so the first paint / auth gate is
-// instant. Every authenticated page is code-split (lazy) so it only downloads
-// when the user navigates to it, keeping the initial bundle small.
+// All pages are imported eagerly so the whole app downloads on first load
+// (during the splash) and navigating between pages is instant — no per-page
+// "Loading…" screen.
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
-
-const More = lazy(() => import("@/pages/more"));
-const Invite = lazy(() => import("@/pages/invite"));
-const Dashboard = lazy(() => import("@/pages/dashboard"));
-const Payments = lazy(() => import("@/pages/payments"));
-const Apply = lazy(() => import("@/pages/apply"));
-const IbanTransfer = lazy(() => import("@/pages/iban-transfer"));
-const UkTransfer = lazy(() => import("@/pages/uk-transfer"));
-const InternalTransfer = lazy(() => import("@/pages/internal-transfer"));
-const EmailTransfer = lazy(() => import("@/pages/email-transfer"));
-const Transactions = lazy(() => import("@/pages/transactions"));
-const Cards = lazy(() => import("@/pages/cards"));
-const Insights = lazy(() => import("@/pages/insights"));
-const Transfer = lazy(() => import("@/pages/transfer"));
-const BillPay = lazy(() => import("@/pages/bill-pay"));
-const TransactionHistoryWorking = lazy(() => import("@/pages/transaction-history-working"));
-const BankStatements = lazy(() => import("@/pages/bank-statements"));
-const Profile = lazy(() => import("@/pages/profile"));
-const Settings = lazy(() => import("@/pages/settings"));
-const Help = lazy(() => import("@/pages/help"));
-const CreditScore = lazy(() => import("@/pages/credit-score"));
-const MonthlyInsights = lazy(() => import("@/pages/monthly-insights"));
+import More from "@/pages/more";
+import Invite from "@/pages/invite";
+import Dashboard from "@/pages/dashboard";
+import Payments from "@/pages/payments";
+import Apply from "@/pages/apply";
+import IbanTransfer from "@/pages/iban-transfer";
+import UkTransfer from "@/pages/uk-transfer";
+import InternalTransfer from "@/pages/internal-transfer";
+import EmailTransfer from "@/pages/email-transfer";
+import Transactions from "@/pages/transactions";
+import Cards from "@/pages/cards";
+import Insights from "@/pages/insights";
+import Transfer from "@/pages/transfer";
+import BillPay from "@/pages/bill-pay";
+import TransactionHistoryWorking from "@/pages/transaction-history-working";
+import BankStatements from "@/pages/bank-statements";
+import Profile from "@/pages/profile";
+import Settings from "@/pages/settings";
+import Help from "@/pages/help";
+import CreditScore from "@/pages/credit-score";
+import MonthlyInsights from "@/pages/monthly-insights";
 
 function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   const authHook = useAuth();
@@ -424,11 +423,6 @@ function AppRoutes() {
     <SecurityWrapper>
       <ErrorBoundary>
         <div className="fixed inset-0 overflow-hidden">
-          <Suspense fallback={
-            <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-              <div className="text-white">Loading...</div>
-            </div>
-          }>
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
@@ -554,7 +548,6 @@ function AppRoutes() {
           </Route>
           <Route component={NotFound} />
         </Switch>
-        </Suspense>
         <BottomNavigation />
 
         {/* Global Persistent Live Chat - stays active across all navigation */}
