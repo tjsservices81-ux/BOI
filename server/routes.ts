@@ -13,6 +13,7 @@ import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSession
 import { sendTransferConfirmation, sendBankStatement, type TransferConfirmationDetails } from "./emailService";
 import { generateTransferConfirmationPDF } from "./pdfService";
 import { StatementService } from "./statementService";
+import { generateAIChatReply, isAIChatEnabled } from "./aiChatService";
 import Database from "@replit/database";
 
 // ============================================================================
@@ -2908,6 +2909,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       confirmed: isConfirmed, 
       status: status || null 
     });
+  });
+
+  // AI-powered live-chat reply. Returns { ok, text } when a reply was
+  // generated, or { ok: false, fallback: true } when AI isn't configured /
+  // failed — the client then uses its local rule-based engine instead, so the
+  // chat always works even with no API key or no network.
+  app.post("/api/chat/ai", async (req, res) => {
+    try {
+      if (!isAIChatEnabled()) {
+        return res.json({ ok: false, fallback: true });
+      }
+
+      const aiSchema = z.object({
+        message: z.string().min(1),
+        agentName: z.string().optional(),
+        history: z
+          .array(z.object({ text: z.string(), isUser: z.boolean() }))
+          .optional(),
+        context: z.any().optional(),
+      });
+
+      const parsed = aiSchema.parse(req.body);
+      const text = await generateAIChatReply({
+        message: parsed.message,
+        history: parsed.history || [],
+        agentName: parsed.agentName || "Alex",
+        context: parsed.context,
+      });
+
+      res.json({ ok: true, text });
+    } catch (error) {
+      // Any failure (bad key, rate limit, network) → let the client fall back
+      // to the local engine rather than showing an error.
+      console.error("AI chat reply failed, falling back to local engine:", error);
+      res.json({ ok: false, fallback: true });
+    }
   });
 
   // Chat API endpoints

@@ -3,7 +3,7 @@ import { getAppDate } from "../utils/appTime";
 import { X, Send, MessageCircle, User } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { getUserCurrency, type Currency } from "../utils/currencyUtils";
-import { getLocalChatResponse } from "../utils/chatEngine";
+import { getLocalChatResponse, buildChatContext } from "../utils/chatEngine";
 import botIconPath from "@assets/IMG_1381_1759334776475.jpeg";
 
 const chatVariants = {
@@ -426,16 +426,53 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   };
 
   const generateAIResponse = async (userMessage: string, messages: ChatMessage[]): Promise<{ text: string; category: string; pdfData?: string; pdfFileName?: string }> => {
-    // Fully local, rule-based response generation - no network call, works offline.
-    // The recent conversation history is passed in so follow-up messages
-    // ("yes", "why not", "and the reference?") are answered in context.
     const conversationHistory = messages.map(msg => ({ text: msg.text, isUser: msg.isUser }));
-    const result = getLocalChatResponse(userMessage, conversationHistory);
+
+    // Compute the local, rule-based reply first. It's instant, works offline,
+    // and is the guaranteed fallback if the AI endpoint isn't available. When
+    // the AI reply comes back it carries no PDF, so we keep the local reply's
+    // PDF (e.g. a transfer confirmation) if the local engine produced one.
+    const local = getLocalChatResponse(userMessage, conversationHistory);
+
+    // Try the AI endpoint for a genuinely understood reply. The agent persona
+    // (name, human tone) is preserved server-side. If AI isn't configured or
+    // the call fails, the server returns { ok: false } and we use the local
+    // reply so nothing ever breaks.
+    try {
+      const res = await fetch('/api/chat/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage,
+          agentName: chatState.agentName,
+          history: conversationHistory,
+          context: buildChatContext(),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.ok && typeof data.text === 'string' && data.text.trim()) {
+          return {
+            text: data.text.trim(),
+            category: 'ai',
+            // Attach the local engine's PDF if it generated one (the AI reply
+            // is text-only, but a "send me the receipt" ask should still work).
+            pdfData: local.pdfData,
+            pdfFileName: local.pdfFileName,
+          };
+        }
+      }
+    } catch (error) {
+      // Network/parse failure - fall through to the local reply.
+      console.warn('AI chat unavailable, using local engine:', error);
+    }
+
     return {
-      text: result.text,
+      text: local.text,
       category: 'local',
-      pdfData: result.pdfData,
-      pdfFileName: result.pdfFileName
+      pdfData: local.pdfData,
+      pdfFileName: local.pdfFileName,
     };
   };
 
@@ -477,17 +514,21 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     // Start processing after reading delay
     setTimeout(async () => {
       try {
-        // Generate response while agent is "reading" - use captured messages for context
-        const responseData = await generateAIResponse(userMessage.text, currentMessages);
-        
-        // Calculate a natural, human-paced typing delay - varies per message
-        // but never drags on, even for longer replies.
-        const typingDelay = getHumanTypingDelayMs(responseData.text);
-        
-        // Show typing indicator
+        // Show the typing indicator up front so there's never a dead gap while
+        // the agent "thinks" (the AI reply can take a moment to come back).
         setIsTyping(true);
         setTypingText(`${chatState.agentName} is typing...`);
-        
+
+        // Generate response while agent is "reading/typing" - use captured messages for context
+        const genStart = Date.now();
+        const responseData = await generateAIResponse(userMessage.text, currentMessages);
+        const genElapsed = Date.now() - genStart;
+
+        // Calculate a natural, human-paced typing delay - varies per message
+        // but never drags on. Subtract time already spent generating so the
+        // typing indicator that showed during the wait counts toward it.
+        const typingDelay = Math.max(200, getHumanTypingDelayMs(responseData.text) - genElapsed);
+
         // Display response after typing delay
         setTimeout(() => {
           const botMessage: ChatMessage = {

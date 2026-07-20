@@ -98,6 +98,73 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Compact, non-sensitive context passed to the AI reply endpoint so the agent
+// can answer about this customer's recent transfer/balance in a natural way.
+// Everything here is already local mock data the app holds for the user.
+export interface ChatContext {
+  currencySymbol: string;
+  balance?: string;
+  accountName?: string;
+  lastTransfer: {
+    amount?: string;
+    currencySymbol?: string;
+    recipientName?: string;
+    date?: string;
+    time?: string;
+    reference?: string;
+    paymentMethod?: string;
+    bankName?: string;
+    recipientAccountNumber?: string;
+    recipientSortCode?: string;
+    iban?: string;
+  } | null;
+}
+
+export function buildChatContext(): ChatContext {
+  const userCurrency = getUserCurrency();
+  const currencySymbol = userCurrency === "GBP" ? "£" : "€";
+
+  let balance: string | undefined;
+  let accountName: string | undefined;
+  try {
+    const accounts = UserDataManager.getUserAccounts();
+    if (Array.isArray(accounts) && accounts.length > 0) {
+      const primary = accounts[0];
+      accountName = primary?.accountName || primary?.name || "Current Account";
+      const rawBalance = primary?.balance;
+      if (rawBalance !== undefined && rawBalance !== null) {
+        const num = parseFloat(String(rawBalance).replace(/[^0-9.-]/g, ""));
+        if (!isNaN(num)) balance = num.toFixed(2);
+      }
+    }
+  } catch {
+    // best-effort only
+  }
+
+  const t = getLastTransfer();
+
+  return {
+    currencySymbol,
+    balance,
+    accountName,
+    lastTransfer: t
+      ? {
+          amount: t.amount,
+          currencySymbol: t.currencySymbol,
+          recipientName: t.recipientName,
+          date: t.date,
+          time: t.time,
+          reference: t.reference,
+          paymentMethod: t.paymentMethod,
+          bankName: t.bankName,
+          recipientAccountNumber: t.recipientAccountNumber,
+          recipientSortCode: t.recipientSortCode,
+          iban: t.iban,
+        }
+      : null,
+  };
+}
+
 // Matches whole words/phrases only - a plain substring check would let short
 // keywords like "hi" or "no" false-match inside "this" or "note".
 function includesAny(message: string, keywords: string[]): boolean {
