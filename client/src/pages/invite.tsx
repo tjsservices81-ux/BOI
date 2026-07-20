@@ -78,6 +78,11 @@ export default function Invite() {
       UserDataManager.setCurrentUser(u.customerNumber);
       try { UserDataManager.setLastActiveUser(u.customerNumber); } catch {}
 
+      // Grant local app access so navigating past the invite (splash -> login ->
+      // dashboard) doesn't hit the ?access= gate. The invite token was the
+      // authorisation; this just records it in the installed app's own storage.
+      localStorage.setItem("accessGranted", "true");
+
       // NOTE: deliberately does NOT touch any Face ID settings — the login
       // screen's own biometric behaviour applies unchanged.
 
