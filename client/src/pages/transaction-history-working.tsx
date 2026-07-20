@@ -749,7 +749,7 @@ export default function TransactionHistoryWorking() {
             outline: 'none'
           }}
         >
-          <User className="h-5 w-5" />
+          <User className="w-6 h-6" />
         </button>
       </div>
 

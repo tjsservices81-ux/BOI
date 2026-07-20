@@ -172,7 +172,7 @@ export default function MonthlyInsights() {
           className="p-2 text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center transition-all duration-150 ease-out active:scale-95"
           style={{ WebkitTapHighlightColor: 'transparent', outline: 'none' }}
         >
-          <User className="h-5 w-5" />
+          <User className="w-6 h-6" />
         </button>
       </div>
 

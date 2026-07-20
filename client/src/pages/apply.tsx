@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, Home, ArrowRightLeft, CreditCard, Landmark, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, Home, ArrowRightLeft, CreditCard, Landmark, FileText, User } from "lucide-react";
 import { getUserCurrency, type Currency } from "../utils/currencyUtils";
 
 interface ProductCard {
@@ -314,14 +314,19 @@ export default function Apply() {
           paddingTop: 'env(safe-area-inset-top, 12px)'
         }}
       >
-        <button 
+        <button
           onClick={() => navigate("/dashboard")}
-          className="flex items-center text-white"
+          className="w-10 h-10 flex items-center justify-center text-white active:scale-95 transition-transform"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
-        <h1 className="flex-1 text-center text-white font-semibold text-lg">Apply</h1>
-        <div className="w-6" />
+        <h1 className="flex-1 text-center text-white text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>Apply</h1>
+        <button
+          onClick={() => navigate("/profile")}
+          className="w-10 h-10 flex items-center justify-center text-white active:scale-95 transition-transform"
+        >
+          <User className="w-6 h-6" />
+        </button>
       </div>
 
       {/* Content - Slides down underneath header */}

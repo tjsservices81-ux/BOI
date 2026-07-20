@@ -108,15 +108,25 @@ export default function Dashboard() {
   const [selectedPayee, setSelectedPayee] = useState<string>('');
   const [payees, setPayees] = useState<any[]>([]);
   
-  // Monthly insights state
+  // Monthly insights state. Initialised from a per-user cache so that when the
+  // user leaves the dashboard and comes back it shows the previous values
+  // immediately, instead of flashing from zero (which made the section "bounce"
+  // every time). The real values are recalculated on mount and update the cache.
+  const emptyInsights = {
+    currentMonth: { name: '', moneyIn: 0, moneyOut: 0 },
+    previousMonth: { name: '', moneyIn: 0, moneyOut: 0 },
+    currentDate: ''
+  };
   const [monthlyInsights, setMonthlyInsights] = useState<{
     currentMonth: { name: string; moneyIn: number; moneyOut: number };
     previousMonth: { name: string; moneyIn: number; moneyOut: number };
     currentDate: string;
-  }>({
-    currentMonth: { name: '', moneyIn: 0, moneyOut: 0 },
-    previousMonth: { name: '', moneyIn: 0, moneyOut: 0 },
-    currentDate: ''
+  }>(() => {
+    try {
+      const cached = UserDataManager.getUserData('monthlyInsightsCache', null);
+      if (cached && cached.currentMonth) return cached;
+    } catch {}
+    return emptyInsights;
   });
 
   // Account deletion state - blocks navigation
@@ -294,11 +304,14 @@ export default function Dashboard() {
       const day = now.getDate().toString().padStart(2, '0');
       const month = (now.getMonth() + 1).toString().padStart(2, '0');
       
-      setMonthlyInsights({
+      const computed = {
         currentMonth: { name: monthNames[currentMonth], moneyIn: currentMonthIn, moneyOut: currentMonthOut },
         previousMonth: { name: monthNames[previousMonth], moneyIn: previousMonthIn, moneyOut: previousMonthOut },
         currentDate: `${day}/${month}`
-      });
+      };
+      setMonthlyInsights(computed);
+      // Cache so the next visit shows these values instantly (no bounce).
+      try { UserDataManager.setUserData('monthlyInsightsCache', computed); } catch {}
     };
     
     calculateMonthlyInsights();
@@ -589,7 +602,7 @@ export default function Dashboard() {
               outline: 'none'
             }}
           >
-            <User className="h-5 w-5" />
+            <User className="w-6 h-6" />
           </button>
         </div>
       </div>

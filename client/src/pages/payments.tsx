@@ -231,18 +231,18 @@ export default function Payments() {
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container page-fade-in">
       {/* Header */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
-        <button 
+        <button
           onClick={() => navigate("/dashboard")}
-          className="flex items-center text-white active:scale-95 transition-transform"
+          className="w-10 h-10 flex items-center justify-center text-white active:scale-95 transition-transform"
         >
-          <ChevronLeft className="w-6 h-6 mr-2" />
-          <span className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Payments
-          </span>
+          <ChevronLeft className="w-6 h-6" />
         </button>
-        <button 
+        <h1 className="flex-1 text-center text-white text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+          Payments
+        </h1>
+        <button
           onClick={() => navigate("/profile")}
-          className="text-white active:scale-95 transition-transform"
+          className="w-10 h-10 flex items-center justify-center text-white active:scale-95 transition-transform"
         >
           <User className="w-6 h-6" />
         </button>

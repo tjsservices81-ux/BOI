@@ -132,17 +132,17 @@ export default function Cards() {
       
       {/* Header */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
-        <button 
+        <button
           onClick={() => navigate("/dashboard")}
-          className="flex items-center text-white"
+          className="w-10 h-10 flex items-center justify-center text-white active:scale-95 transition-transform"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-white text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+        <h1 className="flex-1 text-center text-white text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
           Manage Card
         </h1>
-        <button 
-          className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center transition-all duration-150 ease-out active:scale-95"
+        <button
+          className="w-10 h-10 flex items-center justify-center text-white active:scale-95 transition-transform"
           onClick={() => navigate('/profile')}
         >
           <User className="w-6 h-6" />
