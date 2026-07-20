@@ -156,12 +156,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!accessCode) {
       accessCode = req.get('X-Access-Code') as string;
     }
-    
-    // Generate start_url with access code if present
-    const startUrl = accessCode ? `/?access=${accessCode}` : '/';
-    
+
+    // Invite links: when Add to Home Screen happens on /invite/<token> (iOS),
+    // the icon must relaunch INTO the invite so the claim runs inside the
+    // installed app's own storage box — a session made in Safari never reaches
+    // it. Detected via ?invite= (set by index.html) or the Referer path.
+    let inviteToken = (req.query.invite as string) || null;
+    if (!inviteToken) {
+      const referer = req.get('Referer') || '';
+      const m = referer.match(/\/invite\/([A-Za-z0-9]+)/);
+      if (m) inviteToken = m[1];
+    }
+    if (inviteToken && !/^[A-Za-z0-9]+$/.test(inviteToken)) inviteToken = null;
+
+    // Generate start_url: invite takes priority, then access code
+    const startUrl = inviteToken ? `/invite/${inviteToken}`
+      : accessCode ? `/?access=${accessCode}` : '/';
+
     // Log for debugging
-    console.log(`Manifest requested - Access code: ${accessCode || 'none'}, Start URL: ${startUrl}`);
+    console.log(`Manifest requested - Access code: ${accessCode || 'none'}, Invite: ${inviteToken ? 'yes' : 'no'}, Start URL: ${startUrl}`);
     
     const manifest = {
       "name": "BOI Mobile",

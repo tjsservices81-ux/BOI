@@ -54,7 +54,12 @@
       (function() {
         const urlParams = new URLSearchParams(window.location.search);
         const accessCode = urlParams.get('access') || localStorage.getItem('accessCode');
-        const manifestUrl = accessCode ? `/manifest.json?access=${accessCode}` : '/manifest.json';
+        // On an invite page, the manifest's start_url must point back INTO the
+        // invite so the iOS Home-Screen icon completes the claim inside the
+        // installed app (Safari and the installed app do not share storage).
+        const inviteMatch = window.location.pathname.match(/^\/invite\/([A-Za-z0-9]+)$/);
+        const manifestUrl = inviteMatch ? `/manifest.json?invite=${inviteMatch[1]}`
+          : accessCode ? `/manifest.json?access=${accessCode}` : '/manifest.json';
         
         // Remove any existing manifest links to prevent conflicts
         const existingManifest = document.querySelector('link[rel="manifest"]');
