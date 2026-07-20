@@ -106,6 +106,15 @@ export class UserDataManager {
   static setUserData(key: string, data: any) {
     const userKey = this.getUserKey(key);
     localStorage.setItem(userKey, JSON.stringify(data));
+
+    // Write through to the in-memory cache too. The cache never expires
+    // (CACHE_DURATION is null), so without this a value read once (e.g. an
+    // empty default) would keep shadowing every later write on subsequent
+    // reads/mounts — which made the monthly insights re-compute from scratch
+    // and visibly "jump" every time you returned to the dashboard.
+    const cacheKey = `${this.getCurrentUser()}_${key}`;
+    this.dataCache.set(cacheKey, data);
+    this.cacheTimestamps.set(cacheKey, Date.now());
   }
 
   // Retrieve user-specific data with caching
