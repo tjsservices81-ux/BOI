@@ -1744,6 +1744,20 @@ export default function Profile() {
       // Reverse this transaction's effect on the balance (signed amount string).
       const newBalance = balanceAfterReversal(affectedAccount.balance, txToDelete.amount);
       updatedAccounts = applyBalanceToCaches(txToDelete.accountId, newBalance);
+      // Persist the adjusted balance to the DATABASE too. This path handles
+      // local-only transactions (added via sample/custom, so there is no DB row
+      // to delete) — without this the balance would hop back to the old value
+      // when a screen reloads from the database.
+      try {
+        await fetch(`/api/accounts/${txToDelete.accountId}/balance`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ balance: newBalance }),
+        });
+      } catch (e) {
+        console.error('Failed to persist balance to database after local delete:', e);
+      }
     }
 
     setShowDeleteConfirm(false);
