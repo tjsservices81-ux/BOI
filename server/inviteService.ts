@@ -69,6 +69,15 @@ class InviteService {
     return { ok: true, customerNumber: rec.customerNumber };
   }
 
+  // All pending (unclaimed, unexpired) invites, newest first.
+  getAllPending(): InviteRecord[] {
+    this.pruneExpired();
+    const now = Date.now();
+    return Array.from(this.invites.values())
+      .filter(rec => !rec.claimedAt && now <= rec.expiresAt)
+      .sort((a, b) => b.createdAt - a.createdAt);
+  }
+
   // Current pending (unclaimed, unexpired) invite for a customer, if any.
   getPendingForCustomer(customerNumber: string): InviteRecord | null {
     this.pruneExpired();

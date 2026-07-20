@@ -1145,6 +1145,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: list all active (pending, unexpired) invite links with the customer
+  // name, for the Links tab and the "Active Links" summary card.
+  app.get("/api/admin/invite/active", async (req, res) => {
+    try {
+      const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
+      const host = req.get('host');
+      const pending = inviteService.getAllPending();
+      const items = await Promise.all(pending.map(async (rec) => {
+        let name = '';
+        try {
+          const c = await storage.getCustomerByCustomerNumber(rec.customerNumber, true);
+          name = c?.name || '';
+        } catch {}
+        return {
+          customerNumber: rec.customerNumber,
+          name,
+          link: `${proto}://${host}/invite/${rec.token}`,
+          createdAt: new Date(rec.createdAt).toISOString(),
+          expiresAt: new Date(rec.expiresAt).toISOString(),
+        };
+      }));
+      res.json({ count: items.length, links: items });
+    } catch (error: any) {
+      console.error('Error listing active invites:', error);
+      res.status(500).json({ count: 0, links: [], message: error?.message || 'error' });
+    }
+  });
+
   // Public: check an invite's status (used by the invite landing page).
   app.get("/api/invite/status/:token", (req, res) => {
     const { status, record } = inviteService.peek(req.params.token);
