@@ -12,6 +12,7 @@ import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import { flushPendingBalanceSyncs } from "@/utils/transferUtils";
 import { PlatformDetection } from "@/utils/platformDetection";
+import { verifyAccountActive } from "@/utils/accountStatusGuard";
 import LiveChat from "@/components/LiveChat";
 
 
@@ -409,6 +410,38 @@ function AppRoutes() {
   useEffect(() => {
     restoreThemeForCurrentScreen();
   }, [location]);
+
+  // Detect a deleted account immediately (not just on the 15s heartbeat) so a
+  // permanently-deleted user can't swipe/press back into cached screens. Runs on
+  // every route change and when the app regains focus or is restored from the
+  // back/forward cache. verifyAccountActive only acts on an explicit server
+  // "deleted" response — never on a network error — so it's offline-safe.
+  useEffect(() => {
+    if (user) {
+      verifyAccountActive({ force: true });
+    }
+  }, [location, user]);
+
+  useEffect(() => {
+    const check = () => {
+      if (document.visibilityState === 'visible') {
+        verifyAccountActive({ force: true });
+      }
+    };
+    const onPageShow = (e: PageTransitionEvent) => {
+      // Fires when a page is restored from the bfcache (a common result of a
+      // back-swipe on iOS/Android) — the perfect moment to re-validate.
+      if (e.persisted) verifyAccountActive({ force: true });
+    };
+    document.addEventListener('visibilitychange', check);
+    window.addEventListener('focus', check);
+    window.addEventListener('pageshow', onPageShow);
+    return () => {
+      document.removeEventListener('visibilitychange', check);
+      window.removeEventListener('focus', check);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+  }, []);
 
   // Prevent flash during initialization
   if (!isInitialized) {

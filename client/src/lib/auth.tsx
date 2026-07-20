@@ -33,7 +33,11 @@ function startSessionHeartbeat() {
     // Get current access code for revocation checking
     const urlParams = new URLSearchParams(window.location.search);
     const accessCode = urlParams.get('access') || localStorage.getItem('currentAccessCode');
-    
+
+    // Include the current customer number so the server can detect deletion even
+    // when there's no server-side session identity (device / invite logins).
+    const currentCustomerNumber = UserDataManager.getCurrentUser();
+
     // Send heartbeat to server to refresh session
     fetch('/api/auth/heartbeat', {
       method: 'POST',
@@ -42,7 +46,7 @@ function startSessionHeartbeat() {
         'Content-Type': 'application/json',
         ...(accessCode && { 'X-Access-Code': accessCode })
       },
-      body: JSON.stringify({ accessCode })
+      body: JSON.stringify({ accessCode, customerNumber: currentCustomerNumber })
     }).then(response => {
       if (response.status === 410) {
         // 410 Gone = Account PERMANENTLY DELETED - wipe all data for this user

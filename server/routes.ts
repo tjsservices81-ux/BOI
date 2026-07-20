@@ -301,61 +301,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (req.session) {
       // Check if customer exists in customers table (auto-logout if deleted)
       const userId = (req.session as any).userId;
-      const customerNumber = (req.session as any).customerNumber;
-      
-      // Try to get user info from session (either userId or customerNumber)
-      if (userId || customerNumber) {
+      const sessionCustomerNumber = (req.session as any).customerNumber;
+
+      // Resolve which customer to validate. Prefer the server session, but fall
+      // back to the customerNumber the client sends in the body. Many users are
+      // "permanently logged in" on their device (Face ID / invite link) and have
+      // NO server-side session identity — without this fallback their deletion
+      // was never detected and they could keep using cached data indefinitely.
+      let effectiveCustomerNumber: string | undefined = sessionCustomerNumber;
+      try {
+        if (!effectiveCustomerNumber && userId) {
+          const u = await storage.getUserById(userId);
+          if (u) effectiveCustomerNumber = u.customerNumber;
+        }
+      } catch (error) {
+        console.error('Heartbeat userId lookup error:', error);
+      }
+      if (!effectiveCustomerNumber && req.body && typeof req.body.customerNumber === 'string') {
+        effectiveCustomerNumber = req.body.customerNumber.trim();
+      }
+
+      if (effectiveCustomerNumber) {
+        // Only logout if we're 100% certain they're deleted, not if the
+        // database has a transient issue (checkCustomerExists fails safe = true).
         try {
-          let user;
-          if (userId) {
-            user = await storage.getUserById(userId);
-          } else if (customerNumber) {
-            user = await storage.getUserByCustomerNumber(customerNumber);
-          }
-          
-          if (user) {
-            // Check if customer was explicitly deleted (soft-delete check)
-            // Only logout if we're 100% certain they're deleted, not if database has issues
-            try {
-              const customerExists = await checkCustomerExists(user.customerNumber);
-              if (!customerExists) {
-                // Check if customer was permanently deleted (not just soft-deleted)
-                const customerInDb = await storage.getCustomerByCustomerNumber(user.customerNumber, true);
-                const isPermanentlyDeleted = !customerInDb;
-                
-                console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber} (permanent: ${isPermanentlyDeleted})`);
-                
-                // Destroy session and force logout
-                return new Promise((resolve) => {
-                  req.session.destroy((err) => {
-                    if (err) console.error('Session destruction error:', err);
-                    
-                    // Use 410 Gone for permanent deletion, 401 for soft deletion
-                    const statusCode = isPermanentlyDeleted ? 410 : 401;
-                    
-                    res.status(statusCode).json({ 
-                      status: isPermanentlyDeleted ? "customer_permanently_deleted" : "customer_deleted",
-                      message: isPermanentlyDeleted ? "Account has been permanently deleted" : "Account access has been revoked",
-                      customerNumber: user.customerNumber,
-                      logout: true,
-                      forceDisconnect: true,
-                      clearStorage: true,
-                      permanentlyDeleted: isPermanentlyDeleted
-                    });
-                    resolve(undefined);
-                  });
+          const customerExists = await checkCustomerExists(effectiveCustomerNumber);
+          if (!customerExists) {
+            // Distinguish a permanent erase (row gone) from a soft delete
+            // (row present, isDeleted). This works even when the in-memory user
+            // record has already been wiped, which is the whole point.
+            const customerInDb = await storage.getCustomerByCustomerNumber(effectiveCustomerNumber, true);
+            const isPermanentlyDeleted = !customerInDb;
+
+            console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${effectiveCustomerNumber} (permanent: ${isPermanentlyDeleted})`);
+
+            // Destroy session and force logout
+            return await new Promise((resolve) => {
+              req.session.destroy((err) => {
+                if (err) console.error('Session destruction error:', err);
+
+                // Use 410 Gone for permanent deletion, 401 for soft deletion
+                const statusCode = isPermanentlyDeleted ? 410 : 401;
+
+                res.status(statusCode).json({
+                  status: isPermanentlyDeleted ? "customer_permanently_deleted" : "customer_deleted",
+                  message: isPermanentlyDeleted ? "Account has been permanently deleted" : "Account access has been revoked",
+                  customerNumber: effectiveCustomerNumber,
+                  logout: true,
+                  forceDisconnect: true,
+                  clearStorage: true,
+                  permanentlyDeleted: isPermanentlyDeleted
                 });
-              }
-            } catch (dbError) {
-              // CRITICAL: If database check fails, DON'T logout the user
-              // This prevents false logouts due to temporary database issues
-              console.warn(`⚠️ Database check failed for ${user.customerNumber}, keeping session active:`, dbError);
-              // Continue to success response - keep user logged in
-            }
+                resolve(undefined);
+              });
+            });
           }
-        } catch (error) {
-          // If we can't get user info, keep session alive (don't force logout)
-          console.error('Heartbeat user lookup error:', error);
+        } catch (dbError) {
+          // CRITICAL: If database check fails, DON'T logout the user
+          // This prevents false logouts due to temporary database issues
+          console.warn(`⚠️ Database check failed for ${effectiveCustomerNumber}, keeping session active:`, dbError);
+          // Continue to success response - keep user logged in
         }
       }
       
