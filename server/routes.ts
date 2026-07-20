@@ -1016,6 +1016,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: create a BRAND-NEW person (minimal) and return a one-person link.
+  // Builds the customer + login user + an empty starter account, saves the admin
+  // alias/notes and replacement level, then generates the invite. Balance starts
+  // at 0.00 — set it later from the customer panel.
+  app.post("/api/admin/customers/create-with-link", async (req, res) => {
+    try {
+      const { name, adminAlias, appReplacement } = req.body || {};
+      const profileName = String(name || '').trim();
+      if (!profileName) {
+        return res.status(400).json({ success: false, message: "A name is required" });
+      }
+
+      let created: { customerNumber: string; id: number } | null = null;
+      for (let attempt = 0; attempt < 5 && !created; attempt++) {
+        const customerNumber = '2' + Math.floor(Math.random() * 10000000).toString().padStart(7, '0');
+        const existing = await storage.getCustomerByCustomerNumber(customerNumber, true);
+        if (existing) continue;
+
+        const email = `${customerNumber}@training.local`;
+        const joinDate = new Date().toISOString();
+        try {
+          const newCustomer = await storage.createCustomer({
+            customerNumber, name: profileName, email, phone: '', dateOfBirth: '', joinDate,
+          });
+          // Random PIN — they log in with the simulated Face ID; the PIN is only a fallback credential.
+          const pin = Math.floor(1000 + Math.random() * 9000).toString();
+          const newUser = await storage.createUser({
+            customerNumber, name: profileName, email, pin, phone: '', address: '',
+            dateOfBirth: '', joinDate, isDisabled: false,
+          }, newCustomer.id);
+
+          // Empty starter current account so the dashboard has something to show.
+          const accountNumber = Math.floor(10000000 + Math.random() * 90000000).toString();
+          const sortCode = '90-78-68';
+          const iban = `IE${Math.floor(10 + Math.random() * 90)}BOFI${sortCode.replace(/-/g, '')}${accountNumber}`;
+          await storage.createAccount({
+            userId: newUser.id, accountType: 'current', accountNumber, sortCode,
+            bic: 'BOFIIE2D', iban, balance: '0.00', displayName: 'Current Account',
+          });
+
+          created = { customerNumber, id: newCustomer.id };
+        } catch (e) {
+          console.warn('create-with-link attempt failed, retrying:', (e as any)?.message);
+        }
+      }
+
+      if (!created) {
+        return res.status(500).json({ success: false, message: "Could not create the account. Please try again." });
+      }
+
+      const updates: any = {};
+      if (adminAlias !== undefined && adminAlias !== '') updates.adminAlias = adminAlias;
+      if (appReplacement !== undefined) {
+        const val = parseInt(appReplacement);
+        if (!isNaN(val) && val >= 0 && val <= 5) updates.appReplacement = val;
+      }
+      if (Object.keys(updates).length > 0) {
+        await storage.updateCustomer(created.customerNumber, updates);
+      }
+
+      const record = inviteService.createInvite(created.customerNumber);
+      const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
+      const host = req.get('host');
+      const link = `${proto}://${host}/invite/${record.token}`;
+
+      res.json({
+        success: true,
+        link,
+        expiresAt: new Date(record.expiresAt).toISOString(),
+        customerNumber: created.customerNumber,
+        name: profileName,
+      });
+    } catch (error) {
+      console.error('Error creating new person with link:', error);
+      res.status(500).json({ success: false, message: "Failed to create new person" });
+    }
+  });
+
   // Public: check an invite's status (used by the invite landing page).
   app.get("/api/invite/status/:token", (req, res) => {
     const { status, record } = inviteService.peek(req.params.token);

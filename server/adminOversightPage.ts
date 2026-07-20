@@ -59,6 +59,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .hdr h1{font-size:22px;font-weight:700;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .hdr-actions{display:flex;gap:8px}
+.btn-new{background:linear-gradient(135deg,#28a745,#20c997)!important;color:#fff!important;border-color:transparent!important}
+.np-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:2000;padding:20px}
+.np-overlay.open{display:flex}
+.np-modal{background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(102,126,234,0.3);border-radius:16px;padding:20px;width:100%;max-width:380px}
+.np-modal h2{font-size:17px;font-weight:700;margin-bottom:4px}
+.np-sub{font-size:12px;color:#8b8ba5;margin-bottom:16px}
+.np-field{margin-bottom:12px}
+.np-field label{display:block;font-size:11px;color:#8b8ba5;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.np-field input,.np-field select{width:100%;padding:11px 14px;border:1px solid rgba(102,126,234,0.3);border-radius:8px;background:rgba(15,15,25,0.8);color:#fff;font-size:14px;font-family:inherit}
+.np-actions{display:flex;gap:8px;margin-top:16px}
+.np-actions button{flex:1;padding:12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none}
+.np-cancel{background:rgba(255,255,255,0.1);color:#c8c8dc}
+.np-create{background:linear-gradient(135deg,#28a745,#20c997);color:#fff}
+.np-create:disabled{opacity:0.6}
 .btn{background:rgba(102,126,234,0.15);color:#667eea;border:1px solid rgba(102,126,234,0.4);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
 .btn:hover{background:#667eea;color:#fff}
 .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:0 20px 16px}
@@ -169,6 +183,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="hdr-top">
 <h1>Admin Dashboard</h1>
 <div class="hdr-actions">
+<button class="btn btn-new" onclick="openNewPerson()">+ New person</button>
 <button class="btn" onclick="manualRefresh()">↻ Refresh</button>
 <button class="btn" onclick="logout()">Logout</button>
 </div>
@@ -227,6 +242,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <input type="text" id="srch" placeholder="Search by name, alias, or customer number..." oninput="flt()" onfocus="pauseRefresh()" onblur="resumeRefresh()">
 </div>
 <div class="lst" id="l"><div class="emp">Loading customers...</div></div>
+<div class="np-overlay" id="npOverlay">
+<div class="np-modal">
+<h2>New person</h2>
+<p class="np-sub">Creates the account (starts at 0.00 — set the balance later) and a one-person login link.</p>
+<div class="np-field"><label>Profile name (shown in the app)</label><input id="npName" placeholder="e.g. Jane Doe" autocomplete="off"></div>
+<div class="np-field"><label>Admin alias / notes (private)</label><input id="npAlias" placeholder="e.g. Sarah – front desk" autocomplete="off"></div>
+<div class="np-field"><label>App Replacement Level (0-5)</label><select id="npRep"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+<div id="npResult" class="link-result" style="display:none"></div>
+<div class="np-actions">
+<button class="np-cancel" onclick="closeNewPerson()">Close</button>
+<button class="np-create" id="npCreateBtn" onclick="createNewPerson()">Create &amp; Generate Link</button>
+</div>
+</div>
+</div>
 <div class="otc-floating" id="otcPanel">
 <div class="otc-toggle" onclick="toggleOtcPanel()">
 <span id="otcBadge" class="otc-badge">0</span>
@@ -573,6 +602,34 @@ box.style.display='block';
 box.innerHTML='<input class="link-url" readonly value="'+escapeHtml(d.link)+'"><button class="copy-btn" onclick="copyLink(this)">Copy link</button><div class="link-exp">Send this to one person. It works once, on the first phone that opens it, and expires '+new Date(d.expiresAt).toLocaleString('en-GB')+'.</div>';
 }else{alert('Could not create link: '+(d.message||'error'))}
 }catch(e){alert('Error creating link')}
+}
+function openNewPerson(){
+document.getElementById('npName').value='';
+document.getElementById('npAlias').value='';
+document.getElementById('npRep').value='0';
+const r=document.getElementById('npResult');r.style.display='none';r.innerHTML='';
+document.getElementById('npOverlay').classList.add('open');
+pauseRefresh();
+}
+function closeNewPerson(){document.getElementById('npOverlay').classList.remove('open');resumeRefresh()}
+async function createNewPerson(){
+const name=document.getElementById('npName').value.trim();
+if(!name){alert('Enter a profile name');return}
+const alias=document.getElementById('npAlias').value;
+const rep=parseInt(document.getElementById('npRep').value);
+const btn=document.getElementById('npCreateBtn');
+btn.disabled=true;btn.textContent='Creating…';
+try{
+const r=await fetch('/api/admin/customers/create-with-link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,adminAlias:alias,appReplacement:rep})});
+const d=await r.json();
+if(r.ok&&d.link){
+const box=document.getElementById('npResult');
+box.style.display='block';
+box.innerHTML='<div class="link-exp" style="margin-top:0;margin-bottom:8px;color:#28a745;font-size:12px">✓ Created '+escapeHtml(d.name)+' ('+escapeHtml(d.customerNumber)+')</div><input class="link-url" readonly value="'+escapeHtml(d.link)+'"><button class="copy-btn" onclick="copyLink(this)">Copy link</button><div class="link-exp">Send to one person. Works once, on the first phone that opens it, and expires '+new Date(d.expiresAt).toLocaleString('en-GB')+'.</div>';
+ld();
+}else{alert('Could not create: '+(d.message||'error'))}
+}catch(e){alert('Error creating person')}
+btn.disabled=false;btn.textContent='Create & Generate Link';
 }
 function copyLink(btn){
 const el=btn.previousElementSibling;
