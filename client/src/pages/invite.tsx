@@ -25,7 +25,7 @@ import { UserDataManager } from "@/utils/userDataManager";
 // All of this is additive — it only calls the invite endpoints and writes the
 // same local keys a returning user already has. Existing auth is untouched.
 
-type Phase = "working" | "installHint" | "error" | "done";
+type Phase = "working" | "installHint" | "error";
 
 export default function Invite() {
   const [, params] = useRoute("/invite/:token");
@@ -38,8 +38,6 @@ export default function Invite() {
     (window.navigator as any).standalone === true ||
     window.matchMedia("(display-mode: standalone)").matches;
   const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-  const goToLogin = () => navigate("/login");
 
   // Claim the invite on THIS device: create the server session + device lock,
   // seed the local state the login screen needs, and switch on the simulated
@@ -97,8 +95,9 @@ export default function Invite() {
         }
       } catch {}
 
-      setPhase("done");
-      setTimeout(goToLogin, 700);
+      // Straight into the normal app: splash -> login (Face ID is already on —
+      // no setup steps, no interstitial screen).
+      navigate("/");
     } catch {
       setPhase("error");
       setMessage("Couldn’t reach the server. Please try the link again.");
@@ -168,14 +167,6 @@ export default function Invite() {
         <>
           <div className="w-14 h-14 border-4 border-white/30 border-t-white rounded-full animate-spin mb-6" />
           <p className="text-white text-lg font-semibold">{message}</p>
-        </>
-      )}
-
-      {phase === "done" && (
-        <>
-          <div className="w-16 h-16 rounded-full bg-white/15 flex items-center justify-center mb-5 text-3xl">✓</div>
-          <p className="text-white text-lg font-semibold">You’re all set</p>
-          <p className="text-white/80 text-sm mt-1">Taking you to the login screen…</p>
         </>
       )}
 
