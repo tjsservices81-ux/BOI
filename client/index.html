@@ -577,10 +577,18 @@
           const result = await response.json();
 
           if (result.success) {
-            // Access granted - save to localStorage and clean URL
+            // Access granted - save to localStorage.
             localStorage.setItem('accessGranted', 'true');
             localStorage.setItem('accessCode', accessCode);
-            window.history.replaceState({}, document.title, window.location.pathname);
+            // IMPORTANT: keep ?access=<code> in the URL. On iPhone, "Add to Home
+            // Screen" captures the CURRENT page URL as the app's launch URL, and
+            // the installed app has its own separate storage (so it can't see
+            // the accessGranted flag saved above). If we stripped the code here,
+            // the installed icon would launch with no access code, fail the gate
+            // and redirect away. Keeping it means the icon relaunches with the
+            // code and re-verifies cleanly inside the installed app.
+            window.history.replaceState({}, document.title,
+              window.location.pathname + '?access=' + encodeURIComponent(accessCode));
             console.log('Access granted successfully');
             hideLoadingScreen();
             // Start periodic access validation
