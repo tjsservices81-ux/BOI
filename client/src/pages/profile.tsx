@@ -2033,15 +2033,15 @@ export default function Profile() {
             onTouchEnd={(e) => e.stopPropagation()}
           >
             <div className="p-6 pb-12">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <div className="-mx-6 -mt-6 mb-6 bg-[#126987] px-6 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Customer Panel
                 </h2>
                 <button
                   onClick={() => setShowAdminPanel(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 transition-colors"
                 >
-                  <X className="w-4 h-4 text-gray-600" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
@@ -2845,15 +2845,15 @@ export default function Profile() {
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <div className="-mx-6 -mt-6 mb-6 bg-[#126987] px-6 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Edit Profile
                 </h2>
                 <button
                   onClick={() => setShowEditProfile(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 transition-colors"
                 >
-                  <X className="w-4 h-4 text-gray-600" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
@@ -2966,14 +2966,14 @@ export default function Profile() {
       {/* Edit Bank Display Modal - Per Account */}
       {showEditBankDisplay && editingBankDisplayAccount && (
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm mx-4 shadow-xl">
+          <div className="bg-white rounded-2xl w-full max-w-sm mx-4 max-h-[90vh] overflow-y-auto shadow-xl">
             <div className="p-5">
-              <div className="flex items-center justify-between mb-4">
+              <div className="-mx-5 -mt-5 mb-4 bg-[#126987] px-5 py-4 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Bank Display Details
                   </h2>
-                  <p className="text-xs text-teal-600 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-xs text-white/80 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {editingBankDisplayAccount.displayName}
                   </p>
                 </div>
@@ -2982,9 +2982,9 @@ export default function Profile() {
                     setShowEditBankDisplay(false);
                     setEditingBankDisplayAccount(null);
                   }}
-                  className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 transition-colors"
                 >
-                  <X className="w-4 h-4 text-gray-500" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
@@ -3092,10 +3092,10 @@ export default function Profile() {
       {/* Edit Account Modal */}
       {editingAccount && (
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md mx-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <div className="-mx-6 -mt-6 mb-6 bg-[#126987] px-6 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Edit Account
                 </h2>
                 <button
@@ -3104,9 +3104,9 @@ export default function Profile() {
                     setNewBalance('');
                     setNewAccountName('');
                   }}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 transition-colors"
                 >
-                  <X className="w-4 h-4 text-gray-600" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
@@ -3175,15 +3175,15 @@ export default function Profile() {
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <div className="-mx-6 -mt-6 mb-6 bg-[#126987] px-6 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Add New Account
                 </h2>
                 <button
                   onClick={() => setShowAddAccount(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 transition-colors"
                 >
-                  <X className="w-4 h-4 text-gray-600" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
@@ -3270,8 +3270,8 @@ export default function Profile() {
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <div className="-mx-6 -mt-6 mb-6 bg-[#126987] px-6 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Delete Account
                 </h2>
                 <button
@@ -3279,9 +3279,9 @@ export default function Profile() {
                     setShowDeleteAccount(false);
                     setDeletingAccountId(null);
                   }}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 transition-colors"
                 >
-                  <X className="w-4 h-4 text-gray-600" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
@@ -3409,8 +3409,8 @@ export default function Profile() {
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <div className="-mx-6 -mt-6 mb-6 bg-[#126987] px-6 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Add Custom Transaction
                 </h2>
                 <button
@@ -3424,9 +3424,9 @@ export default function Profile() {
                       date: new Date().toISOString().slice(0, 16)
                     });
                   }}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center hover:bg-white/25 transition-colors"
                 >
-                  <X className="w-4 h-4 text-gray-600" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
@@ -3590,18 +3590,18 @@ export default function Profile() {
               </div>
             )}
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <div className="-mx-6 -mt-6 mb-6 bg-[#126987] px-6 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Add Sample Transactions
                 </h2>
                 <button
                   onClick={() => !isAddingSampleTransactions && setShowSampleTransactions(false)}
                   disabled={isAddingSampleTransactions}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                    isAddingSampleTransactions ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-100 hover:bg-gray-200'
+                  className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                    isAddingSampleTransactions ? 'bg-white/10 cursor-not-allowed' : 'bg-white/15 hover:bg-white/25'
                   }`}
                 >
-                  <X className="w-4 h-4 text-gray-600" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
