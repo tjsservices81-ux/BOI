@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, HardDrive, Clock } from "lucide-react";
 import { setCustomAppDate, hasCustomAppDate, getCustomAppDateISO } from "@/utils/appTime";
@@ -25,6 +25,10 @@ export default function Profile() {
   const [newAccountName, setNewAccountName] = useState('');
 
   const [showAddAccount, setShowAddAccount] = useState(false);
+  const [isAddingAccount, setIsAddingAccount] = useState(false);
+  // Synchronous guard: state updates are async, so a very fast double-tap could
+  // pass the state check twice in the same tick. The ref flips immediately.
+  const isAddingAccountRef = useRef(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [deletingAccountId, setDeletingAccountId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -814,6 +818,14 @@ export default function Profile() {
       return;
     }
 
+    // Guard against double-taps: if a create is already in flight, ignore
+    // further presses so the same account isn't created multiple times. The ref
+    // check is synchronous (bulletproof against same-tick double-fire); the
+    // state drives the button's disabled/label.
+    if (isAddingAccountRef.current) return;
+    isAddingAccountRef.current = true;
+    setIsAddingAccount(true);
+
     try {
       // Create account in database with full banking details
       const response = await fetch('/api/accounts', {
@@ -898,6 +910,9 @@ export default function Profile() {
     } catch (error) {
       console.error('Error creating account:', error);
       showDeveloperMessage(error instanceof Error ? error.message : 'Failed to create account. Please try again.');
+    } finally {
+      isAddingAccountRef.current = false;
+      setIsAddingAccount(false);
     }
   };
 
@@ -3254,10 +3269,11 @@ export default function Profile() {
                 </button>
                 <button
                   onClick={addNewAccount}
-                  className="flex-1 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors"
+                  disabled={isAddingAccount}
+                  className="flex-1 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  Create Account
+                  {isAddingAccount ? 'Creating…' : 'Create Account'}
                 </button>
               </div>
             </div>
