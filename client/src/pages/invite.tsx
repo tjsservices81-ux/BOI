@@ -39,9 +39,9 @@ export default function Invite() {
     window.matchMedia("(display-mode: standalone)").matches;
   const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-  // Claim the invite on THIS device: create the server session + device lock,
-  // seed the local state the login screen needs, and switch on the simulated
-  // Face ID. Ends at the normal splash -> login flow.
+  // Claim the invite on THIS device: create the server session + device lock
+  // and seed the local state the login screen needs. Ends at the normal
+  // splash -> login flow. Face ID settings are left completely untouched.
   const claimNow = async () => {
     setPhase("working");
     setMessage("Setting up your app…");
@@ -63,7 +63,7 @@ export default function Invite() {
       const u = data.user;
 
       // Seed the same local state a returning user has, so the login screen
-      // recognises them and the Face ID unlock works.
+      // recognises them.
       try {
         const users = JSON.parse(localStorage.getItem("bankUsers") || "{}");
         users[u.customerNumber] = {
@@ -78,9 +78,8 @@ export default function Invite() {
       UserDataManager.setCurrentUser(u.customerNumber);
       try { UserDataManager.setLastActiveUser(u.customerNumber); } catch {}
 
-      // Turn on the simulated Face ID unlock for this device.
-      localStorage.setItem("faceIdEnabled", JSON.stringify(true));
-      localStorage.setItem("faceIdCredentialId", "fallback-" + u.customerNumber);
+      // NOTE: deliberately does NOT touch any Face ID settings — the login
+      // screen's own biometric behaviour applies unchanged.
 
       // Make sure they see splash -> login (not skip straight to dashboard).
       localStorage.setItem("app_session_active", "true");
@@ -95,8 +94,7 @@ export default function Invite() {
         }
       } catch {}
 
-      // Straight into the normal app: splash -> login (Face ID is already on —
-      // no setup steps, no interstitial screen).
+      // Straight into the normal app: splash -> login, no interstitial screen.
       navigate("/");
     } catch {
       setPhase("error");
