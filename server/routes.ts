@@ -10,6 +10,7 @@ import {
   TEAM_CUSTOMER_LIMIT,
   TEAM_CUSTOMER_NAME,
 } from "./teamAdminPage";
+import { teamAccountRegistry } from "./teamAccountRegistry";
 import { inviteService } from "./inviteService";
 import { loginSchema, transferSchema, type InsertUser } from "@shared/schema";
 import { z } from "zod";
@@ -793,13 +794,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Team Admin page, so the same cap applies here — that page never holds
       // more than TEAM_CUSTOMER_LIMIT accounts at once.
       if (isTeamCustomerName(fullName)) {
-        const teamCount = (await storage.getAllCustomers(false))
-          .filter((c) => isTeamCustomerName(c.name)).length;
-        if (teamCount >= TEAM_CUSTOMER_LIMIT) {
+        if (await countTeamSlotsInUse() >= TEAM_CUSTOMER_LIMIT) {
           return res.status(409).json({
             message: `There are already ${TEAM_CUSTOMER_LIMIT} team accounts. Delete one on the Team Admin page first.`,
           });
         }
+        // Sticky from here on — renaming in Personal Details won't move them off
+        // the Team Admin page.
+        teamAccountRegistry.add(customerNumber);
       }
 
       try {
@@ -2658,7 +2660,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const accountData = accountDataSchema.parse(req.body);
-      
+
+      // Naming the customer "admincustomer" here (the 5-taps-on-the-logo signup)
+      // routes the code to the Team Admin page instead of the main panel. The
+      // same 2-account cap applies, counting codes that haven't been used yet.
+      if (isTeamCustomerName(accountData.name)) {
+        const inUse = await countTeamSlotsInUse();
+        if (inUse >= TEAM_CUSTOMER_LIMIT) {
+          return res.status(409).json({
+            success: false,
+            message: `There are already ${TEAM_CUSTOMER_LIMIT} team accounts. Delete one on the Team Admin page first.`,
+          });
+        }
+        teamAccountRegistry.add(accountData.customerNumber);
+      }
+
       // Generate OTC (no email sent - displayed in admin panel)
       const otc = await otcService.processNewAccount(accountData);
       
@@ -2705,6 +2721,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (validation.isValid && validation.accountData) {
         // Create the user in the database with their actual data
         const userData = validation.accountData;
+
+        // Accounts created under the name "admincustomer" belong to the Team
+        // Admin page. Recorded now, at creation, so it sticks even if they
+        // rename themselves in Personal Details later.
+        if (isTeamCustomerName(userData.name)) {
+          teamAccountRegistry.add(userData.customerNumber);
+        }
+
         try {
           // STEP 1: Create customer in PostgreSQL FIRST to get the ID
           let postgresCustomerId: number;
@@ -3504,16 +3528,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // cannot be touched from these endpoints.
   // ==========================================================================
 
-  /** All active (non-deleted) team accounts. */
+  /**
+   * All active (non-deleted) team accounts.
+   *
+   * Membership comes from the persistent registry, so an account stays on this
+   * page even if the person later renames themselves in Personal Details. Any
+   * account still named "admincustomer" but not yet registered is enrolled here
+   * (covers accounts made before the registry existed).
+   */
   const getTeamCustomers = async () => {
     const all = await storage.getAllCustomers(false);
-    return all.filter((c) => isTeamCustomerName(c.name));
+    return all.filter((c) => {
+      if (teamAccountRegistry.has(c.customerNumber)) return true;
+      if (isTeamCustomerName(c.name)) {
+        teamAccountRegistry.add(c.customerNumber);
+        return true;
+      }
+      return false;
+    });
+  };
+
+  /**
+   * Login codes generated for a team account that doesn't exist as a customer
+   * yet — i.e. the 5-taps-on-the-logo signup, where the code is created first
+   * and the account only exists once the code is entered.
+   */
+  const getPendingTeamOTCs = () => {
+    return otcService.getAllActiveOTCs().filter((o) => {
+      const name = o.accountData && o.accountData.name;
+      return isTeamCustomerName(name) || teamAccountRegistry.has(o.customerNumber);
+    });
+  };
+
+  /** Slots in use = existing team accounts + codes waiting to be used. */
+  const countTeamSlotsInUse = async () => {
+    const customers = await getTeamCustomers();
+    const taken = new Set(customers.map((c) => c.customerNumber));
+    getPendingTeamOTCs().forEach((o) => taken.add(o.customerNumber));
+    return taken.size;
   };
 
   /** Guard: resolve a customer number, but only if it's a team account. */
   const getTeamCustomerOr404 = async (customerNumber: string, res: any) => {
     const customer = await storage.getCustomerByCustomerNumber(customerNumber, true);
-    if (!customer || !isTeamCustomerName(customer.name)) {
+    const isTeam = customer
+      && (teamAccountRegistry.has(customer.customerNumber) || isTeamCustomerName(customer.name));
+    if (!customer || !isTeam) {
       res.status(404).json({ success: false, message: "That account isn't managed from this page." });
       return null;
     }
@@ -3571,11 +3631,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: c.name,
           adminAlias: c.adminAlias || '',
           created,
+          pending: false,
           otc: otc ? { code: otc.code, timeRemaining: otc.timeRemaining } : null,
         };
       });
 
-      res.json({ success: true, limit: TEAM_CUSTOMER_LIMIT, customers: payload });
+      // Codes from the 5-tap signup, where the account doesn't exist yet. These
+      // are what the other admins are waiting on, so they show at the top.
+      const existing = new Set(customers.map((c) => c.customerNumber));
+      const pending = getPendingTeamOTCs()
+        .filter((o) => !existing.has(o.customerNumber))
+        .map((o) => ({
+          customerNumber: o.customerNumber,
+          name: (o.accountData && o.accountData.name) || TEAM_CUSTOMER_NAME,
+          adminAlias: '',
+          created: '',
+          pending: true,
+          otc: { code: o.code, timeRemaining: o.timeRemaining },
+        }));
+
+      res.json({
+        success: true,
+        limit: TEAM_CUSTOMER_LIMIT,
+        customers: pending.concat(payload as any),
+      });
     } catch (error) {
       console.error('Team admin data failed:', error);
       res.status(500).json({ success: false, message: "Failed to load accounts" });
@@ -3585,8 +3664,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a team account (name is always "admincustomer") + its login code.
   app.post("/api/team-admin/customers", async (req, res) => {
     try {
-      const existing = await getTeamCustomers();
-      if (existing.length >= TEAM_CUSTOMER_LIMIT) {
+      if (await countTeamSlotsInUse() >= TEAM_CUSTOMER_LIMIT) {
         return res.status(409).json({
           success: false,
           message: `You already have ${TEAM_CUSTOMER_LIMIT} accounts. Delete one to make a new one.`,
@@ -3630,6 +3708,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ success: false, message: "Could not create the account. Please try again." });
       }
 
+      // Sticky membership — stays on this page even if they rename themselves.
+      teamAccountRegistry.add(created.customerNumber);
+
       if (label) {
         await storage.updateCustomer(created.customerNumber, { adminAlias: label } as any);
       }
@@ -3662,14 +3743,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const customer = await getTeamCustomerOr404(customerNumber, res);
       if (!customer) return;
 
+      // Same one-step permanent erase the main Admin Oversight page uses, so it
+      // works whether the account is active or already soft-deleted.
       const result = await storage.permanentlyEraseCustomer(customerNumber);
       if (!result.success) {
-        return res.status(500).json({ success: false, message: result.detail || "Could not delete the account" });
+        return res.status(500).json({
+          success: false,
+          message: result.detail
+            ? `Failed to permanently erase account: ${result.detail}`
+            : "Failed to permanently erase account",
+        });
       }
-      try { await storage.deleteUser(customerNumber); } catch { /* best effort */ }
 
-      console.log(`👥 TEAM ADMIN deleted account ${customerNumber}`);
-      res.json({ success: true });
+      // Safety: also drop the in-memory/JSON user if anything is still present.
+      try { await storage.deleteUser(customerNumber); } catch { /* best effort */ }
+      teamAccountRegistry.remove(customerNumber);
+
+      console.log(`🔥 TEAM ADMIN PERMANENTLY ERASED: ${customerNumber}`);
+      res.json({
+        success: true,
+        message: "Account permanently erased",
+        customerNumber,
+        forceDisconnect: true, // Trigger complete PWA wipe on their device
+        logout: true,
+      });
     } catch (error) {
       console.error('Team admin delete failed:', error);
       res.status(500).json({ success: false, message: "Failed to delete the account" });

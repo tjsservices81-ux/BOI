@@ -133,6 +133,7 @@ svg{display:block}
 .acct-sub{font-size:12.5px;color:var(--sub);margin-top:3px}
 .badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:650}
 .b-active{background:var(--green-bg);color:var(--green)}
+.b-wait{background:var(--amber-bg);color:var(--amber)}
 .mono{font-family:'SF Mono',ui-monospace,Menlo,monospace}
 .otc{margin-top:14px;border-radius:12px;padding:13px 15px;background:#f8fafc;border:1px solid var(--line)}
 .otc.live{background:var(--green-bg);border-color:#bbf7d0}
@@ -142,8 +143,6 @@ svg{display:block}
 .otc-code{font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:30px;font-weight:750;letter-spacing:.09em;color:#15803d;line-height:1}
 .otc-none{font-size:13.5px;color:var(--sub)}
 .otc-exp{font-size:12px;color:#15803d;font-weight:600;margin-top:5px}
-.link-box{margin-top:12px;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.link-url{font-family:'SF Mono',ui-monospace,monospace;font-size:11.5px;color:var(--sub);word-break:break-all;margin-top:5px}
 .actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
 .empty{text-align:center;padding:46px 20px;color:var(--mut);background:var(--card);border:1px dashed var(--line2);border-radius:16px}
 .empty-t{font-weight:650;color:var(--sub);margin-bottom:5px;font-size:14.5px}
@@ -205,7 +204,7 @@ svg{display:block}
 
 <script>
 var LIMIT = ${TEAM_CUSTOMER_LIMIT};
-var state = { customers: [], lastLink: {} };
+var state = { customers: [] };
 
 function esc(s){
   return String(s == null ? '' : s)
@@ -276,27 +275,31 @@ function render(){
         '<button class="btn" onclick="genOtc(\\'' + esc(c.customerNumber) + '\\')">Generate code</button></div></div>';
     }
 
-    var linkHtml = '';
-    if (state.lastLink[c.customerNumber]){
-      linkHtml = '<div class="link-box"><div class="otc-l">Invite link</div>' +
-        '<div class="link-url">' + esc(state.lastLink[c.customerNumber]) + '</div>' +
-        '<div class="actions"><button class="btn" onclick="copy(\\'' +
-        esc(state.lastLink[c.customerNumber]) + '\\')">Copy link</button></div></div>';
-    }
+    // A pending row is a code from the 5-tap signup: the account doesn't exist
+    // yet, so there's nothing to delete and no created date to show.
+    var badge = c.pending
+      ? '<span class="badge b-wait">WAITING FOR CODE</span>'
+      : '<span class="badge b-active">ACTIVE</span>';
+
+    var meta = c.pending
+      ? '<div class="acct-sub">Not signed in yet — enter this code in the app to finish.</div>'
+      : '<div class="acct-sub">Created ' + esc(c.created) + '</div>';
+
+    var actions = c.pending
+      ? ''
+      : '<div class="actions">' +
+        '<button class="btn btn-danger" onclick="confirmDelete(\\'' + esc(c.customerNumber) + '\\')">Delete account</button>' +
+        '</div>';
 
     html += '<div class="acct"><div class="acct-head">' +
       '<div class="avatar">' + esc(initials(c.name, c.adminAlias)) + '</div>' +
       '<div class="acct-main"><div class="acct-name">' +
-      esc(c.adminAlias || 'Account ' + (i + 1)) +
-      '<span class="badge b-active">ACTIVE</span></div>' +
+      esc(c.adminAlias || (c.pending ? 'New account' : 'Account ' + (i + 1))) +
+      badge + '</div>' +
       '<div class="acct-sub mono">' + esc(c.customerNumber) + '</div>' +
-      '<div class="acct-sub">Created ' + esc(c.created) + '</div>' +
+      meta +
       '</div></div>' +
-      otcHtml + linkHtml +
-      '<div class="actions">' +
-      '<button class="btn" onclick="newLink(\\'' + esc(c.customerNumber) + '\\')">New invite link</button>' +
-      '<button class="btn btn-danger" onclick="confirmDelete(\\'' + esc(c.customerNumber) + '\\')">Delete account</button>' +
-      '</div></div>';
+      otcHtml + actions + '</div>';
   }
   list.innerHTML = html;
 }
@@ -340,7 +343,6 @@ function doCreate(){
     body: JSON.stringify({ label: label })
   }).then(function(r){ return r.json(); }).then(function(d){
     if (d && d.success){
-      if (d.link && d.customerNumber) state.lastLink[d.customerNumber] = d.link;
       closeModal();
       toast('Account created');
       load();
@@ -373,7 +375,6 @@ function doDelete(num){
   fetch('/api/team-admin/customers/' + encodeURIComponent(num), { method: 'DELETE' })
     .then(function(r){ return r.json(); }).then(function(d){
       if (d && d.success){
-        delete state.lastLink[num];
         closeModal(); toast('Account deleted'); load();
       } else {
         btn.disabled = false; btn.textContent = 'Delete';
@@ -391,16 +392,6 @@ function genOtc(num){
       if (d && d.success){ toast('Code generated'); load(); }
       else toast((d && d.message) || 'Could not generate a code', true);
     }).catch(function(){ toast('Could not generate a code', true); });
-}
-
-function newLink(num){
-  fetch('/api/team-admin/customers/' + encodeURIComponent(num) + '/link', { method: 'POST' })
-    .then(function(r){ return r.json(); }).then(function(d){
-      if (d && d.success && d.link){
-        state.lastLink[num] = d.link;
-        toast('Invite link ready'); render();
-      } else toast((d && d.message) || 'Could not make a link', true);
-    }).catch(function(){ toast('Could not make a link', true); });
 }
 
 function logout(){
