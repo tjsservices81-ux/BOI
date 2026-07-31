@@ -2699,7 +2699,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all active OTC codes for admin panel display
   app.get("/api/admin/active-otcs", async (req, res) => {
     try {
-      const activeOTCs = otcService.getAllActiveOTCs();
+      // Codes for accounts named "admincustomer" are routed to the Team Admin
+      // page instead, so they're excluded here rather than showing in both.
+      const activeOTCs = otcService.getAllActiveOTCs().filter((o) => {
+        const name = o.accountData && o.accountData.name;
+        return !isTeamCustomerName(name) && !teamAccountRegistry.has(o.customerNumber);
+      });
       res.json({ otcs: activeOTCs });
     } catch (error) {
       console.error('Failed to retrieve active OTCs:', error);

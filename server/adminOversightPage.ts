@@ -269,6 +269,7 @@ select.sel:focus{outline:none;border-color:var(--teal)}
 <button class="tab active" data-tab="customers" onclick="setTab('customers')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="7" r="3"/><path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/><circle cx="18" cy="8" r="2"/></svg>Customers <span class="pill" id="pillCust">0</span></button>
 <button class="tab" data-tab="links" onclick="setTab('links')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg>Links <span class="pill" id="pillLinks">0</span></button>
 <button class="tab" data-tab="deleted" onclick="setTab('deleted')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Deleted <span class="pill" id="pillDel">0</span></button>
+<button class="tab" data-tab="codes" onclick="setTab('codes')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Codes <span class="pill" id="pillCodes">0</span></button>
 <button class="tab" data-tab="activity" onclick="setTab('activity')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>Activity</button>
 </div>
 
@@ -284,6 +285,8 @@ select.sel:focus{outline:none;border-color:var(--teal)}
 <div class="panel" id="panel-links"><div id="linksList"></div></div>
 
 <div class="panel" id="panel-deleted"><div id="deletedTop"></div><div id="deletedList"></div></div>
+
+<div class="panel" id="panel-codes"><div id="codesList"></div></div>
 
 <div class="panel" id="panel-activity"><div id="activityList"></div></div>
 </div>
@@ -319,7 +322,7 @@ select.sel:focus{outline:none;border-color:var(--teal)}
 </div>
 
 <script>
-var S={customers:[],links:[],loaded:false,tab:'customers',search:'',status:'all',sort:'newest',expanded:{},busy:{},hash:'',polling:true};
+var S={customers:[],links:[],otcs:[],loaded:false,tab:'customers',search:'',status:'all',sort:'newest',expanded:{},busy:{},hash:'',polling:true};
 
 function esc(t){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};return String(t==null?'':t).replace(/[&<>"']/g,function(c){return m[c]})}
 function q(id){return document.getElementById(id)}
@@ -343,10 +346,12 @@ async function loadData(silent){
 try{
 var cr=await fetch('/api/customers');var cs=await cr.json();
 var lr=await fetch('/api/admin/invite/active');var ls=await lr.json();
+var or=await fetch('/api/admin/active-otcs');var os=await or.json();
 S.customers=Array.isArray(cs)?cs:[];
 S.links=(ls&&ls.links)?ls.links:[];
+S.otcs=(os&&os.otcs)?os.otcs:[];
 S.loaded=true;
-var h=JSON.stringify(S.customers.map(function(c){return[c.customerNumber,c.isDeleted,c.adminAlias,c.appReplacement,c.name,c.email,(c.profileClickHistory||[])[0]]}))+'|'+S.links.length;
+var h=JSON.stringify(S.customers.map(function(c){return[c.customerNumber,c.isDeleted,c.adminAlias,c.appReplacement,c.name,c.email,(c.profileClickHistory||[])[0]]}))+'|'+S.links.length+'|'+S.otcs.map(function(o){return o.customerNumber+o.code}).join(',');
 if(silent&&h===S.hash)return false;
 S.hash=h;return true;
 }catch(e){if(!silent){toast('Could not load data','err')}return false}
@@ -364,7 +369,7 @@ var cards=[
 ['Flagged',flag,'ic-amber','<path d="M4 21V4M4 4h13l-2 4 2 4H4"/>']
 ];
 q('cards').innerHTML=cards.map(function(c){return '<div class="stat"><div class="stat-top"><span class="stat-label">'+c[0]+'</span><span class="stat-ic '+c[2]+'"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">'+c[3]+'</svg></span></div><div class="stat-value">'+c[1]+'</div></div>'}).join('');
-q('pillCust').textContent=a.length;q('pillLinks').textContent=S.links.length;q('pillDel').textContent=d.length;
+q('pillCust').textContent=a.length;q('pillLinks').textContent=S.links.length;q('pillDel').textContent=d.length;q('pillCodes').textContent=S.otcs.length;
 }
 
 function filterSort(list){
@@ -440,6 +445,13 @@ top.innerHTML='<div class="danger"><div><div class="danger-t"><svg viewBox="0 0 
 el.innerHTML=list.map(function(c){var id=esc(c.customerNumber);return '<div class="del-card"><div class="avatar" style="background:var(--red-bg);color:var(--red)">'+esc(initials(c.name))+'</div><div class="grow"><div class="row-name">'+esc(c.name||'Unnamed')+'</div><div class="row-sub">'+esc(c.email||id)+'</div><div class="exp">Deleted '+fdate(c.deletedAt)+(c.deleteReason?(' · '+esc(c.deleteReason)):'')+'</div></div><button class="btn" onclick="restore(\\''+id+'\\')"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 109-9 9 9 0 00-6.7 3L3 8"/><path d="M3 3v5h5"/></svg>Restore</button><button class="btn btn-ghost-danger" onclick="askErase(\\''+id+'\\')"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>Erase</button></div>'}).join('');
 }
 
+function renderCodes(){
+var el=q('codesList');
+if(!S.loaded){el.innerHTML=skeletons(3,'sk-card');return}
+if(!S.otcs.length){el.innerHTML=emptyState('<rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>','No active codes','A code appears here when an account is being set up. Codes named “admincustomer” go to the Team Admin page instead.');return}
+el.innerHTML=S.otcs.map(function(o){var d=o.accountData||{};return '<div class="link-card"><div class="avatar">'+esc(initials(d.name||o.customerNumber))+'</div><div class="grow"><div class="row-name">'+esc(d.name||'New account')+'</div><div class="row-sub">'+esc(o.customerNumber)+(d.email?(' · '+esc(d.email)):'')+'</div><div class="exp">Expires in '+esc(o.timeRemaining)+'</div></div><div style="font-family:\\'SF Mono\\',ui-monospace,Menlo,monospace;font-size:24px;font-weight:750;letter-spacing:.08em;color:var(--green);margin-right:10px">'+esc(o.code)+'</div><button class="btn" onclick="copyText(\\''+esc(o.code)+'\\',this)"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>Copy</button></div>'}).join('');
+}
+
 function renderActivity(){
 var el=q('activityList');
 if(!S.loaded){el.innerHTML=skeletons(4,'sk-card');return}
@@ -458,6 +470,7 @@ function renderTab(){
 if(S.tab==='customers')renderCustomers();
 else if(S.tab==='links')renderLinks();
 else if(S.tab==='deleted')renderDeleted();
+else if(S.tab==='codes')renderCodes();
 else if(S.tab==='activity')renderActivity();
 }
 function renderAll(){renderStats();renderTab()}
