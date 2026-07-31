@@ -26,6 +26,15 @@ class OTCService {
     }, 10 * 60 * 1000);
   }
 
+  /**
+   * Drop any pending code for a customer. Used when an account is deleted, so a
+   * still-valid code can't leave the account showing as "waiting" on an admin
+   * page after it's gone.
+   */
+  clearOTC(customerNumber: string): void {
+    this.otcStorage.delete(customerNumber);
+  }
+
   validateOTC(customerNumber: string, code: string): { isValid: boolean; accountData?: any } {
     const stored = this.otcStorage.get(customerNumber);
     

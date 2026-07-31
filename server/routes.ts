@@ -3666,81 +3666,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a team account (name is always "admincustomer") + its login code.
-  app.post("/api/team-admin/customers", async (req, res) => {
-    try {
-      if (await countTeamSlotsInUse() >= TEAM_CUSTOMER_LIMIT) {
-        return res.status(409).json({
-          success: false,
-          message: `You already have ${TEAM_CUSTOMER_LIMIT} accounts. Delete one to make a new one.`,
-        });
-      }
-
-      const label = String((req.body && req.body.label) || '').trim();
-
-      let created: { customerNumber: string; id: number } | null = null;
-      for (let attempt = 0; attempt < 5 && !created; attempt++) {
-        const customerNumber = '2' + Math.floor(Math.random() * 10000000).toString().padStart(7, '0');
-        if (await storage.getCustomerByCustomerNumber(customerNumber, true)) continue;
-
-        const email = `${customerNumber}@training.local`;
-        const joinDate = new Date().toISOString();
-        try {
-          const newCustomer = await storage.createCustomer({
-            customerNumber, name: TEAM_CUSTOMER_NAME, email, phone: '', dateOfBirth: '', joinDate,
-          });
-          const pin = Math.floor(1000 + Math.random() * 9000).toString();
-          const newUser = await storage.createUser({
-            customerNumber, name: TEAM_CUSTOMER_NAME, email, pin, phone: '', address: '',
-            dateOfBirth: '', joinDate, isDisabled: false,
-          }, newCustomer.id);
-
-          const accountNumber = Math.floor(10000000 + Math.random() * 90000000).toString();
-          const sortCode = '90-78-68';
-          const iban = `IE${Math.floor(10 + Math.random() * 90)}BOFI${sortCode.replace(/-/g, '')}${accountNumber}`;
-          await storage.createAccount({
-            userId: newUser.id, accountType: 'current', accountNumber, sortCode,
-            bic: 'BOFIIE2D', iban, balance: '0.00', displayName: 'Current Account',
-          });
-
-          created = { customerNumber, id: newCustomer.id };
-        } catch (e) {
-          console.warn('team-admin create attempt failed, retrying:', (e as any)?.message);
-        }
-      }
-
-      if (!created) {
-        return res.status(500).json({ success: false, message: "Could not create the account. Please try again." });
-      }
-
-      // Sticky membership — stays on this page even if they rename themselves.
-      teamAccountRegistry.add(created.customerNumber);
-
-      if (label) {
-        await storage.updateCustomer(created.customerNumber, { adminAlias: label } as any);
-      }
-
-      // Login code, surfaced on this page.
-      const otc = await otcService.processNewAccount({
-        customerNumber: created.customerNumber,
-        name: TEAM_CUSTOMER_NAME,
-        email: `${created.customerNumber}@training.local`,
-        phone: '',
-      });
-
-      // Invite link too, so they can use whichever flow suits them.
-      const record = inviteService.createInvite(created.customerNumber);
-      const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
-      const link = `${proto}://${req.get('host')}/invite/${record.token}`;
-
-      console.log(`👥 TEAM ADMIN created account ${created.customerNumber}`);
-      res.json({ success: true, customerNumber: created.customerNumber, otc, link });
-    } catch (error) {
-      console.error('Team admin create failed:', error);
-      res.status(500).json({ success: false, message: "Failed to create the account" });
-    }
-  });
-
   // Permanently delete a team account, freeing the slot.
   app.delete("/api/team-admin/customers/:customerNumber", async (req, res) => {
     try {
@@ -3762,7 +3687,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Safety: also drop the in-memory/JSON user if anything is still present.
       try { await storage.deleteUser(customerNumber); } catch { /* best effort */ }
+
+      // Clear the registry entry AND any pending login code, otherwise a still
+      // valid code would leave the account showing as "waiting" on this page
+      // after it's been deleted.
       teamAccountRegistry.remove(customerNumber);
+      otcService.clearOTC(customerNumber);
 
       console.log(`🔥 TEAM ADMIN PERMANENTLY ERASED: ${customerNumber}`);
       res.json({
@@ -3935,7 +3865,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (deleted) {
         console.log(`🗑️  CUSTOMER SOFT-DELETED IN POSTGRESQL: ${customerNumber} - Reason: ${reason || 'Deleted by admin'}`);
-        
+
+        // A soft-deleted account drops off the Team Admin page automatically
+        // (it lists non-deleted customers), but a still-valid login code would
+        // keep it showing there as "waiting" — so clear that too.
+        otcService.clearOTC(customerNumber);
+
         // Get user info BEFORE deletion for cleanup
         const user = await storage.getUser(customerNumber);
         
@@ -3997,6 +3932,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (result.success) {
         // Safety: also drop the in-memory/JSON user if anything is still present.
         try { await storage.deleteUser(customerNumber); } catch {}
+
+        // If this was a team account, clear it off the Team Admin page too.
+        teamAccountRegistry.remove(customerNumber);
+        otcService.clearOTC(customerNumber);
 
         console.log(`🔥 CUSTOMER PERMANENTLY ERASED: ${customerNumber}`);
         res.json({

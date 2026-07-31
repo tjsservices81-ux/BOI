@@ -182,18 +182,15 @@ svg{display:block}
 
 <div class="wrap">
   <div class="note">
-    Accounts here are created with the customer name <strong>admincustomer</strong>. Any account registered in the app under that name shows up on this page with its login code. Real customers never appear here.
+    <strong>To make an account:</strong> on the app's login screen tap <strong>Bank of Ireland 5 times</strong>, then set the name to <strong>admincustomer</strong>. The login code appears here. Real customers never show on this page.
   </div>
 
   <div class="slots">
     <div>
       <div class="slots-t" id="slotsTitle">Loading…</div>
-      <div class="slots-s">You can delete an account and make a new one any time.</div>
+      <div class="slots-s">Delete one to free a slot — you can make a new one straight away.</div>
     </div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <div class="pips" id="pips"></div>
-      <button class="btn btn-primary" id="newBtn" onclick="openNew()">+ New account</button>
-    </div>
+    <div class="pips" id="pips"></div>
   </div>
 
   <div class="list" id="list"><div class="skel"></div><div class="skel"></div></div>
@@ -249,14 +246,11 @@ function render(){
   }
   document.getElementById('pips').innerHTML = pips;
 
-  var btn = document.getElementById('newBtn');
-  btn.disabled = used >= LIMIT;
-  btn.textContent = used >= LIMIT ? 'Both slots full' : '+ New account';
-
   var list = document.getElementById('list');
   if (used === 0){
     list.innerHTML = '<div class="empty"><div class="empty-t">No accounts yet</div>' +
-      '<div class="empty-s">Tap “+ New account” to create one. You get ' + LIMIT + ' at a time.</div></div>';
+      '<div class="empty-s">In the app, tap Bank of Ireland 5 times and set the name to ' +
+      '“admincustomer”. The code will appear here. You get ' + LIMIT + ' at a time.</div></div>';
     return;
   }
 
@@ -317,44 +311,6 @@ function copy(text){
 }
 
 function closeModal(){ document.getElementById('modalHost').innerHTML = ''; }
-
-function openNew(){
-  document.getElementById('modalHost').innerHTML =
-    '<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box">' +
-    '<div class="modal-head"><h2>New account</h2>' +
-    '<button class="modal-x" onclick="closeModal()">&times;</button></div>' +
-    '<div class="modal-body">' +
-    '<p>Creates an account named <strong>admincustomer</strong> with a login code. The label is just so you can tell your two accounts apart.</p>' +
-    '<div class="field"><label>Label (optional)</label>' +
-    '<input id="newLabel" placeholder="e.g. Test phone" autocomplete="off"></div>' +
-    '<div class="modal-actions">' +
-    '<button class="btn" onclick="closeModal()">Cancel</button>' +
-    '<button class="btn btn-primary" id="createBtn" onclick="doCreate()">Create</button>' +
-    '</div></div></div></div>';
-}
-
-function doCreate(){
-  var btn = document.getElementById('createBtn');
-  btn.disabled = true; btn.textContent = 'Creating…';
-  var label = (document.getElementById('newLabel') || {}).value || '';
-  fetch('/api/team-admin/customers', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ label: label })
-  }).then(function(r){ return r.json(); }).then(function(d){
-    if (d && d.success){
-      closeModal();
-      toast('Account created');
-      load();
-    } else {
-      btn.disabled = false; btn.textContent = 'Create';
-      toast((d && d.message) || 'Could not create the account', true);
-    }
-  }).catch(function(){
-    btn.disabled = false; btn.textContent = 'Create';
-    toast('Could not create the account', true);
-  });
-}
 
 function confirmDelete(num){
   document.getElementById('modalHost').innerHTML =
