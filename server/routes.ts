@@ -2,6 +2,14 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { renderAdminLoginPage, renderAdminDashboardPage } from "./adminOversightPage";
+import {
+  renderTeamAdminLoginPage,
+  renderTeamAdminDashboardPage,
+  isTeamCustomerName,
+  getTeamAdminPin,
+  TEAM_CUSTOMER_LIMIT,
+  TEAM_CUSTOMER_NAME,
+} from "./teamAdminPage";
 import { inviteService } from "./inviteService";
 import { loginSchema, transferSchema, type InsertUser } from "@shared/schema";
 import { z } from "zod";
@@ -780,6 +788,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // STEP 1: Create customer in PostgreSQL FIRST to get the ID
       let postgresCustomerId: number;
       const fullName = `${userData.firstName} ${userData.lastName}`;
+
+      // Registering under the name "admincustomer" routes the login code to the
+      // Team Admin page, so the same cap applies here — that page never holds
+      // more than TEAM_CUSTOMER_LIMIT accounts at once.
+      if (isTeamCustomerName(fullName)) {
+        const teamCount = (await storage.getAllCustomers(false))
+          .filter((c) => isTeamCustomerName(c.name)).length;
+        if (teamCount >= TEAM_CUSTOMER_LIMIT) {
+          return res.status(409).json({
+            message: `There are already ${TEAM_CUSTOMER_LIMIT} team accounts. Delete one on the Team Admin page first.`,
+          });
+        }
+      }
+
       try {
         const newCustomer = await storage.createCustomer({
           customerNumber,
@@ -3472,6 +3494,222 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Delete all customers failed:', error);
       res.status(500).json({ success: false, error: "Failed to delete all customers" });
+    }
+  });
+
+  // ==========================================================================
+  // TEAM ADMIN — separate, limited oversight page for the two other admins.
+  // Only ever exposes "team" accounts (customer name = admincustomer), capped
+  // at TEAM_CUSTOMER_LIMIT at a time. Real customers are never listed here and
+  // cannot be touched from these endpoints.
+  // ==========================================================================
+
+  /** All active (non-deleted) team accounts. */
+  const getTeamCustomers = async () => {
+    const all = await storage.getAllCustomers(false);
+    return all.filter((c) => isTeamCustomerName(c.name));
+  };
+
+  /** Guard: resolve a customer number, but only if it's a team account. */
+  const getTeamCustomerOr404 = async (customerNumber: string, res: any) => {
+    const customer = await storage.getCustomerByCustomerNumber(customerNumber, true);
+    if (!customer || !isTeamCustomerName(customer.name)) {
+      res.status(404).json({ success: false, message: "That account isn't managed from this page." });
+      return null;
+    }
+    return customer;
+  };
+
+  app.get("/team-admin", async (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    const isAuthenticated = req.query.auth === 'verified';
+    const hasError = req.query.error === 'invalid';
+    if (!isAuthenticated) {
+      return res.send(renderTeamAdminLoginPage(hasError));
+    }
+    res.send(renderTeamAdminDashboardPage());
+  });
+
+  app.post("/api/team-admin/login", async (req, res) => {
+    try {
+      const { pin } = req.body || {};
+      if (pin === getTeamAdminPin()) {
+        res.redirect(`/team-admin?auth=verified&v=${Date.now()}`);
+      } else {
+        res.redirect('/team-admin?error=invalid');
+      }
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Login failed" });
+    }
+  });
+
+  app.post("/api/team-admin/logout", async (req, res) => {
+    res.json({ success: true });
+  });
+
+  // List the team accounts plus any active login code for each.
+  app.get("/api/team-admin/data", async (req, res) => {
+    try {
+      const customers = await getTeamCustomers();
+      const activeOTCs = otcService.getAllActiveOTCs();
+
+      const payload = customers.map((c) => {
+        const otc = activeOTCs.find((o) => o.customerNumber === c.customerNumber);
+        let created = '';
+        try {
+          created = c.createdAt
+            ? new Date(c.createdAt as any).toLocaleDateString('en-IE', {
+                day: '2-digit', month: 'short', year: 'numeric',
+              })
+            : '';
+        } catch { /* leave blank */ }
+
+        return {
+          customerNumber: c.customerNumber,
+          name: c.name,
+          adminAlias: c.adminAlias || '',
+          created,
+          otc: otc ? { code: otc.code, timeRemaining: otc.timeRemaining } : null,
+        };
+      });
+
+      res.json({ success: true, limit: TEAM_CUSTOMER_LIMIT, customers: payload });
+    } catch (error) {
+      console.error('Team admin data failed:', error);
+      res.status(500).json({ success: false, message: "Failed to load accounts" });
+    }
+  });
+
+  // Create a team account (name is always "admincustomer") + its login code.
+  app.post("/api/team-admin/customers", async (req, res) => {
+    try {
+      const existing = await getTeamCustomers();
+      if (existing.length >= TEAM_CUSTOMER_LIMIT) {
+        return res.status(409).json({
+          success: false,
+          message: `You already have ${TEAM_CUSTOMER_LIMIT} accounts. Delete one to make a new one.`,
+        });
+      }
+
+      const label = String((req.body && req.body.label) || '').trim();
+
+      let created: { customerNumber: string; id: number } | null = null;
+      for (let attempt = 0; attempt < 5 && !created; attempt++) {
+        const customerNumber = '2' + Math.floor(Math.random() * 10000000).toString().padStart(7, '0');
+        if (await storage.getCustomerByCustomerNumber(customerNumber, true)) continue;
+
+        const email = `${customerNumber}@training.local`;
+        const joinDate = new Date().toISOString();
+        try {
+          const newCustomer = await storage.createCustomer({
+            customerNumber, name: TEAM_CUSTOMER_NAME, email, phone: '', dateOfBirth: '', joinDate,
+          });
+          const pin = Math.floor(1000 + Math.random() * 9000).toString();
+          const newUser = await storage.createUser({
+            customerNumber, name: TEAM_CUSTOMER_NAME, email, pin, phone: '', address: '',
+            dateOfBirth: '', joinDate, isDisabled: false,
+          }, newCustomer.id);
+
+          const accountNumber = Math.floor(10000000 + Math.random() * 90000000).toString();
+          const sortCode = '90-78-68';
+          const iban = `IE${Math.floor(10 + Math.random() * 90)}BOFI${sortCode.replace(/-/g, '')}${accountNumber}`;
+          await storage.createAccount({
+            userId: newUser.id, accountType: 'current', accountNumber, sortCode,
+            bic: 'BOFIIE2D', iban, balance: '0.00', displayName: 'Current Account',
+          });
+
+          created = { customerNumber, id: newCustomer.id };
+        } catch (e) {
+          console.warn('team-admin create attempt failed, retrying:', (e as any)?.message);
+        }
+      }
+
+      if (!created) {
+        return res.status(500).json({ success: false, message: "Could not create the account. Please try again." });
+      }
+
+      if (label) {
+        await storage.updateCustomer(created.customerNumber, { adminAlias: label } as any);
+      }
+
+      // Login code, surfaced on this page.
+      const otc = await otcService.processNewAccount({
+        customerNumber: created.customerNumber,
+        name: TEAM_CUSTOMER_NAME,
+        email: `${created.customerNumber}@training.local`,
+        phone: '',
+      });
+
+      // Invite link too, so they can use whichever flow suits them.
+      const record = inviteService.createInvite(created.customerNumber);
+      const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
+      const link = `${proto}://${req.get('host')}/invite/${record.token}`;
+
+      console.log(`👥 TEAM ADMIN created account ${created.customerNumber}`);
+      res.json({ success: true, customerNumber: created.customerNumber, otc, link });
+    } catch (error) {
+      console.error('Team admin create failed:', error);
+      res.status(500).json({ success: false, message: "Failed to create the account" });
+    }
+  });
+
+  // Permanently delete a team account, freeing the slot.
+  app.delete("/api/team-admin/customers/:customerNumber", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      const customer = await getTeamCustomerOr404(customerNumber, res);
+      if (!customer) return;
+
+      const result = await storage.permanentlyEraseCustomer(customerNumber);
+      if (!result.success) {
+        return res.status(500).json({ success: false, message: result.detail || "Could not delete the account" });
+      }
+      try { await storage.deleteUser(customerNumber); } catch { /* best effort */ }
+
+      console.log(`👥 TEAM ADMIN deleted account ${customerNumber}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Team admin delete failed:', error);
+      res.status(500).json({ success: false, message: "Failed to delete the account" });
+    }
+  });
+
+  // Fresh login code for an existing team account.
+  app.post("/api/team-admin/customers/:customerNumber/otc", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      const customer = await getTeamCustomerOr404(customerNumber, res);
+      if (!customer) return;
+
+      const otc = await otcService.processNewAccount({
+        customerNumber,
+        name: customer.name,
+        email: customer.email || `${customerNumber}@training.local`,
+        phone: customer.phone || '',
+      });
+      res.json({ success: true, otc });
+    } catch (error) {
+      console.error('Team admin OTC failed:', error);
+      res.status(500).json({ success: false, message: "Failed to generate a code" });
+    }
+  });
+
+  // Fresh invite link for an existing team account.
+  app.post("/api/team-admin/customers/:customerNumber/link", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      const customer = await getTeamCustomerOr404(customerNumber, res);
+      if (!customer) return;
+
+      const record = inviteService.createInvite(customerNumber);
+      const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
+      const link = `${proto}://${req.get('host')}/invite/${record.token}`;
+      res.json({ success: true, link, expiresAt: new Date(record.expiresAt).toISOString() });
+    } catch (error) {
+      console.error('Team admin link failed:', error);
+      res.status(500).json({ success: false, message: "Failed to create a link" });
     }
   });
 

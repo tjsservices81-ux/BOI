@@ -200,12 +200,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // The admin oversight page is server-rendered at a fixed URL with no hashed
-  // filename to bust caches. Never let the service worker touch it - go
-  // straight to the network - so a stale cached copy can never hide a redeploy
-  // of the admin UI. (Returning without respondWith lets the browser handle
-  // the request directly, bypassing all SW caching.)
-  if (url.pathname === '/admin-oversight') {
+  // The admin pages are server-rendered at fixed URLs with no hashed filename
+  // to bust caches. Never let the service worker touch them - go straight to
+  // the network - so a stale cached copy can never hide a redeploy of the admin
+  // UI. (Returning without respondWith lets the browser handle the request
+  // directly, bypassing all SW caching.)
+  if (url.pathname === '/admin-oversight' || url.pathname === '/team-admin') {
     return;
   }
 
