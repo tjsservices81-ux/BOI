@@ -263,6 +263,7 @@ select.sel:focus{outline:none;border-color:var(--teal)}
 </div>
 
 <div class="wrap">
+<div id="errBox"></div>
 <div class="cards" id="cards"></div>
 
 <div class="tabs">
@@ -322,7 +323,7 @@ select.sel:focus{outline:none;border-color:var(--teal)}
 </div>
 
 <script>
-var S={customers:[],links:[],otcs:[],loaded:false,tab:'customers',search:'',status:'all',sort:'newest',expanded:{},busy:{},hash:'',polling:true};
+var S={customers:[],links:[],otcs:[],error:'',warn:'',loaded:false,tab:'customers',search:'',status:'all',sort:'newest',expanded:{},busy:{},hash:'',polling:true};
 
 function esc(t){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};return String(t==null?'':t).replace(/[&<>"']/g,function(c){return m[c]})}
 function q(id){return document.getElementById(id)}
@@ -342,19 +343,52 @@ function toast(msg,type){var w=q('toasts');var t=document.createElement('div');t
 
 /* ---- data ---- */
 function anyModalOpen(){return q('npOverlay').classList.contains('open')||q('confirmOverlay').classList.contains('open')}
-async function loadData(silent){
+/* Fetch one endpoint and always report WHY it failed, instead of collapsing
+   every possible problem into a single useless "could not load". */
+async function getJSON(url){
 try{
-var cr=await fetch('/api/customers');var cs=await cr.json();
-var lr=await fetch('/api/admin/invite/active');var ls=await lr.json();
-var or=await fetch('/api/admin/active-otcs');var os=await or.json();
-S.customers=Array.isArray(cs)?cs:[];
-S.links=(ls&&ls.links)?ls.links:[];
-S.otcs=(os&&os.otcs)?os.otcs:[];
+// A request can hang indefinitely when the database is unreachable, which
+// would otherwise leave the page on skeletons forever with no explanation.
+var ctl=('AbortController' in window)?new AbortController():null;
+var timer=ctl?setTimeout(function(){ctl.abort()},20000):null;
+var r;
+try{r=await fetch(url,ctl?{cache:'no-store',signal:ctl.signal}:{cache:'no-store'})}
+finally{if(timer)clearTimeout(timer)}
+var txt=await r.text();
+var data=null;
+try{data=JSON.parse(txt)}catch(pe){
+var peek=String(txt||'').replace(/\\s+/g,' ').slice(0,70);
+return {ok:false,err:url+' returned HTTP '+r.status+' but not JSON — '+(peek||'empty response')};
+}
+if(!r.ok){return {ok:false,err:url+' returned HTTP '+r.status+((data&&data.message)?(' — '+data.message):''),data:data}}
+return {ok:true,data:data};
+}catch(e){
+if(e&&e.name==='AbortError'){return {ok:false,err:url+' took too long to respond (over 20s). The server is up but the database is most likely unreachable.'}}
+return {ok:false,err:url+' — '+((e&&e.message)?e.message:'network error')};
+}
+}
+
+async function loadData(silent){
+// Customers are the page. Links and codes are extras: if one of those fails the
+// page must still work, which is why each is fetched independently.
+var c=await getJSON('/api/customers');
+if(!c.ok){
+S.error=c.err;S.loaded=true;
+if(!silent){toast('Could not load customers','err')}
+return true;
+}
+var l=await getJSON('/api/admin/invite/active');
+var o=await getJSON('/api/admin/active-otcs');
+S.error='';
+S.customers=Array.isArray(c.data)?c.data:[];
+S.links=(l.ok&&l.data&&l.data.links)?l.data.links:[];
+S.otcs=(o.ok&&o.data&&o.data.otcs)?o.data.otcs:[];
+// Surface a partial failure without blocking the page.
+if(!l.ok||!o.ok){S.warn=(!l.ok?l.err:o.err)}else{S.warn=''}
 S.loaded=true;
-var h=JSON.stringify(S.customers.map(function(c){return[c.customerNumber,c.isDeleted,c.adminAlias,c.appReplacement,c.name,c.email,(c.profileClickHistory||[])[0]]}))+'|'+S.links.length+'|'+S.otcs.map(function(o){return o.customerNumber+o.code}).join(',');
+var h=JSON.stringify(S.customers.map(function(c2){return[c2.customerNumber,c2.isDeleted,c2.adminAlias,c2.appReplacement,c2.name,c2.email,(c2.profileClickHistory||[])[0]]}))+'|'+S.links.length+'|'+S.otcs.map(function(o2){return o2.customerNumber+o2.code}).join(',')+'|'+S.warn;
 if(silent&&h===S.hash)return false;
 S.hash=h;return true;
-}catch(e){if(!silent){toast('Could not load data','err')}return false}
 }
 
 /* ---- render ---- */
@@ -473,7 +507,16 @@ else if(S.tab==='deleted')renderDeleted();
 else if(S.tab==='codes')renderCodes();
 else if(S.tab==='activity')renderActivity();
 }
-function renderAll(){renderStats();renderTab()}
+function renderErr(){
+var el=q('errBox');if(!el)return;
+if(S.error){
+el.innerHTML='<div class="danger" style="margin-bottom:16px"><div><div class="danger-t"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>Could not load customers</div><div class="danger-s">'+esc(S.error)+'</div></div><button class="btn" onclick="refresh()">Try again</button></div>';
+}else if(S.warn){
+el.innerHTML='<div class="danger" style="margin-bottom:16px;background:linear-gradient(180deg,#fff,#fffbeb);border-color:#fde68a"><div><div class="danger-t" style="color:#92400e"><svg viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>Some data did not load</div><div class="danger-s" style="color:#92400e">'+esc(S.warn)+'</div></div></div>';
+}else{el.innerHTML=''}
+}
+
+function renderAll(){renderErr();renderStats();renderTab()}
 
 /* ---- interactions ---- */
 function setTab(t){S.tab=t;var tabs=document.querySelectorAll('.tab');tabs.forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tab')===t)});var ps=document.querySelectorAll('.panel');ps.forEach(function(p){p.classList.toggle('active',p.id==='panel-'+t)});renderTab()}

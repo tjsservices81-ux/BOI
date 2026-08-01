@@ -3794,9 +3794,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       res.json(customersWithAccounts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching customers:', error);
-      res.status(500).json({ message: "Failed to fetch customers" });
+      // Surface the real reason (e.g. a missing DATABASE_URL or an unreachable
+      // database) so the admin page can show what actually needs fixing
+      // instead of a dead-end "could not load".
+      res.status(500).json({
+        message: error?.message
+          ? `Failed to fetch customers: ${error.message}`
+          : "Failed to fetch customers",
+      });
     }
   });
 
