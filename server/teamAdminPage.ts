@@ -1,44 +1,88 @@
-// Team Admin — a separate, deliberately simple oversight page for the two
-// secondary admins, kept apart from the main /admin-oversight panel.
+// Team Admin pages — separate, deliberately simple oversight pages kept apart
+// from the main /admin-oversight panel.
 //
-// Scope is intentionally tiny so the other admins can work freely without
-// being able to touch real customers:
-//   • It only ever shows "team" accounts — customers whose name is
-//     "admincustomer" (see isTeamCustomerName). Real customers are invisible
-//     here and cannot be listed, edited or deleted from this page.
-//   • At most TEAM_CUSTOMER_LIMIT (2) team accounts can exist at once. Once
-//     both slots are full, a new one is refused until one is deleted — they can
-//     delete and re-create as often as they like.
-//   • The one-time code (OTC) for a team account is surfaced right here, so an
-//     account registered in the app under the name "admincustomer" delivers its
-//     code to this page instead of needing the main admin.
+// There are several, each keyed to its own customer name so login codes land on
+// the right page:
+//   /team-admin   → name "admincustomer"   (2 accounts at a time)
+//   /team-admin1  → name "admincustomer1"  (1 account)
+//   /team-admin2  → name "admincustomer2"  (1 account)   … up to /team-admin10
+//
+// Creating an account in the app (tap Bank of Ireland 5 times) under one of
+// those names sends its one-time code to that page and nowhere else. Real
+// customers never appear on any of them, and these endpoints refuse to touch
+// any account that isn't one of their own.
 //
 // Rendered as standalone HTML/CSS/vanilla-JS (not part of the React app). The
 // client script uses string concatenation rather than template literals so
 // nothing needs escaping inside this server-side template literal.
 
-/** How many team accounts may exist at the same time. */
-export const TEAM_CUSTOMER_LIMIT = 2;
+export interface TeamPageConfig {
+  /** URL path, e.g. "team-admin3". */
+  slug: string;
+  /** Heading shown on the page. */
+  title: string;
+  /** Customer name that routes codes to this page. */
+  customerName: string;
+  /** How many accounts may exist on this page at once. */
+  limit: number;
+  /** Env var that overrides this page's PIN. */
+  pinEnv: string;
+}
 
-/** The customer name that marks an account as belonging to the team page. */
-export const TEAM_CUSTOMER_NAME = 'admincustomer';
+/** How many single-account pages exist alongside the main one. */
+export const TEAM_PAGE_COUNT = 10;
+
+export const TEAM_PAGES: TeamPageConfig[] = [
+  {
+    slug: 'team-admin',
+    title: 'Team Admin',
+    customerName: 'admincustomer',
+    limit: 2,
+    pinEnv: 'TEAM_ADMIN_PIN',
+  },
+  ...Array.from({ length: TEAM_PAGE_COUNT }, (_, i) => {
+    const n = i + 1;
+    return {
+      slug: `team-admin${n}`,
+      title: `Team Admin ${n}`,
+      customerName: `admincustomer${n}`,
+      limit: 1,
+      pinEnv: `TEAM_ADMIN_PIN_${n}`,
+    };
+  }),
+];
+
+/** Normalise a typed name so "Admin Customer 3" matches "admincustomer3". */
+function normaliseName(name?: string | null): string {
+  if (!name) return '';
+  return name.replace(/[\s._-]/g, '').toLowerCase();
+}
 
 /**
- * True when a customer name marks it as a team-page account. Tolerant of
- * spacing/casing so "Admin Customer", "AdminCustomer" and "admincustomer" all
- * count — the admins type this by hand.
+ * Which team page (if any) a customer name belongs to. Matching is exact after
+ * normalising, so "admincustomer" never collides with "admincustomer1".
  */
+export function findTeamPageForName(name?: string | null): TeamPageConfig | null {
+  const n = normaliseName(name);
+  if (!n) return null;
+  return TEAM_PAGES.find((p) => p.customerName === n) || null;
+}
+
+export function getTeamPageBySlug(slug: string): TeamPageConfig | null {
+  return TEAM_PAGES.find((p) => p.slug === slug) || null;
+}
+
+/** True when the name belongs to any team page. */
 export function isTeamCustomerName(name?: string | null): boolean {
-  if (!name) return false;
-  return name.replace(/[\s._-]/g, '').toLowerCase() === TEAM_CUSTOMER_NAME;
+  return findTeamPageForName(name) !== null;
 }
 
-/** PIN for this page. Set TEAM_ADMIN_PIN to override the default. */
-export function getTeamAdminPin(): string {
-  return process.env.TEAM_ADMIN_PIN || 'TeamAdmin321!';
+/** PIN for a page. Set its env var to override the shared default. */
+export function getTeamAdminPin(cfg: TeamPageConfig): string {
+  return process.env[cfg.pinEnv] || process.env.TEAM_ADMIN_PIN || 'TeamAdmin321!';
 }
 
-export function renderTeamAdminLoginPage(hasError: boolean): string {
+export function renderTeamAdminLoginPage(cfg: TeamPageConfig, hasError: boolean): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,7 +90,7 @@ export function renderTeamAdminLoginPage(hasError: boolean): string {
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Team Admin</title>
+<title>${cfg.title}</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,sans-serif;background:#f6f7f9;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;color:#0f172a}
@@ -68,10 +112,10 @@ button:hover{background:#6d28d9}
   <div class="mark">
     <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
   </div>
-  <h1>Team Admin</h1>
+  <h1>${cfg.title}</h1>
   <p>Sign in to manage your team accounts.</p>
   ${hasError ? '<div class="err">Incorrect PIN. Please try again.</div>' : ''}
-  <form method="POST" action="/api/team-admin/login">
+  <form method="POST" action="/api/${cfg.slug}/login">
     <label for="pin">PIN</label>
     <input type="password" id="pin" name="pin" required autofocus autocomplete="current-password">
     <button type="submit">Sign in</button>
@@ -81,7 +125,7 @@ button:hover{background:#6d28d9}
 </html>`;
 }
 
-export function renderTeamAdminDashboardPage(): string {
+export function renderTeamAdminDashboardPage(cfg: TeamPageConfig): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,7 +134,7 @@ export function renderTeamAdminDashboardPage(): string {
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Team Admin</title>
+<title>${cfg.title}</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -172,7 +216,7 @@ svg{display:block}
     <div class="brand-mark">
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     </div>
-    <h1>Team Admin</h1>
+    <h1>${cfg.title}</h1>
   </div>
   <div class="top-actions">
     <button class="btn" onclick="load()">Refresh</button>
@@ -182,25 +226,26 @@ svg{display:block}
 
 <div class="wrap">
   <div class="note">
-    <strong>To make an account:</strong> on the app's login screen tap <strong>Bank of Ireland 5 times</strong>, then set the name to <strong>admincustomer</strong>. The login code appears here. Real customers never show on this page.
+    <strong>To make an account:</strong> on the app's login screen tap <strong>Bank of Ireland 5 times</strong>, then set the name to <strong>${cfg.customerName}</strong>. The login code appears here. Real customers never show on this page.
   </div>
 
   <div class="slots">
     <div>
       <div class="slots-t" id="slotsTitle">Loading…</div>
-      <div class="slots-s">Delete one to free a slot — you can make a new one straight away.</div>
+      <div class="slots-s">${cfg.limit === 1 ? 'Delete it to free the slot — you can make a new one straight away.' : 'Delete one to free a slot — you can make a new one straight away.'}</div>
     </div>
     <div class="pips" id="pips"></div>
   </div>
 
-  <div class="list" id="list"><div class="skel"></div><div class="skel"></div></div>
+  <div class="list" id="list">${'<div class="skel"></div>'.repeat(cfg.limit)}</div>
 </div>
 
 <div id="modalHost"></div>
 <div id="toastHost"></div>
 
 <script>
-var LIMIT = ${TEAM_CUSTOMER_LIMIT};
+var LIMIT = ${cfg.limit};
+var API = '/api/${cfg.slug}';
 var state = { customers: [] };
 
 function esc(s){
@@ -223,7 +268,7 @@ function initials(name, alias){
 }
 
 function load(){
-  fetch('/api/team-admin/data', { cache: 'no-store' })
+  fetch(API + '/data', { cache: 'no-store' })
     .then(function(r){ return r.json(); })
     .then(function(d){
       state.customers = (d && d.customers) || [];
@@ -250,7 +295,7 @@ function render(){
   if (used === 0){
     list.innerHTML = '<div class="empty"><div class="empty-t">No accounts yet</div>' +
       '<div class="empty-s">In the app, tap Bank of Ireland 5 times and set the name to ' +
-      '“admincustomer”. The code will appear here. You get ' + LIMIT + ' at a time.</div></div>';
+      '\u201c${cfg.customerName}\u201d. The code will appear here. You get ' + LIMIT + ' at a time.</div></div>';
     return;
   }
 
@@ -328,7 +373,7 @@ function confirmDelete(num){
 function doDelete(num){
   var btn = document.getElementById('delBtn');
   btn.disabled = true; btn.textContent = 'Deleting…';
-  fetch('/api/team-admin/customers/' + encodeURIComponent(num), { method: 'DELETE' })
+  fetch(API + '/customers/' + encodeURIComponent(num), { method: 'DELETE' })
     .then(function(r){ return r.json(); }).then(function(d){
       if (d && d.success){
         closeModal(); toast('Account deleted'); load();
@@ -343,7 +388,7 @@ function doDelete(num){
 }
 
 function genOtc(num){
-  fetch('/api/team-admin/customers/' + encodeURIComponent(num) + '/otc', { method: 'POST' })
+  fetch(API + '/customers/' + encodeURIComponent(num) + '/otc', { method: 'POST' })
     .then(function(r){ return r.json(); }).then(function(d){
       if (d && d.success){ toast('Code generated'); load(); }
       else toast((d && d.message) || 'Could not generate a code', true);
@@ -351,9 +396,9 @@ function genOtc(num){
 }
 
 function logout(){
-  fetch('/api/team-admin/logout', { method: 'POST' }).then(function(){
-    window.location.href = '/team-admin';
-  }).catch(function(){ window.location.href = '/team-admin'; });
+  fetch(API + '/logout', { method: 'POST' }).then(function(){
+    window.location.href = '/${cfg.slug}';
+  }).catch(function(){ window.location.href = '/${cfg.slug}'; });
 }
 
 load();

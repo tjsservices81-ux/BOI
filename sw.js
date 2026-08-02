@@ -205,7 +205,7 @@ self.addEventListener('fetch', (event) => {
   // the network - so a stale cached copy can never hide a redeploy of the admin
   // UI. (Returning without respondWith lets the browser handle the request
   // directly, bypassing all SW caching.)
-  if (url.pathname === '/admin-oversight' || url.pathname === '/team-admin') {
+  if (url.pathname === '/admin-oversight' || /^\/team-admin\d*$/.test(url.pathname)) {
     return;
   }
 

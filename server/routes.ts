@@ -7,8 +7,9 @@ import {
   renderTeamAdminDashboardPage,
   isTeamCustomerName,
   getTeamAdminPin,
-  TEAM_CUSTOMER_LIMIT,
-  TEAM_CUSTOMER_NAME,
+  findTeamPageForName,
+  TEAM_PAGES,
+  type TeamPageConfig,
 } from "./teamAdminPage";
 import { teamAccountRegistry } from "./teamAccountRegistry";
 import { inviteService } from "./inviteService";
@@ -790,18 +791,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let postgresCustomerId: number;
       const fullName = `${userData.firstName} ${userData.lastName}`;
 
-      // Registering under the name "admincustomer" routes the login code to the
-      // Team Admin page, so the same cap applies here — that page never holds
-      // more than TEAM_CUSTOMER_LIMIT accounts at once.
-      if (isTeamCustomerName(fullName)) {
-        if (await countTeamSlotsInUse() >= TEAM_CUSTOMER_LIMIT) {
+      // Registering under a team name (admincustomer, admincustomer1, …) routes
+      // the login code to that page, so that page's cap applies here too.
+      const regTeamPage = findTeamPageForName(fullName);
+      if (regTeamPage) {
+        if (await countTeamSlotsInUse(regTeamPage) >= regTeamPage.limit) {
           return res.status(409).json({
-            message: `There are already ${TEAM_CUSTOMER_LIMIT} team accounts. Delete one on the Team Admin page first.`,
+            message: `${regTeamPage.title} is full (${regTeamPage.limit}). Delete one there first.`,
           });
         }
         // Sticky from here on — renaming in Personal Details won't move them off
-        // the Team Admin page.
-        teamAccountRegistry.add(customerNumber);
+        // that page.
+        teamAccountRegistry.add(customerNumber, regTeamPage.slug);
       }
 
       try {
@@ -2661,18 +2662,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const accountData = accountDataSchema.parse(req.body);
 
-      // Naming the customer "admincustomer" here (the 5-taps-on-the-logo signup)
-      // routes the code to the Team Admin page instead of the main panel. The
-      // same 2-account cap applies, counting codes that haven't been used yet.
-      if (isTeamCustomerName(accountData.name)) {
-        const inUse = await countTeamSlotsInUse();
-        if (inUse >= TEAM_CUSTOMER_LIMIT) {
+      // Naming the customer "admincustomer", "admincustomer1", … here (the
+      // 5-taps-on-the-logo signup) routes the code to that team page instead of
+      // the main panel. That page's cap applies, counting codes not yet used.
+      const otcTeamPage = findTeamPageForName(accountData.name);
+      if (otcTeamPage) {
+        const inUse = await countTeamSlotsInUse(otcTeamPage);
+        if (inUse >= otcTeamPage.limit) {
           return res.status(409).json({
             success: false,
-            message: `There are already ${TEAM_CUSTOMER_LIMIT} team accounts. Delete one on the Team Admin page first.`,
+            message: `${otcTeamPage.title} is full (${otcTeamPage.limit}). Delete one there first.`,
           });
         }
-        teamAccountRegistry.add(accountData.customerNumber);
+        teamAccountRegistry.add(accountData.customerNumber, otcTeamPage.slug);
       }
 
       // Generate OTC (no email sent - displayed in admin panel)
@@ -2727,11 +2729,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Create the user in the database with their actual data
         const userData = validation.accountData;
 
-        // Accounts created under the name "admincustomer" belong to the Team
-        // Admin page. Recorded now, at creation, so it sticks even if they
-        // rename themselves in Personal Details later.
-        if (isTeamCustomerName(userData.name)) {
-          teamAccountRegistry.add(userData.customerNumber);
+        // Accounts created under a team name belong to that Team Admin page.
+        // Recorded now, at creation, so it sticks even if they rename
+        // themselves in Personal Details later.
+        const valTeamPage = findTeamPageForName(userData.name);
+        if (valTeamPage) {
+          teamAccountRegistry.add(userData.customerNumber, valTeamPage.slug);
         }
 
         try {
@@ -3527,222 +3530,208 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==========================================================================
-  // TEAM ADMIN — separate, limited oversight page for the two other admins.
-  // Only ever exposes "team" accounts (customer name = admincustomer), capped
-  // at TEAM_CUSTOMER_LIMIT at a time. Real customers are never listed here and
-  // cannot be touched from these endpoints.
+  // TEAM ADMIN PAGES — separate, limited oversight pages for the other admins.
+  //
+  // One page per team name (see TEAM_PAGES): /team-admin holds 2 accounts,
+  // /team-admin1 … /team-admin10 hold 1 each. A page only ever exposes accounts
+  // bound to it, so real customers — and other pages' accounts — are invisible
+  // and cannot be touched from here.
   // ==========================================================================
 
-  /**
-   * All active (non-deleted) team accounts.
-   *
-   * Membership comes from the persistent registry, so an account stays on this
-   * page even if the person later renames themselves in Personal Details. Any
-   * account still named "admincustomer" but not yet registered is enrolled here
-   * (covers accounts made before the registry existed).
-   */
-  const getTeamCustomers = async () => {
+  /** Active (non-deleted) accounts bound to one page. */
+  const getTeamCustomers = async (cfg: TeamPageConfig) => {
     const all = await storage.getAllCustomers(false);
     return all.filter((c) => {
-      if (teamAccountRegistry.has(c.customerNumber)) return true;
-      if (isTeamCustomerName(c.name)) {
-        teamAccountRegistry.add(c.customerNumber);
-        return true;
+      const slug = teamAccountRegistry.slugFor(c.customerNumber);
+      if (slug) return slug === cfg.slug;
+      // Not registered yet: bind it now if its name matches a page. Covers
+      // accounts created before the registry existed.
+      const page = findTeamPageForName(c.name);
+      if (page) {
+        teamAccountRegistry.add(c.customerNumber, page.slug);
+        return page.slug === cfg.slug;
       }
       return false;
     });
   };
 
   /**
-   * Login codes generated for a team account that doesn't exist as a customer
-   * yet — i.e. the 5-taps-on-the-logo signup, where the code is created first
-   * and the account only exists once the code is entered.
+   * Codes generated for this page's accounts that don't exist as customers yet
+   * — i.e. the 5-taps-on-the-logo signup, where the code comes first and the
+   * account only exists once the code is entered.
    */
-  const getPendingTeamOTCs = () => {
+  const getPendingTeamOTCs = (cfg: TeamPageConfig) => {
     return otcService.getAllActiveOTCs().filter((o) => {
-      const name = o.accountData && o.accountData.name;
-      return isTeamCustomerName(name) || teamAccountRegistry.has(o.customerNumber);
+      const slug = teamAccountRegistry.slugFor(o.customerNumber);
+      if (slug) return slug === cfg.slug;
+      const page = findTeamPageForName(o.accountData && o.accountData.name);
+      return !!page && page.slug === cfg.slug;
     });
   };
 
-  /** Slots in use = existing team accounts + codes waiting to be used. */
-  const countTeamSlotsInUse = async () => {
-    const customers = await getTeamCustomers();
+  /** Slots in use on a page = its accounts + its codes waiting to be used. */
+  const countTeamSlotsInUse = async (cfg: TeamPageConfig) => {
+    const customers = await getTeamCustomers(cfg);
     const taken = new Set(customers.map((c) => c.customerNumber));
-    getPendingTeamOTCs().forEach((o) => taken.add(o.customerNumber));
+    getPendingTeamOTCs(cfg).forEach((o) => taken.add(o.customerNumber));
     return taken.size;
   };
 
-  /** Guard: resolve a customer number, but only if it's a team account. */
-  const getTeamCustomerOr404 = async (customerNumber: string, res: any) => {
+  /** Guard: resolve a customer, but only if it belongs to THIS page. */
+  const getTeamCustomerOr404 = async (cfg: TeamPageConfig, customerNumber: string, res: any) => {
     const customer = await storage.getCustomerByCustomerNumber(customerNumber, true);
-    const isTeam = customer
-      && (teamAccountRegistry.has(customer.customerNumber) || isTeamCustomerName(customer.name));
-    if (!customer || !isTeam) {
-      res.status(404).json({ success: false, message: "That account isn't managed from this page." });
-      return null;
+    if (customer) {
+      const slug = teamAccountRegistry.slugFor(customer.customerNumber)
+        || (findTeamPageForName(customer.name) || { slug: null }).slug;
+      if (slug === cfg.slug) return customer;
     }
-    return customer;
+    res.status(404).json({ success: false, message: "That account isn't managed from this page." });
+    return null;
   };
 
-  app.get("/team-admin", async (req, res) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-    const isAuthenticated = req.query.auth === 'verified';
-    const hasError = req.query.error === 'invalid';
-    if (!isAuthenticated) {
-      return res.send(renderTeamAdminLoginPage(hasError));
-    }
-    res.send(renderTeamAdminDashboardPage());
-  });
-
-  app.post("/api/team-admin/login", async (req, res) => {
-    try {
-      const { pin } = req.body || {};
-      if (pin === getTeamAdminPin()) {
-        res.redirect(`/team-admin?auth=verified&v=${Date.now()}`);
-      } else {
-        res.redirect('/team-admin?error=invalid');
+  // Build the identical set of routes for every team page.
+  TEAM_PAGES.forEach((cfg) => {
+    app.get(`/${cfg.slug}`, async (req, res) => {
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      const isAuthenticated = req.query.auth === 'verified';
+      const hasError = req.query.error === 'invalid';
+      if (!isAuthenticated) {
+        return res.send(renderTeamAdminLoginPage(cfg, hasError));
       }
-    } catch (error) {
-      res.status(500).json({ success: false, error: "Login failed" });
-    }
-  });
+      res.send(renderTeamAdminDashboardPage(cfg));
+    });
 
-  app.post("/api/team-admin/logout", async (req, res) => {
-    res.json({ success: true });
-  });
+    app.post(`/api/${cfg.slug}/login`, async (req, res) => {
+      try {
+        const { pin } = req.body || {};
+        if (pin === getTeamAdminPin(cfg)) {
+          res.redirect(`/${cfg.slug}?auth=verified&v=${Date.now()}`);
+        } else {
+          res.redirect(`/${cfg.slug}?error=invalid`);
+        }
+      } catch (error) {
+        res.status(500).json({ success: false, error: "Login failed" });
+      }
+    });
 
-  // List the team accounts plus any active login code for each.
-  app.get("/api/team-admin/data", async (req, res) => {
-    try {
-      const customers = await getTeamCustomers();
-      const activeOTCs = otcService.getAllActiveOTCs();
+    app.post(`/api/${cfg.slug}/logout`, async (_req, res) => {
+      res.json({ success: true });
+    });
 
-      const payload = customers.map((c) => {
-        const otc = activeOTCs.find((o) => o.customerNumber === c.customerNumber);
-        let created = '';
-        try {
-          created = c.createdAt
-            ? new Date(c.createdAt as any).toLocaleDateString('en-IE', {
-                day: '2-digit', month: 'short', year: 'numeric',
-              })
-            : '';
-        } catch { /* leave blank */ }
+    // This page's accounts plus any active login code for each.
+    app.get(`/api/${cfg.slug}/data`, async (_req, res) => {
+      try {
+        const customers = await getTeamCustomers(cfg);
+        const activeOTCs = otcService.getAllActiveOTCs();
 
-        return {
-          customerNumber: c.customerNumber,
-          name: c.name,
-          adminAlias: c.adminAlias || '',
-          created,
-          pending: false,
-          otc: otc ? { code: otc.code, timeRemaining: otc.timeRemaining } : null,
-        };
-      });
+        const payload = customers.map((c) => {
+          const otc = activeOTCs.find((o) => o.customerNumber === c.customerNumber);
+          let created = '';
+          try {
+            created = c.createdAt
+              ? new Date(c.createdAt as any).toLocaleDateString('en-IE', {
+                  day: '2-digit', month: 'short', year: 'numeric',
+                })
+              : '';
+          } catch { /* leave blank */ }
 
-      // Codes from the 5-tap signup, where the account doesn't exist yet. These
-      // are what the other admins are waiting on, so they show at the top.
-      const existing = new Set(customers.map((c) => c.customerNumber));
-      const pending = getPendingTeamOTCs()
-        .filter((o) => !existing.has(o.customerNumber))
-        .map((o) => ({
-          customerNumber: o.customerNumber,
-          name: (o.accountData && o.accountData.name) || TEAM_CUSTOMER_NAME,
-          adminAlias: '',
-          created: '',
-          pending: true,
-          otc: { code: o.code, timeRemaining: o.timeRemaining },
-        }));
-
-      res.json({
-        success: true,
-        limit: TEAM_CUSTOMER_LIMIT,
-        customers: pending.concat(payload as any),
-      });
-    } catch (error) {
-      console.error('Team admin data failed:', error);
-      res.status(500).json({ success: false, message: "Failed to load accounts" });
-    }
-  });
-
-  // Permanently delete a team account, freeing the slot.
-  app.delete("/api/team-admin/customers/:customerNumber", async (req, res) => {
-    try {
-      const { customerNumber } = req.params;
-      const customer = await getTeamCustomerOr404(customerNumber, res);
-      if (!customer) return;
-
-      // Same one-step permanent erase the main Admin Oversight page uses, so it
-      // works whether the account is active or already soft-deleted.
-      const result = await storage.permanentlyEraseCustomer(customerNumber);
-      if (!result.success) {
-        return res.status(500).json({
-          success: false,
-          message: result.detail
-            ? `Failed to permanently erase account: ${result.detail}`
-            : "Failed to permanently erase account",
+          return {
+            customerNumber: c.customerNumber,
+            name: c.name,
+            adminAlias: c.adminAlias || '',
+            created,
+            pending: false,
+            otc: otc ? { code: otc.code, timeRemaining: otc.timeRemaining } : null,
+          };
         });
+
+        // Codes from the 5-tap signup, where the account doesn't exist yet.
+        const existing = new Set(customers.map((c) => c.customerNumber));
+        const pending = getPendingTeamOTCs(cfg)
+          .filter((o) => !existing.has(o.customerNumber))
+          .map((o) => ({
+            customerNumber: o.customerNumber,
+            name: (o.accountData && o.accountData.name) || cfg.customerName,
+            adminAlias: '',
+            created: '',
+            pending: true,
+            otc: { code: o.code, timeRemaining: o.timeRemaining },
+          }));
+
+        res.json({
+          success: true,
+          limit: cfg.limit,
+          customers: pending.concat(payload as any),
+        });
+      } catch (error) {
+        console.error(`${cfg.slug} data failed:`, error);
+        res.status(500).json({ success: false, message: "Failed to load accounts" });
       }
+    });
 
-      // Safety: also drop the in-memory/JSON user if anything is still present.
-      try { await storage.deleteUser(customerNumber); } catch { /* best effort */ }
+    // Permanently delete one of this page's accounts, freeing the slot.
+    app.delete(`/api/${cfg.slug}/customers/:customerNumber`, async (req, res) => {
+      try {
+        const { customerNumber } = req.params;
+        const customer = await getTeamCustomerOr404(cfg, customerNumber, res);
+        if (!customer) return;
 
-      // Clear the registry entry AND any pending login code, otherwise a still
-      // valid code would leave the account showing as "waiting" on this page
-      // after it's been deleted.
-      teamAccountRegistry.remove(customerNumber);
-      otcService.clearOTC(customerNumber);
+        // Same one-step permanent erase the main Admin Oversight page uses, so
+        // it works whether the account is active or already soft-deleted.
+        const result = await storage.permanentlyEraseCustomer(customerNumber);
+        if (!result.success) {
+          return res.status(500).json({
+            success: false,
+            message: result.detail
+              ? `Failed to permanently erase account: ${result.detail}`
+              : "Failed to permanently erase account",
+          });
+        }
 
-      console.log(`🔥 TEAM ADMIN PERMANENTLY ERASED: ${customerNumber}`);
-      res.json({
-        success: true,
-        message: "Account permanently erased",
-        customerNumber,
-        forceDisconnect: true, // Trigger complete PWA wipe on their device
-        logout: true,
-      });
-    } catch (error) {
-      console.error('Team admin delete failed:', error);
-      res.status(500).json({ success: false, message: "Failed to delete the account" });
-    }
-  });
+        // Safety: also drop the in-memory/JSON user if anything is still present.
+        try { await storage.deleteUser(customerNumber); } catch { /* best effort */ }
 
-  // Fresh login code for an existing team account.
-  app.post("/api/team-admin/customers/:customerNumber/otc", async (req, res) => {
-    try {
-      const { customerNumber } = req.params;
-      const customer = await getTeamCustomerOr404(customerNumber, res);
-      if (!customer) return;
+        // Clear the registry entry AND any pending login code, otherwise a
+        // still-valid code would leave the account showing as "waiting" here
+        // after it's been deleted.
+        teamAccountRegistry.remove(customerNumber);
+        otcService.clearOTC(customerNumber);
 
-      const otc = await otcService.processNewAccount({
-        customerNumber,
-        name: customer.name,
-        email: customer.email || `${customerNumber}@training.local`,
-        phone: customer.phone || '',
-      });
-      res.json({ success: true, otc });
-    } catch (error) {
-      console.error('Team admin OTC failed:', error);
-      res.status(500).json({ success: false, message: "Failed to generate a code" });
-    }
-  });
+        console.log(`🔥 ${cfg.slug} PERMANENTLY ERASED: ${customerNumber}`);
+        res.json({
+          success: true,
+          message: "Account permanently erased",
+          customerNumber,
+          forceDisconnect: true, // Trigger complete PWA wipe on their device
+          logout: true,
+        });
+      } catch (error) {
+        console.error(`${cfg.slug} delete failed:`, error);
+        res.status(500).json({ success: false, message: "Failed to delete the account" });
+      }
+    });
 
-  // Fresh invite link for an existing team account.
-  app.post("/api/team-admin/customers/:customerNumber/link", async (req, res) => {
-    try {
-      const { customerNumber } = req.params;
-      const customer = await getTeamCustomerOr404(customerNumber, res);
-      if (!customer) return;
+    // Fresh login code for one of this page's existing accounts.
+    app.post(`/api/${cfg.slug}/customers/:customerNumber/otc`, async (req, res) => {
+      try {
+        const { customerNumber } = req.params;
+        const customer = await getTeamCustomerOr404(cfg, customerNumber, res);
+        if (!customer) return;
 
-      const record = inviteService.createInvite(customerNumber);
-      const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
-      const link = `${proto}://${req.get('host')}/invite/${record.token}`;
-      res.json({ success: true, link, expiresAt: new Date(record.expiresAt).toISOString() });
-    } catch (error) {
-      console.error('Team admin link failed:', error);
-      res.status(500).json({ success: false, message: "Failed to create a link" });
-    }
+        const otc = await otcService.processNewAccount({
+          customerNumber,
+          name: customer.name,
+          email: customer.email || `${customerNumber}@training.local`,
+          phone: customer.phone || '',
+        });
+        res.json({ success: true, otc });
+      } catch (error) {
+        console.error(`${cfg.slug} OTC failed:`, error);
+        res.status(500).json({ success: false, message: "Failed to generate a code" });
+      }
+    });
   });
 
   // Admin Oversight - iPhone Optimized
