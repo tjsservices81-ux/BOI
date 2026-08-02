@@ -22,10 +22,10 @@ export default function Splash() {
     
     // Comprehensive theme color update for splash screen
     const updateThemeColor = () => {
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
-      if (themeColorMeta) {
-        themeColorMeta.content = '#000DFF';
-      }
+      // theme-color is deliberately NOT touched. iOS latches onto the value it
+      // sees and will not change it back, so setting it to the splash blue left
+      // the status bar stuck blue for the rest of the session. It stays teal in
+      // index.html; the splash's blue comes from the painted band instead.
       
       // Create or update additional iOS-specific status bar configuration
       const iosStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]') as HTMLMetaElement;
@@ -58,14 +58,11 @@ export default function Splash() {
       // Back to teal BEFORE navigating so the blue never carries past the splash.
       // index.html paints body/html blue at load for the splash visual — those
       // inline styles must be cleared here or the blue would persist app-wide.
+      // theme-color is left alone on purpose (see note above).
       document.documentElement.style.setProperty('--status-bar-color', '#126987');
       document.body.style.backgroundColor = '#126987';
       document.documentElement.style.backgroundColor = '#126987';
       document.body.classList.remove('splash-fullscreen');
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
       
       // Dispatch event to notify App.tsx that splash is complete
       window.dispatchEvent(new CustomEvent('splashComplete'));
@@ -82,9 +79,6 @@ export default function Splash() {
       document.documentElement.style.setProperty('--status-bar-color', '#126987');
       document.body.style.backgroundColor = '#126987';
       document.documentElement.style.backgroundColor = '#126987';
-      // Restore theme-color for main app
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
     };
   }, [navigate]);
 
