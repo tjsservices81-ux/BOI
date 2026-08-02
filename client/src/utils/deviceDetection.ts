@@ -1,76 +1,13 @@
 // Device Detection System
 // Detects when app is running on a different device (e.g., after iPhone restore/transfer)
-// and automatically clears all stored data to prevent data leakage between devices
+// It only records a device id. It must NEVER clear stored data: the only
+// thing that may end a session is the admin deleting the account.
 
 const DEVICE_ID_KEY = 'app_device_id';
 
 // Generate a random unique device ID
 function generateDeviceId(): string {
   return `device_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-}
-
-// Clear all localStorage data
-function clearLocalStorage() {
-  try {
-    localStorage.clear();
-    console.log('✅ localStorage cleared');
-  } catch (error) {
-    console.error('Failed to clear localStorage:', error);
-  }
-}
-
-// Clear all sessionStorage data
-function clearSessionStorage() {
-  try {
-    sessionStorage.clear();
-    console.log('✅ sessionStorage cleared');
-  } catch (error) {
-    console.error('Failed to clear sessionStorage:', error);
-  }
-}
-
-// Clear all IndexedDB databases
-async function clearIndexedDB() {
-  try {
-    if ('indexedDB' in window) {
-      const databases = await indexedDB.databases();
-      for (const db of databases) {
-        if (db.name) {
-          indexedDB.deleteDatabase(db.name);
-          console.log(`✅ IndexedDB "${db.name}" deleted`);
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Failed to clear IndexedDB:', error);
-  }
-}
-
-// Clear all service worker caches
-async function clearServiceWorkerCaches() {
-  try {
-    if ('caches' in window) {
-      const cacheNames = await caches.keys();
-      for (const cacheName of cacheNames) {
-        await caches.delete(cacheName);
-        console.log(`✅ Cache "${cacheName}" deleted`);
-      }
-    }
-  } catch (error) {
-    console.error('Failed to clear service worker caches:', error);
-  }
-}
-
-// Clear ALL app data (localStorage, sessionStorage, IndexedDB, caches)
-async function clearAllAppData() {
-  console.log('🔄 Device change detected - clearing all app data...');
-  
-  clearLocalStorage();
-  clearSessionStorage();
-  await clearIndexedDB();
-  await clearServiceWorkerCaches();
-  
-  console.log('✅ All app data cleared - starting fresh');
 }
 
 // Main device detection function
@@ -94,12 +31,11 @@ export async function detectAndHandleDeviceChange(): Promise<void> {
         localStorage.setItem(DEVICE_ID_KEY, newDeviceId);
         console.log('✅ Device ID regenerated (user stays logged in)');
       } else {
-        // No device ID AND no user data = truly first time OR device transfer
-        console.log('⚠️ No device ID or user data - clearing all data for clean state');
-        await clearAllAppData();
+        // First run on this device. Previously this wiped all storage; it must
+        // not — only the admin deleting the account may clear a user's data.
         const newDeviceId = generateDeviceId();
         localStorage.setItem(DEVICE_ID_KEY, newDeviceId);
-        console.log('✅ New device ID created:', newDeviceId);
+        console.log('✅ New device ID created (nothing cleared):', newDeviceId);
       }
     } else {
       // Device ID exists - app is running on same device

@@ -109,58 +109,14 @@ function startSessionHeartbeat() {
           // If JSON parsing fails, log error but don't logout (only explicit flags trigger logout)
           console.error('Heartbeat JSON parse error (401):', jsonError);
         });
-      } else if (response.status === 403) {
-        // CRITICAL: Only logout if response explicitly has forceDisconnect/nukeCaches flags
-        // Generic 403 responses (from middleware, guards, etc.) should NOT trigger logout
-        return response.json().then(data => {
-          // Only process logout if explicit flags are present
-          if (data && (data.forceDisconnect === true || data.nukeCaches === true)) {
-            console.log('🔴 EXPLICIT REVOCATION - Destroying session with logout flags');
-            
-            // Nuclear data clearing for PWA apps
-            localStorage.clear();
-            sessionStorage.clear();
-            
-            // Clear all possible caches
-            if ('caches' in window) {
-              caches.keys().then(names => {
-                names.forEach(name => caches.delete(name));
-              });
-            }
-            
-            // Clear IndexedDB
-            if ('indexedDB' in window) {
-              indexedDB.databases().then(databases => {
-                databases.forEach(db => {
-                  if (db.name) indexedDB.deleteDatabase(db.name);
-                });
-              }).catch(() => {});
-            }
-            
-            // Force complete reload to destroy any cached state
-            window.location.replace('/?nuked=true');
-          } else {
-            // 403 without explicit logout flags - ignore and stay logged in
-            console.log('⚠️ 403 response without logout flags - staying logged in');
-          }
-        }).catch(jsonError => {
-          // If JSON parsing fails, it's not a logout response - stay logged in
-          console.log('⚠️ 403 with malformed JSON - staying logged in');
-        });
       }
-    }).catch((error) => {
-      // Handle network failures - user stays logged in unless admin deletion
-      const action = OfflineAuthGuard.handleNetworkFailure(error);
-      
-      if (action === 'logout') {
-        // Admin deletion - clear everything
-        OfflineAuthGuard.clearAllUserData();
-        window.location.href = '/login?message=Account%20Access%20Revoked';
-      } else {
-        // Network error - backup user data and stay logged in
-        OfflineAuthGuard.backupUserData();
-        console.log('💾 User data backed up - staying logged in offline');
-      }
+      // 403 and every other status are deliberately ignored. Deleting the
+      // account is the ONLY thing that may sign someone out — access-code
+      // revocation, device checks and the like must never do it.
+    }).catch(() => {
+      // Network/offline errors NEVER sign anyone out. Just keep a backup.
+      OfflineAuthGuard.backupUserData();
+      console.log('💾 Offline or unreachable - staying logged in');
     });
   }, 15000); // Every 15 seconds for faster PWA revocation detection
 }
@@ -186,17 +142,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Initialize offline auth guard
         OfflineAuthGuard.initialize();
-        
-        // Check if auth should persist
-        if (!OfflineAuthGuard.shouldPersistAuth()) {
-          console.log('Auth persistence disabled - clearing session');
-          if (isMounted) {
-            setIsLoading(false);
-            setIsInitialized(true);
-          }
-          return;
-        }
-        
+
+        // No persistence gate: a session is only ever ended by the admin
+        // deleting the account, so we always try to restore the user.
+
         // Try to restore user from any available storage
         let foundUser = OfflineAuthGuard.restoreUserData();
         
@@ -314,47 +263,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    // Only admin can force logout - otherwise sessions persist indefinitely
-    console.warn('Standard logout disabled - sessions persist until admin deletion');
-    
-    // Stop heartbeat but keep session data
-    stopSessionHeartbeat();
-    
-    // Mark session as inactive but don't clear data
-    localStorage.setItem('bankingSessionActive', 'false');
-    localStorage.setItem('lastSessionActivity', Date.now().toString());
-    
-    // Clear offline login permissions on logout attempt
-    try {
-      const { SecureAuthManager } = await import('../utils/secureAuthManager');
-      SecureAuthManager.clearOfflineLoginPermissions();
-    } catch (error) {
-      console.error('Failed to clear offline permissions:', error);
-    }
-    
+    // Deliberately does nothing. A session ends only when the admin deletes the
+    // account — there is no user-facing or programmatic sign-out.
+    console.warn('Sign-out is disabled: sessions end only when an admin deletes the account.');
     return;
   };
 
-  // Admin-only function to force complete logout
+  // Kept for the context shape only. Clearing data here would be a sign-out
+  // path, which is exactly what must not exist.
   const forceLogout = () => {
-    stopSessionHeartbeat();
-    setUser(null);
-    
-    // Use offline auth guard to clear all data
-    OfflineAuthGuard.clearAllUserData();
-    
-    // Clear additional session markers
-    localStorage.removeItem('bankingSessionActive');
-    localStorage.removeItem('lastSessionActivity');
-    
-    // Clear offline permissions
-    try {
-      import('../utils/secureAuthManager').then(({ SecureAuthManager }) => {
-        SecureAuthManager.clearOfflineLoginPermissions();
-      });
-    } catch (error) {
-      console.error('Failed to clear offline permissions:', error);
-    }
+    console.warn('forceLogout is disabled: only account deletion ends a session.');
   };
 
   // Expose forceLogout for admin use

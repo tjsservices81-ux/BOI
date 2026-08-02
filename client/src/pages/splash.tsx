@@ -16,13 +16,13 @@ export default function Splash() {
     
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
-    document.documentElement.style.setProperty('--status-bar-color', '#000DFF');
+    document.documentElement.style.setProperty('--status-bar-color', '#126987');
     
     // Comprehensive theme color update for splash screen
     const updateThemeColor = () => {
       const themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
       if (themeColorMeta) {
-        themeColorMeta.content = '#000DFF';
+        themeColorMeta.content = '#126987';
       }
       
       // Create or update additional iOS-specific status bar configuration
@@ -34,7 +34,7 @@ export default function Splash() {
       // Force PWA status bar color update
       if ('setAppBadge' in navigator) {
         // PWA-specific color updates
-        document.body.style.backgroundColor = '#000DFF';
+        document.body.style.backgroundColor = '#126987';
         setTimeout(() => {
           document.body.style.backgroundColor = '';
         }, 100);
@@ -99,7 +99,7 @@ export default function Splash() {
         pointerEvents: 'none',
         opacity: 1,
         visibility: 'visible',
-        backgroundColor: '#000DFF'
+        backgroundColor: '#126987'
       }}
       onClick={handleInteraction}
       onTouchStart={handleInteraction}

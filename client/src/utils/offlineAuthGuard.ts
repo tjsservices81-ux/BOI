@@ -151,31 +151,11 @@ export class OfflineAuthGuard {
   /**
    * Handle network request failure
    */
-  static handleNetworkFailure(error: any): 'stay_logged_in' | 'logout' {
-    // Network errors - keep user logged in
-    if (
-      error instanceof TypeError && 
-      (error.message.includes('fetch') || error.message.includes('network'))
-    ) {
-      console.log('🌐 Network error - user stays logged in');
-      localStorage.setItem(this.STORAGE_KEYS.OFFLINE_MODE, 'true');
-      return 'stay_logged_in';
-    }
-
-    // Server errors (5xx) - keep user logged in
-    if (error.message && /^5\d{2}:/.test(error.message)) {
-      console.log('🔧 Server error - user stays logged in');
-      return 'stay_logged_in';
-    }
-
-    // Admin deletion (specific 401/403 with logout flag) - force logout
-    if (error.message && error.message.includes('Account access revoked')) {
-      console.log('🚫 Admin deletion - forcing logout');
-      return 'logout';
-    }
-
-    // All other errors - stay logged in
-    console.log('⚠️ Unknown error - user stays logged in by default');
+  static handleNetworkFailure(_error: any): 'stay_logged_in' | 'logout' {
+    // Never signs anyone out. Network problems, server errors and revocation
+    // responses all leave the user logged in — only the admin deleting the
+    // account ends a session, and that is handled separately.
+    localStorage.setItem(this.STORAGE_KEYS.OFFLINE_MODE, 'true');
     return 'stay_logged_in';
   }
 

@@ -462,7 +462,7 @@ function AppRoutes() {
   // Prevent flash during initialization
   if (!isInitialized) {
     return (
-      <div className="w-full h-full bg-[#000DFF]">
+      <div className="w-full h-full bg-[#126987]">
         {/* Empty blue screen during initialization */}
       </div>
     );

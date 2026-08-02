@@ -1141,14 +1141,14 @@ img {
 /* Splash screen specific styling */
 .splash-fullscreen {
   /* Pure blue status bar for splash screen only */
-  --splash-theme-color: #000DFF;
-  --status-bar-color: #000DFF;
+  --splash-theme-color: #126987;
+  --status-bar-color: #126987;
 }
 
 /* iOS Safari status bar integration for splash */
 @supports (-webkit-appearance: none) {
   .splash-fullscreen {
-    background-color: #000DFF !important;
+    background-color: #126987 !important;
   }
   
   .splash-fullscreen::before {
@@ -1158,7 +1158,7 @@ img {
     left: 0;
     right: 0;
     height: env(safe-area-inset-top, 44px);
-    background-color: #000DFF;
+    background-color: #126987;
     z-index: 9999;
     pointer-events: none;
   }
@@ -1178,7 +1178,7 @@ img {
     left: 0;
     right: 0;
     height: env(safe-area-inset-top, 0);
-    background-color: #000DFF;
+    background-color: #126987;
     z-index: 9999;
     pointer-events: none;
   }
@@ -1189,7 +1189,7 @@ img {
   
   .splash-fullscreen .splash-container {
     /* Keep original background image and blue fallback */
-    background-color: #000DFF;
+    background-color: #126987;
   }
 }
 

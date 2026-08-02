@@ -1,35 +1,19 @@
 /**
- * PWA-specific revocation checking system
- * Implements aggressive revocation detection for PWA installations
+ * Revocation checking is intentionally disabled.
+ *
+ * A session ends only when an admin deletes the account — that case is handled
+ * by the heartbeat in lib/auth.tsx and by utils/accountStatusGuard.ts. Nothing
+ * else (access-code changes, device checks, connectivity) may sign a user out,
+ * so there is no polling loop here any more.
  */
 
-let revocationCheckInterval: NodeJS.Timeout | null = null;
-
-/**
- * Starts aggressive revocation checking for PWA installations
- */
 export function startPWARevocationChecker(): void {
-  if (revocationCheckInterval) {
-    clearInterval(revocationCheckInterval);
-  }
-
-  console.log('🔴 Starting aggressive revocation checker - checking every 10 seconds');
-  
-  // DISABLED: Access code revocation checking removed
-  // Only admin deletion (via heartbeat checkCustomerExists) should trigger logout
-  // Access code issues should NOT log out existing users
-  
-  revocationCheckInterval = setInterval(async () => {
-    // Revocation checks disabled - users only logout on admin deletion
-    console.log('⚠️ PWA revocation checks disabled - heartbeat handles all logout logic');
-  }, 10000); // Every 10 seconds
+  // No-op by design. See the note above.
 }
 
-/**
- * Checks if running as PWA
- */
+/** Whether the app is running as an installed PWA. */
 export function isPWA(): boolean {
   return window.matchMedia('(display-mode: standalone)').matches ||
-         (window.navigator as any).standalone === true ||
-         document.referrer.includes('android-app://');
+    (window.navigator as any).standalone === true ||
+    document.referrer.includes('android-app://');
 }
