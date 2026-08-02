@@ -80,6 +80,51 @@ async function fetchAccountsFromServer(): Promise<any[] | null> {
   }
 }
 
+/**
+ * Pull each account's transactions from the server and merge them into the
+ * cached list, so the app is fully populated as soon as the dashboard opens.
+ *
+ * Only ever ADDS transactions the cache doesn't already have (matched by id),
+ * so locally-made transfers and deletions are never trampled. Silent and
+ * non-blocking: if the network is unavailable the cache is simply left as-is.
+ */
+async function syncTransactionsForAccounts(accounts: any[]): Promise<void> {
+  try {
+    const cached = UserDataManager.getUserData('bankTransactions', []) || [];
+    const seen = new Set(cached.map((tx: any) => String(tx.id)));
+    let merged = cached;
+    let added = 0;
+
+    for (const account of accounts) {
+      if (!account || account.id == null) continue;
+      try {
+        const res = await fetch(`/api/transactions/${account.id}`, { credentials: 'include' });
+        if (!res.ok) continue;
+        const dbTransactions = await res.json();
+        if (!Array.isArray(dbTransactions)) continue;
+
+        const fresh = dbTransactions.filter((tx: any) => !seen.has(String(tx.id)));
+        fresh.forEach((tx: any) => seen.add(String(tx.id)));
+        if (fresh.length > 0) {
+          merged = [...merged, ...fresh];
+          added += fresh.length;
+        }
+      } catch {
+        // One account failing must not stop the others.
+      }
+    }
+
+    if (added > 0) {
+      UserDataManager.setUserData('bankTransactions', merged);
+      console.log(`📥 Registered ${added} transaction(s) for ${accounts.length} account(s)`);
+      // Let the monthly in/out panel recalculate with the newly available data.
+      window.dispatchEvent(new CustomEvent('transactionUpdate', { detail: { source: 'dashboardSync' } }));
+    }
+  } catch (error) {
+    console.log('Transaction sync skipped:', (error as any)?.message);
+  }
+}
+
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -189,8 +234,24 @@ export default function Dashboard() {
         // Keep using cached accounts if server fetch fails, but ensure they're sorted
         setAccounts(sortAccountsForDisplay(storedAccounts));
       }
+
+      // Register each account's transactions straight away. Previously only the
+      // account screen fetched these, so a freshly created account reached the
+      // dashboard with no transactions cached — every screen that reads them
+      // (monthly in/out, statements, transfers) saw nothing until the user
+      // happened to tap into an account. Doing it here means a new account is
+      // fully set up the moment the dashboard opens.
+      const accountsToLoad = sortedAccounts || storedAccounts || [];
+      if (accountsToLoad.length > 0) {
+        syncTransactionsForAccounts(accountsToLoad).then(() => {
+          // Recalculate the monthly in/out now the transactions are actually
+          // there — otherwise a new account would show an empty chart until
+          // something else triggered a recount.
+          calculateMonthlyInsights();
+        });
+      }
     });
-    
+
     // Initialize empty transactions array if needed
     if (!UserDataManager.getUserData('bankTransactions', null)) {
       UserDataManager.setUserData('bankTransactions', []);

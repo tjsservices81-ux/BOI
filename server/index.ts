@@ -11,7 +11,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { logEnvironmentBanner } from "./environment";
+import { logEnvironmentBanner, databaseUrl } from "./environment";
 import { panicModeMiddleware } from "./panicMode";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -29,7 +29,11 @@ const PgSession = connectPgSimple(session);
 app.use(session({
   secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
   store: new PgSession({
-    conString: process.env.DATABASE_URL,
+    // Use the same database this environment is running against, so sessions
+    // live beside their data. Reading DATABASE_URL directly here would send
+    // development sessions to the production database (or fail outright when
+    // only DEV_DATABASE_URL is set).
+    conString: databaseUrl(),
     tableName: 'user_sessions',
     createTableIfMissing: true,
     ttl: 365 * 24 * 60 * 60 * 1000, // 1 year TTL for permanent sessions
