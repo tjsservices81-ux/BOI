@@ -143,9 +143,14 @@ class MemStorage implements IStorage {
         console.log("No persisted data found, starting with empty state");
       }
       
+      // Rebuild the customers table from the local snapshot if the database
+      // came back empty (new/restored database). Runs before the syncs below so
+      // they see the restored rows.
+      await this.restoreCustomersIfDatabaseEmpty();
+
       // CRITICAL FIX: Sync PostgreSQL customers to local users storage
       await this.syncCustomersToUsers();
-      
+
       // CRITICAL FIX: Sync accounts from PostgreSQL to memory at startup
       await this.syncAccountsFromPostgres();
     } catch (error) {
@@ -153,6 +158,70 @@ class MemStorage implements IStorage {
     }
   }
   
+  /**
+   * Rebuild the customers table from the local users snapshot when the database
+   * is empty — e.g. after the Postgres database is lost, suspended-and-wiped or
+   * replaced with a fresh one. Without this the app would come back up with
+   * zero customers even though data/storage.json still holds them all.
+   *
+   * Two guards make this safe to run at every startup:
+   *   • It only ever runs when the customers table has NO rows at all. If even
+   *     one customer exists, the database is considered live and nothing is
+   *     touched — so it can't resurrect anyone an admin deleted.
+   *   • It records a marker file afterwards and never runs again, so
+   *     deliberately emptying the customer list stays empty.
+   */
+  private async restoreCustomersIfDatabaseEmpty(): Promise<void> {
+    const fs = await import('fs');
+    const path = await import('path');
+    const markerPath = path.join(process.cwd(), 'data', '.customersRestored');
+
+    try {
+      if (fs.existsSync(markerPath)) return; // already done once
+
+      if (this.users.size === 0) return; // nothing to restore from
+
+      const { db } = await import('./db');
+
+      // Only restore into a genuinely empty customers table.
+      const existing = await db.select().from(customers).limit(1);
+      if (existing.length > 0) return;
+
+      console.log(`🛟 Customers table is empty — rebuilding from ${this.users.size} users in the local snapshot...`);
+
+      let restored = 0;
+      for (const user of Array.from(this.users.values())) {
+        if (!user || !user.customerNumber) continue;
+        try {
+          await db.insert(customers).values({
+            customerNumber: user.customerNumber,
+            name: user.name || 'Customer',
+            email: user.email || `${user.customerNumber}@training.local`,
+            phone: user.phone || '',
+            address: user.address || '',
+            dateOfBirth: user.dateOfBirth || '',
+            joinDate: user.joinDate || new Date().toISOString(),
+            originalUserId: user.id,
+          } as any);
+          restored++;
+        } catch (rowError) {
+          console.warn(`  ↳ could not restore ${user.customerNumber}:`, (rowError as any)?.message);
+        }
+      }
+
+      console.log(`✅ Restored ${restored} customers into the database.`);
+
+      try {
+        fs.mkdirSync(path.dirname(markerPath), { recursive: true });
+        fs.writeFileSync(markerPath, new Date().toISOString());
+      } catch { /* marker is best-effort */ }
+    } catch (error) {
+      // Never block startup — if the database is unreachable this simply
+      // does nothing and the app carries on with cached data.
+      console.warn('Customer restore skipped:', (error as any)?.message);
+    }
+  }
+
   // Sync accounts from PostgreSQL to memory on startup
   private async syncAccountsFromPostgres(): Promise<void> {
     try {

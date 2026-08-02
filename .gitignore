@@ -6,3 +6,7 @@ vite.config.ts.*
 *.tar.gz
 # Team Admin membership registry - per-deployment runtime state
 data/teamAccounts.json
+
+# One-time customer-restore marker - must never be committed,
+# or a fresh database would skip the restore.
+data/.customersRestored
