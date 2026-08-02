@@ -130,13 +130,8 @@ function AppRoutes() {
     return () => window.removeEventListener('openLiveChat', handleOpenLiveChat);
   }, []);
 
-  // Centralized theme color management
-  const updateThemeColor = (color: string) => {
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', color);
-    }
-  };
+  // The theme colour is fixed at #126987 and never varies by screen, so there
+  // is deliberately no setter here — see restoreThemeForCurrentScreen below.
 
   
   // Initialize app state with proper cold/warm start detection

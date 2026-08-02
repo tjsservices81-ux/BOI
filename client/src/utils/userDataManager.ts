@@ -515,44 +515,36 @@ export class UserDataManager {
   }
 
   // Save cache to localStorage for persistence across reloads
+  // Deliberately does nothing: persisting the in-memory cache is what caused
+  // stale values to outlive a reload. localStorage already holds the real data.
   private static saveCacheToStorage() {
-    try {
-      const cacheData = Object.fromEntries(this.dataCache.entries());
-      const timestampData = Object.fromEntries(this.cacheTimestamps.entries());
-      
-      localStorage.setItem(this.CACHE_STORAGE_KEY, JSON.stringify(cacheData));
-      localStorage.setItem(this.CACHE_TIMESTAMPS_KEY, JSON.stringify(timestampData));
-    } catch (error) {
-      console.error('Failed to save cache to storage:', error);
-    }
+    /* no-op */
   }
 
   // Restore cache from localStorage on initialization
   private static restoreCacheFromStorage() {
-    try {
-      const cacheData = localStorage.getItem(this.CACHE_STORAGE_KEY);
-      const timestampData = localStorage.getItem(this.CACHE_TIMESTAMPS_KEY);
-      
-      if (cacheData) {
-        const parsedCache = JSON.parse(cacheData);
-        this.dataCache = new Map(Object.entries(parsedCache));
-      }
-      
-      if (timestampData) {
-        const parsedTimestamps = JSON.parse(timestampData);
-        this.cacheTimestamps = new Map(Object.entries(parsedTimestamps).map(([k, v]) => [k, Number(v)]));
-      }
-    } catch (error) {
-      console.error('Failed to restore cache from storage:', error);
-    }
+    /* no-op - see initializeCachePersistence */
   }
 
   // Initialize cache persistence
+  /**
+   * The in-memory cache is a per-session read optimisation ONLY — the real data
+   * already lives in localStorage under the per-user keys.
+   *
+   * A snapshot of that cache used to be persisted and restored at startup. That
+   * was actively harmful: the cache never expires, so a stale entry captured at
+   * an unlucky moment (e.g. bankAccounts before the accounts had loaded) came
+   * back on every launch and permanently shadowed the real data — the account
+   * card would simply not appear. Any old snapshot is deleted here so it can't
+   * shadow anything again.
+   */
   static initializeCachePersistence() {
-    this.restoreCacheFromStorage();
-    
-    // Save cache periodically and on important operations
-    setInterval(() => this.saveCacheToStorage(), 30000); // Every 30 seconds
+    try {
+      localStorage.removeItem(this.CACHE_STORAGE_KEY);
+      localStorage.removeItem(this.CACHE_TIMESTAMPS_KEY);
+    } catch {
+      /* nothing to clean up */
+    }
   }
 
   // Admin function to clear all data - PROTECTED (admin-only)

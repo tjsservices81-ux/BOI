@@ -2141,3 +2141,23 @@ html, body {
 #root {
   background-color: #126987;
 }
+
+/* ---------------------------------------------------------------------------
+   Permanent status-bar strip.
+   A fixed teal band across the top safe area on EVERY screen, so the status bar
+   colour can never flicker or disappear during navigation, splash transitions
+   or PWA launch — whatever the page underneath happens to be doing. On devices
+   with no safe-area inset this collapses to zero height and the browser's
+   theme-color takes over, which is the same teal.
+--------------------------------------------------------------------------- */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background-color: #126987;
+  z-index: 2147483647;
+  pointer-events: none;
+}
