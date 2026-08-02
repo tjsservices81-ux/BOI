@@ -143,11 +143,6 @@ class MemStorage implements IStorage {
         console.log("No persisted data found, starting with empty state");
       }
       
-      // Rebuild the customers table from the local snapshot if the database
-      // came back empty (new/restored database). Runs before the syncs below so
-      // they see the restored rows.
-      await this.restoreCustomersIfDatabaseEmpty();
-
       // CRITICAL FIX: Sync PostgreSQL customers to local users storage
       await this.syncCustomersToUsers();
 
@@ -158,70 +153,6 @@ class MemStorage implements IStorage {
     }
   }
   
-  /**
-   * Rebuild the customers table from the local users snapshot when the database
-   * is empty — e.g. after the Postgres database is lost, suspended-and-wiped or
-   * replaced with a fresh one. Without this the app would come back up with
-   * zero customers even though data/storage.json still holds them all.
-   *
-   * Two guards make this safe to run at every startup:
-   *   • It only ever runs when the customers table has NO rows at all. If even
-   *     one customer exists, the database is considered live and nothing is
-   *     touched — so it can't resurrect anyone an admin deleted.
-   *   • It records a marker file afterwards and never runs again, so
-   *     deliberately emptying the customer list stays empty.
-   */
-  private async restoreCustomersIfDatabaseEmpty(): Promise<void> {
-    const fs = await import('fs');
-    const path = await import('path');
-    const markerPath = path.join(process.cwd(), 'data', '.customersRestored');
-
-    try {
-      if (fs.existsSync(markerPath)) return; // already done once
-
-      if (this.users.size === 0) return; // nothing to restore from
-
-      const { db } = await import('./db');
-
-      // Only restore into a genuinely empty customers table.
-      const existing = await db.select().from(customers).limit(1);
-      if (existing.length > 0) return;
-
-      console.log(`🛟 Customers table is empty — rebuilding from ${this.users.size} users in the local snapshot...`);
-
-      let restored = 0;
-      for (const user of Array.from(this.users.values())) {
-        if (!user || !user.customerNumber) continue;
-        try {
-          await db.insert(customers).values({
-            customerNumber: user.customerNumber,
-            name: user.name || 'Customer',
-            email: user.email || `${user.customerNumber}@training.local`,
-            phone: user.phone || '',
-            address: user.address || '',
-            dateOfBirth: user.dateOfBirth || '',
-            joinDate: user.joinDate || new Date().toISOString(),
-            originalUserId: user.id,
-          } as any);
-          restored++;
-        } catch (rowError) {
-          console.warn(`  ↳ could not restore ${user.customerNumber}:`, (rowError as any)?.message);
-        }
-      }
-
-      console.log(`✅ Restored ${restored} customers into the database.`);
-
-      try {
-        fs.mkdirSync(path.dirname(markerPath), { recursive: true });
-        fs.writeFileSync(markerPath, new Date().toISOString());
-      } catch { /* marker is best-effort */ }
-    } catch (error) {
-      // Never block startup — if the database is unreachable this simply
-      // does nothing and the app carries on with cached data.
-      console.warn('Customer restore skipped:', (error as any)?.message);
-    }
-  }
-
   // Sync accounts from PostgreSQL to memory on startup
   private async syncAccountsFromPostgres(): Promise<void> {
     try {
@@ -615,7 +546,25 @@ class MemStorage implements IStorage {
       })
       .where(eq(customers.customerNumber, customerNumber))
       .returning();
-    
+
+    if (result.length > 0) {
+      // A soft-deleted customer keeps their row (so they stay in the Deleted
+      // list and can be restored), but every way back IN is cut off — an
+      // outstanding invite link or login code must not let them return.
+      try {
+        const { inviteService } = await import('./inviteService');
+        inviteService.revokeForCustomer(customerNumber);
+      } catch (e: any) {
+        console.warn('Could not revoke invites on soft delete:', e?.message || e);
+      }
+      try {
+        const { otcService } = await import('./otcService');
+        otcService.clearOTC(customerNumber);
+      } catch (e: any) {
+        console.warn('Could not clear codes on soft delete:', e?.message || e);
+      }
+    }
+
     return result.length > 0;
   }
 
@@ -665,6 +614,7 @@ class MemStorage implements IStorage {
         await safeExec('permanent_user_sessions (user_id)', sql`DELETE FROM permanent_user_sessions WHERE user_id = ${userId}`);
         await safeExec('permanent_user_sessions (customer_number)', sql`DELETE FROM permanent_user_sessions WHERE customer_number = ${customerNumber}`);
         await safeExec('scheduled_payments', sql`DELETE FROM scheduled_payments WHERE user_id = ${userId}`);
+        await safeExec('chat_sessions', sql`DELETE FROM chat_sessions WHERE user_id = ${userId}`);
 
         console.log(`🔥 Cleared related data for user ${userId} (${customerNumber})`);
       }
@@ -689,25 +639,88 @@ class MemStorage implements IStorage {
       // this running instance (the admin list is DB-driven, but the user map is
       // held in memory / JSON).
       try {
-        if (userId != null) {
-          for (const acc of Array.from(this.accounts.values()).filter(a => a.userId === userId)) {
+        // In-memory user id may differ from the PostgreSQL customer id, so
+        // collect every id this customer is known by before clearing.
+        const memoryUsers = Array.from(this.users.values())
+          .filter(u => u.customerNumber === customerNumber);
+        const userIds = new Set<number>(memoryUsers.map(u => u.id));
+        if (userId != null) userIds.add(userId);
+
+        for (const uid of Array.from(userIds)) {
+          for (const acc of Array.from(this.accounts.values()).filter(a => a.userId === uid)) {
             for (const tx of Array.from(this.transactions.values()).filter(t => t.accountId === acc.id)) {
               this.transactions.delete(tx.id);
             }
+            for (const st of Array.from(this.statements.values()).filter(s => s.accountId === acc.id)) {
+              this.statements.delete(st.id);
+            }
             this.accounts.delete(acc.id);
           }
-          for (const p of Array.from(this.payees.values()).filter(p => p.userId === userId)) {
+          for (const p of Array.from(this.payees.values()).filter(p => p.userId === uid)) {
             this.payees.delete(p.id);
           }
+          for (const sp of Array.from(this.scheduledPayments.values()).filter(s => s.userId === uid)) {
+            this.scheduledPayments.delete(sp.id);
+          }
+          for (const cm of Array.from(this.chatMessages.values()).filter((m: any) => m.userId === uid)) {
+            this.chatMessages.delete(cm.id);
+          }
+          for (const [sid, cs] of Array.from(this.chatSessions)) {
+            if ((cs as any).userId === uid) this.chatSessions.delete(sid);
+          }
         }
-        for (const u of Array.from(this.users.values()).filter(u => u.customerNumber === customerNumber)) {
+        for (const u of memoryUsers) {
           this.users.delete(u.id);
         }
+
+        // Persist immediately so the erased customer is gone from the JSON
+        // snapshot too — otherwise they could reappear from disk on restart.
         await this.saveData();
+
+        // Finally clear every non-database store that could still reference
+        // this customer. Each is best-effort so one failure can't stop the
+        // others, but together they mean nothing is left anywhere.
+        const clearElsewhere: Array<[string, () => Promise<void> | void]> = [
+          ['invite links', async () => {
+            const { inviteService } = await import('./inviteService');
+            inviteService.revokeForCustomer(customerNumber);
+          }],
+          ['one-time codes', async () => {
+            const { otcService } = await import('./otcService');
+            otcService.clearOTC(customerNumber);
+          }],
+          ['team admin registry', async () => {
+            const { teamAccountRegistry } = await import('./teamAccountRegistry');
+            teamAccountRegistry.remove(customerNumber);
+          }],
+          ['active sessions', async () => {
+            const { invalidateAllUserSessions } = await import('./sessionManager');
+            invalidateAllUserSessions(customerNumber);
+          }],
+          ['device sessions', async () => {
+            const { getAllDeviceSessions, removeDeviceSession } = await import('./deviceSessions');
+            for (const s of getAllDeviceSessions()) {
+              if (s.customerNumber === customerNumber) removeDeviceSession(s.sessionId);
+            }
+          }],
+          ['device binding', async () => {
+            const { removeUserDeviceSession } = await import('./deviceExclusiveAuth');
+            for (const uid of Array.from(userIds)) removeUserDeviceSession(uid);
+          }],
+        ];
+
+        for (const [label, fn] of clearElsewhere) {
+          try {
+            await fn();
+          } catch (e: any) {
+            console.warn(`⚠️  Could not clear ${label} for ${customerNumber}:`, e?.message || e);
+          }
+        }
       } catch (memErr: any) {
         console.warn('Memory cleanup during erase had an issue:', memErr?.message || memErr);
       }
 
+      console.log(`✅ ${customerNumber} erased from every store — this cannot be undone.`);
       return { success: true };
     } catch (error: any) {
       console.error('Error permanently erasing customer:', error);

@@ -383,8 +383,12 @@ S.error='';
 S.customers=Array.isArray(c.data)?c.data:[];
 S.links=(l.ok&&l.data&&l.data.links)?l.data.links:[];
 S.otcs=(o.ok&&o.data&&o.data.otcs)?o.data.otcs:[];
-// Surface a partial failure without blocking the page.
-if(!l.ok||!o.ok){S.warn=(!l.ok?l.err:o.err)}else{S.warn=''}
+// Surface a partial failure without blocking the page — but stay quiet when an
+// endpoint simply isn't on this server yet (it answers with the app's HTML
+// rather than JSON). That's a deploy-lag condition the admin can't act on, and
+// the affected section just shows zero.
+var missing=function(r){return !r.ok && /not JSON/.test(r.err||'')};
+if((!l.ok&&!missing(l))||(!o.ok&&!missing(o))){S.warn=(!l.ok?l.err:o.err)}else{S.warn=''}
 S.loaded=true;
 var h=JSON.stringify(S.customers.map(function(c2){return[c2.customerNumber,c2.isDeleted,c2.adminAlias,c2.appReplacement,c2.name,c2.email,(c2.profileClickHistory||[])[0]]}))+'|'+S.links.length+'|'+S.otcs.map(function(o2){return o2.customerNumber+o2.code}).join(',')+'|'+S.warn;
 if(silent&&h===S.hash)return false;

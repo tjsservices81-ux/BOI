@@ -78,6 +78,22 @@ class InviteService {
       .sort((a, b) => b.createdAt - a.createdAt);
   }
 
+  /**
+   * Destroy every invite (pending or claimed) for a customer. Called when an
+   * account is deleted so an outstanding link can never be used to claim an
+   * account that no longer exists.
+   */
+  revokeForCustomer(customerNumber: string): number {
+    let removed = 0;
+    for (const [token, rec] of Array.from(this.invites)) {
+      if (rec.customerNumber === customerNumber) {
+        this.invites.delete(token);
+        removed++;
+      }
+    }
+    return removed;
+  }
+
   // Current pending (unclaimed, unexpired) invite for a customer, if any.
   getPendingForCustomer(customerNumber: string): InviteRecord | null {
     this.pruneExpired();
