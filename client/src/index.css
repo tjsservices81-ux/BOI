@@ -1167,8 +1167,10 @@ img {
 /* iOS PWA status bar color override */
 @media (display-mode: standalone) {
   .splash-fullscreen {
-    /* Remove padding-top - extend splash behind safe area */
-    background: transparent !important;
+    /* Extend the splash behind the safe area, but keep the page background the
+       app teal — transparent here let the blue splash artwork show through the
+       status bar, which was the only place the blue still appeared. */
+    background-color: #126987 !important;
   }
   
   .splash-fullscreen::before {
@@ -1184,7 +1186,7 @@ img {
   }
   
   .splash-fullscreen .full-height {
-    background: transparent;
+    background-color: #126987;
   }
   
   .splash-fullscreen .splash-container {
@@ -2150,7 +2152,7 @@ html, body {
    with no safe-area inset this collapses to zero height and the browser's
    theme-color takes over, which is the same teal.
 --------------------------------------------------------------------------- */
-body::before {
+html::before {
   content: '';
   position: fixed;
   top: 0;
