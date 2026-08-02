@@ -128,7 +128,7 @@ export default function Cards() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-fade-in">
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
       
       {/* Header */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0 relative z-10" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
@@ -149,8 +149,8 @@ export default function Cards() {
         </button>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto">
+      {/* Content - slides down underneath the fixed header (same as Apply) */}
+      <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto content-slide-under">
         {/* Card Type Label */}
         <div className="text-center mb-6">
           <p className="text-gray-600 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -168,8 +168,7 @@ export default function Cards() {
             {cards.map((card, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-full px-2 snap-center stagger-item"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="flex-shrink-0 w-full px-2 snap-center"
               >
                 <div className="relative">
                   {/* Card */}

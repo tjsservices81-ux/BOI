@@ -16,13 +16,15 @@ export default function Splash() {
     
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
-    document.documentElement.style.setProperty('--status-bar-color', '#126987');
+    // Splash gets the blue status bar. Every other screen is strictly teal —
+    // this variable is cleared again on the way out (see cleanup below).
+    document.documentElement.style.setProperty('--status-bar-color', '#000DFF');
     
     // Comprehensive theme color update for splash screen
     const updateThemeColor = () => {
       const themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
       if (themeColorMeta) {
-        themeColorMeta.content = '#126987';
+        themeColorMeta.content = '#000DFF';
       }
       
       // Create or update additional iOS-specific status bar configuration
@@ -34,7 +36,7 @@ export default function Splash() {
       // Force PWA status bar color update
       if ('setAppBadge' in navigator) {
         // PWA-specific color updates
-        document.body.style.backgroundColor = '#126987';
+        document.body.style.backgroundColor = '#000DFF';
         setTimeout(() => {
           document.body.style.backgroundColor = '';
         }, 100);
@@ -53,7 +55,13 @@ export default function Splash() {
       // Mark splash as completed in localStorage for proper state tracking
       localStorage.setItem('splash_completed', 'true');
       
-      // Force status bar transition BEFORE navigation
+      // Back to teal BEFORE navigating so the blue never carries past the splash.
+      // index.html paints body/html blue at load for the splash visual — those
+      // inline styles must be cleared here or the blue would persist app-wide.
+      document.documentElement.style.setProperty('--status-bar-color', '#126987');
+      document.body.style.backgroundColor = '#126987';
+      document.documentElement.style.backgroundColor = '#126987';
+      document.body.classList.remove('splash-fullscreen');
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#126987');
@@ -71,7 +79,9 @@ export default function Splash() {
     return () => {
       clearTimeout(finalTimer);
       document.body.classList.remove('splash-fullscreen');
-      document.documentElement.style.removeProperty('--status-bar-color');
+      document.documentElement.style.setProperty('--status-bar-color', '#126987');
+      document.body.style.backgroundColor = '#126987';
+      document.documentElement.style.backgroundColor = '#126987';
       // Restore theme-color for main app
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
@@ -99,7 +109,7 @@ export default function Splash() {
         pointerEvents: 'none',
         opacity: 1,
         visibility: 'visible',
-        backgroundColor: '#126987'
+        backgroundColor: '#000DFF'
       }}
       onClick={handleInteraction}
       onTouchStart={handleInteraction}

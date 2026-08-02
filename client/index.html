@@ -21,7 +21,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#126987" />
+    <meta name="theme-color" content="#000DFF" />
     
     <!-- Critical font preloading for instant rendering -->
     <link rel="preload" href="/OpenSans-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
@@ -146,7 +146,7 @@
       background-size:cover;
       background-position:center;
       background-repeat:no-repeat;
-      background-color:#126987;
+      background-color:#000DFF;
       z-index:9999;
     ">
       <div style="position:absolute;bottom:30%;left:50%;transform:translateX(-50%);">
@@ -209,8 +209,8 @@
       // Keep body background blue during load for the splash screen visual
       // but do NOT change theme-color — on iOS 26 Liquid Glass the status bar
       // reads theme-color and gets stuck on the blue if we change it here
-      document.body.style.backgroundColor = '#126987';
-      document.documentElement.style.backgroundColor = '#126987';
+      document.body.style.backgroundColor = '#000DFF';
+      document.documentElement.style.backgroundColor = '#000DFF';
 
       // Security measures to prevent sharing and copying
       document.addEventListener('DOMContentLoaded', function() {

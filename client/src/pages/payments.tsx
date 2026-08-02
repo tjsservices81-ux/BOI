@@ -228,7 +228,7 @@ export default function Payments() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container page-fade-in">
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container">
       {/* Header */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0 relative z-10" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
         <button
@@ -248,8 +248,8 @@ export default function Payments() {
         </button>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto">
+      {/* Content - slides down underneath the fixed header (same as Apply) */}
+      <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto content-slide-under">
         {/* Header Section */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -272,7 +272,7 @@ export default function Payments() {
                 else if (option.id === 'email') navigate('/email-transfer');
                 else setSelectedPaymentType(option.id);
               }}
-              className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20 stagger-item card-interactive"
+              className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20 card-interactive"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className="flex items-center justify-between">

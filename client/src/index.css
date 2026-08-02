@@ -1140,15 +1140,15 @@ img {
 
 /* Splash screen specific styling */
 .splash-fullscreen {
-  /* Pure blue status bar for splash screen only */
-  --splash-theme-color: #126987;
-  --status-bar-color: #126987;
+  /* Pure blue status bar for the splash screen only */
+  --splash-theme-color: #000DFF;
+  --status-bar-color: #000DFF;
 }
 
 /* iOS Safari status bar integration for splash */
 @supports (-webkit-appearance: none) {
   .splash-fullscreen {
-    background-color: #126987 !important;
+    background-color: #000DFF !important;
   }
   
   .splash-fullscreen::before {
@@ -1158,7 +1158,7 @@ img {
     left: 0;
     right: 0;
     height: env(safe-area-inset-top, 44px);
-    background-color: #126987;
+    background-color: #000DFF;
     z-index: 9999;
     pointer-events: none;
   }
@@ -1167,10 +1167,8 @@ img {
 /* iOS PWA status bar color override */
 @media (display-mode: standalone) {
   .splash-fullscreen {
-    /* Extend the splash behind the safe area, but keep the page background the
-       app teal — transparent here let the blue splash artwork show through the
-       status bar, which was the only place the blue still appeared. */
-    background-color: #126987 !important;
+    /* Splash keeps its own blue, including behind the safe area. */
+    background-color: #000DFF !important;
   }
   
   .splash-fullscreen::before {
@@ -1180,18 +1178,18 @@ img {
     left: 0;
     right: 0;
     height: env(safe-area-inset-top, 0);
-    background-color: #126987;
+    background-color: #000DFF;
     z-index: 9999;
     pointer-events: none;
   }
   
   .splash-fullscreen .full-height {
-    background-color: #126987;
+    background-color: #000DFF;
   }
   
   .splash-fullscreen .splash-container {
     /* Keep original background image and blue fallback */
-    background-color: #126987;
+    background-color: #000DFF;
   }
 }
 
@@ -2159,7 +2157,10 @@ html::before {
   left: 0;
   right: 0;
   height: env(safe-area-inset-top, 0px);
-  background-color: #126987;
+  /* Teal everywhere. The splash sets --status-bar-color to its blue while it is
+     on screen and clears it again on the way out, so the blue is confined to
+     the splash and every other screen is strictly teal. */
+  background-color: var(--status-bar-color, #126987);
   z-index: 2147483647;
   pointer-events: none;
 }
