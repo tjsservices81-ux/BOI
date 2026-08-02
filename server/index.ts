@@ -11,6 +11,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { logEnvironmentBanner } from "./environment";
 import { panicModeMiddleware } from "./panicMode";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -117,6 +118,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Make it unmistakable which environment's data is in use.
+  logEnvironmentBanner();
+
   // Register API routes first
   const server = await registerRoutes(app);
 

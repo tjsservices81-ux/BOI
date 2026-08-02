@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { dataFilePath, isProduction } from './environment';
 import { 
   type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
   type ChatMessage, type ChatResponse, type ChatSession,
@@ -34,8 +35,30 @@ export class PersistentDataManager {
   private initialized: boolean = false;
 
   constructor() {
-    this.dataPath = path.join(process.cwd(), 'data', 'storage.json');
+    // Development writes to data/storage.dev.json so it can never modify the
+    // production snapshot.
+    this.dataPath = dataFilePath('storage.json');
     this.ensureDataDirectory();
+    this.seedDevFromProductionOnce();
+  }
+
+  /**
+   * First time development runs, copy the production snapshot so there's
+   * something to work with. From then on the two files are entirely separate —
+   * changes on either side never cross over.
+   */
+  private seedDevFromProductionOnce(): void {
+    if (isProduction()) return;
+    try {
+      if (fs.existsSync(this.dataPath)) return;
+      const prodPath = path.join(process.cwd(), 'data', 'storage.json');
+      if (!fs.existsSync(prodPath)) return;
+      fs.copyFileSync(prodPath, this.dataPath);
+      console.log('🌱 Seeded development data from the production snapshot (one time only).');
+      console.log('   From here on, development and production data are separate.');
+    } catch (error) {
+      console.warn('Could not seed development data:', error);
+    }
   }
 
   private ensureDataDirectory(): void {

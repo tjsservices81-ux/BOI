@@ -12,6 +12,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { dataFilePath } from './environment';
 
 class TeamAccountRegistry {
   /** customerNumber -> page slug (e.g. "team-admin3") */
@@ -20,7 +21,8 @@ class TeamAccountRegistry {
   private loaded = false;
 
   constructor() {
-    this.filePath = path.join(process.cwd(), 'data', 'teamAccounts.json');
+    // Development uses data/teamAccounts.dev.json — kept apart from production.
+    this.filePath = dataFilePath('teamAccounts.json');
   }
 
   private load(): void {

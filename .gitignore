@@ -10,3 +10,6 @@ data/teamAccounts.json
 # One-time customer-restore marker - must never be committed,
 # or a fresh database would skip the restore.
 data/.customersRestored
+
+# Development data - kept separate from production, never committed
+data/*.dev.json
