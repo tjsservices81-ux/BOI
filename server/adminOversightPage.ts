@@ -104,6 +104,12 @@ svg{display:block}
 .icon-only{padding:9px}
 
 .wrap{max-width:960px;margin:0 auto;padding:20px}
+.envbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 13px;margin-bottom:14px;box-shadow:var(--sh);font-size:12.5px;color:var(--sub)}
+.envtag{font-weight:750;font-size:11px;letter-spacing:.05em;padding:3px 9px;border-radius:20px}
+.env-prod{background:var(--green-bg);color:var(--green)}
+.env-dev{background:var(--violet-bg);color:var(--violet)}
+.envdb{font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--mut)}
+.envwarn{color:#b45309;font-weight:600}
 
 /* summary cards */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
@@ -263,6 +269,7 @@ select.sel:focus{outline:none;border-color:var(--teal)}
 </div>
 
 <div class="wrap">
+<div id="envBar"></div>
 <div id="errBox"></div>
 <div class="cards" id="cards"></div>
 
@@ -323,7 +330,7 @@ select.sel:focus{outline:none;border-color:var(--teal)}
 </div>
 
 <script>
-var S={customers:[],links:[],otcs:[],error:'',warn:'',loaded:false,tab:'customers',search:'',status:'all',sort:'newest',expanded:{},busy:{},hash:'',polling:true};
+var S={customers:[],links:[],otcs:[],env:null,error:'',warn:'',loaded:false,tab:'customers',search:'',status:'all',sort:'newest',expanded:{},busy:{},hash:'',polling:true};
 
 function esc(t){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};return String(t==null?'':t).replace(/[&<>"']/g,function(c){return m[c]})}
 function q(id){return document.getElementById(id)}
@@ -366,6 +373,22 @@ return {ok:true,data:data};
 if(e&&e.name==='AbortError'){return {ok:false,err:url+' took too long to respond (over 20s). The server is up but the database is most likely unreachable.'}}
 return {ok:false,err:url+' — '+((e&&e.message)?e.message:'network error')};
 }
+}
+
+async function loadEnv(){
+var e=await getJSON('/api/admin/environment');
+if(e.ok&&e.data){S.env=e.data;renderEnv()}
+}
+
+function renderEnv(){
+var el=q('envBar');if(!el||!S.env)return;
+var isProd=S.env.environment==='production';
+var html='<span class="envtag '+(isProd?'env-prod':'env-dev')+'">'+esc(S.env.environment.toUpperCase())+'</span>'+
+'<span>Reading database</span><span class="envdb">'+esc(S.env.database)+'</span>';
+if(S.env.sharingProductionDatabase){
+html+='<span class="envwarn">\u26a0 development is using the PRODUCTION database</span>';
+}
+el.innerHTML='<div class="envbar">'+html+'</div>';
 }
 
 async function loadData(silent){
@@ -520,7 +543,7 @@ el.innerHTML='<div class="danger" style="margin-bottom:16px;background:linear-gr
 }else{el.innerHTML=''}
 }
 
-function renderAll(){renderErr();renderStats();renderTab()}
+function renderAll(){renderEnv();renderErr();renderStats();renderTab()}
 
 /* ---- interactions ---- */
 function setTab(t){S.tab=t;var tabs=document.querySelectorAll('.tab');tabs.forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tab')===t)});var ps=document.querySelectorAll('.panel');ps.forEach(function(p){p.classList.toggle('active',p.id==='panel-'+t)});renderTab()}
@@ -606,6 +629,7 @@ async function logout(){try{await fetch('/api/admin/logout',{method:'POST'})}cat
 
 /* ---- init + gentle background refresh (no flicker: only re-renders on change) ---- */
 renderAll();
+loadEnv();
 refresh(false);
 setInterval(function(){
 if(!S.polling||anyModalOpen())return;

@@ -49,6 +49,27 @@ export function databaseUrl(): string | undefined {
   return process.env.DATABASE_URL;
 }
 
+/**
+ * A safe, human-readable label for the database currently in use — host and
+ * database name only. Never includes the username or password, so it's safe to
+ * show in the admin UI. Two environments showing different fingerprints are
+ * reading different databases, which is why their customer counts can differ.
+ */
+export function databaseFingerprint(): string {
+  const url = databaseUrl();
+  if (!url) return 'none configured';
+  try {
+    const u = new URL(url);
+    const dbName = (u.pathname || '').replace(/^\//, '') || 'default';
+    const host = u.hostname || 'unknown-host';
+    // Shorten long managed-host names so the badge stays readable.
+    const shortHost = host.length > 34 ? `${host.slice(0, 31)}…` : host;
+    return `${shortHost}/${dbName}`;
+  } catch {
+    return 'unrecognised URL';
+  }
+}
+
 /** True when development is falling back to the production database. */
 export function isSharingProductionDatabase(): boolean {
   return !isProduction() && !process.env.DEV_DATABASE_URL && !!process.env.DATABASE_URL;

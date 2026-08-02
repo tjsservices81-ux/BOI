@@ -3734,6 +3734,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Which environment and database this page is reading. Lets an admin tell at
+  // a glance whether they're looking at development or production data — the
+  // reason the two can show different customer counts.
+  app.get("/api/admin/environment", async (_req, res) => {
+    try {
+      const { environmentName, databaseFingerprint, isSharingProductionDatabase } =
+        await import('./environment');
+      res.json({
+        environment: environmentName(),
+        database: databaseFingerprint(),
+        sharingProductionDatabase: isSharingProductionDatabase(),
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to read environment" });
+    }
+  });
+
   // Admin Oversight - iPhone Optimized
   app.get("/admin-oversight", async (req, res) => {
     // Never cache the admin page (browser or PWA), so a redeploy is always
