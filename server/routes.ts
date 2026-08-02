@@ -12,6 +12,7 @@ import {
   type TeamPageConfig,
 } from "./teamAdminPage";
 import { teamAccountRegistry } from "./teamAccountRegistry";
+import { deviceFlagRegistry } from "./deviceFlagRegistry";
 import { inviteService } from "./inviteService";
 import { loginSchema, transferSchema, type InsertUser } from "@shared/schema";
 import { z } from "zod";
@@ -987,6 +988,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isTouchDevice,
         permanentLock: true
       });
+
+      // Note which device this account is being used on. Purely informational —
+      // it flags multi-device use on Admin Oversight and never blocks a login
+      // or ends a session.
+      try {
+        const result = deviceFlagRegistry.recordLogin(user.customerNumber, {
+          deviceId: typeof req.body?.deviceId === 'string' ? req.body.deviceId : undefined,
+          model: deviceModel,
+          ipAddress,
+          userAgent,
+        });
+        if (result.newlyFlagged) {
+          console.log(`🚩 MULTI-DEVICE: ${user.customerNumber} now used on ${result.deviceCount} devices`);
+        }
+      } catch (e: any) {
+        console.warn('Could not record device for flagging:', e?.message || e);
+      }
 
       // Store user and device session in session (include customerNumber for heartbeat checks)
       (req as any).session.userId = user.id;
@@ -3751,6 +3769,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: clear an account's device history, e.g. after confirming the person
+  // genuinely moved to a new phone. Only removes the flag — nothing else.
+  app.post("/api/admin/customers/:customerNumber/reset-devices", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      deviceFlagRegistry.reset(customerNumber);
+      console.log(`🚩 Device history cleared for ${customerNumber}`);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Could not clear device history" });
+    }
+  });
+
   // Admin Oversight - iPhone Optimized
   app.get("/admin-oversight", async (req, res) => {
     // Never cache the admin page (browser or PWA), so a redeploy is always
@@ -3770,7 +3801,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/customers", async (req, res) => {
     try {
       const customers = await storage.getAllCustomers(true); // Include soft-deleted
-      
+
       // Fetch account data for each customer
       const customersWithAccounts = await Promise.all(
         customers.map(async (customer: any) => {
@@ -3799,7 +3830,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       );
       
-      res.json(customersWithAccounts);
+      // Attach device usage so the admin list can flag an account that has been
+      // used on more than one device.
+      const withDevices = customersWithAccounts.map((c: any) => {
+        try {
+          const d = deviceFlagRegistry.summary(c.customerNumber);
+          return {
+            ...c,
+            deviceCount: d.deviceCount,
+            multiDeviceFlagged: d.flagged,
+            multiDeviceFlaggedAt: d.flaggedAt || null,
+            devices: d.devices,
+          };
+        } catch {
+          return { ...c, deviceCount: 0, multiDeviceFlagged: false, devices: [] };
+        }
+      });
+
+      res.json(withDevices);
     } catch (error: any) {
       console.error('Error fetching customers:', error);
       // Surface the real reason (e.g. a missing DATABASE_URL or an unreachable

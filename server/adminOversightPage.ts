@@ -343,6 +343,8 @@ function acount(c){return(c.profileClickHistory&&c.profileClickHistory.length)||
 function fdate(d){if(!d)return'—';var x=new Date(d);if(isNaN(x))return'—';return x.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}
 function ftime(ts){var d=new Date(ts),diff=Date.now()-d.getTime();if(diff<60000)return'Just now';if(diff<3600000)return Math.floor(diff/60000)+'m ago';if(diff<86400000)return Math.floor(diff/3600000)+'h ago';return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
 function active(c){return c.filter(function(x){return !x.isDeleted})}
+// Flagged = a notification violation OR the account being used on 2+ devices.
+function isFlagged(c){return !!(c.notificationViolationFlagged||c.multiDeviceFlagged)}
 function deleted(c){return c.filter(function(x){return x.isDeleted})}
 
 /* ---- toasts ---- */
@@ -421,7 +423,7 @@ S.hash=h;return true;
 /* ---- render ---- */
 function renderStats(){
 var a=active(S.customers),d=deleted(S.customers);
-var online=a.filter(isOnline).length,flag=S.customers.filter(function(c){return c.notificationViolationFlagged}).length;
+var online=a.filter(isOnline).length,flag=S.customers.filter(isFlagged).length;
 var cards=[
 ['Total customers',a.length,'ic-teal','<circle cx="9" cy="7" r="3"/><path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/><circle cx="18" cy="8" r="2"/>'],
 ['Active sessions',online,'ic-green','<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'],
@@ -438,7 +440,7 @@ var out=list.slice();
 if(S.status==='online')out=out.filter(isOnline);
 else if(S.status==='today')out=out.filter(isToday);
 else if(S.status==='developer')out=out.filter(isDev);
-else if(S.status==='flagged')out=out.filter(function(c){return c.notificationViolationFlagged});
+else if(S.status==='flagged')out=out.filter(isFlagged);
 var qy=S.search.toLowerCase().trim();
 if(qy)out=out.filter(function(c){return(c.name||'').toLowerCase().indexOf(qy)>=0||(c.adminAlias||'').toLowerCase().indexOf(qy)>=0||(c.customerNumber||'').indexOf(qy)>=0||(c.email||'').toLowerCase().indexOf(qy)>=0});
 if(S.sort==='newest')out.sort(function(a,b){return new Date(b.createdAt||b.joinDate||0)-new Date(a.createdAt||a.joinDate||0)});
@@ -457,6 +459,7 @@ var badges='';
 if(on)badges+='<span class="badge b-active">Online</span>';
 if(isDev(c))badges+='<span class="badge b-dev">Dev</span>';
 if(c.notificationViolationFlagged)badges+='<span class="badge b-flag">Flagged</span>';
+if(c.multiDeviceFlagged)badges+='<span class="badge b-flag">'+(c.deviceCount||2)+' DEVICES</span>';
 var accts=(c.accounts&&c.accounts.length)?c.accounts.map(function(a){var cur=(c.currency==='GBP')?'£':'€';return '<div class="acct"><div class="acct-top"><span class="acct-name">'+esc(a.displayName||'Account')+'</span><span class="acct-bal">'+cur+Number(a.balance||0).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span></div><div class="kv"><span class="k">Account</span><span class="v mono">'+esc(a.accountNumber||'—')+'</span></div><div class="kv"><span class="k">IBAN</span><span class="v mono">'+esc(a.iban||'—')+'</span></div></div>'}).join(''):'<div class="click none"><span>No account created yet</span></div>';
 var clicks=(c.profileClickHistory&&c.profileClickHistory.length)?c.profileClickHistory.slice(0,3).map(function(ts,i){return '<div class="click"><span>'+(i===0?'Most recent':i===1?'2nd visit':'3rd visit')+'</span><span>'+ftime(ts)+'</span></div>'}).join(''):'<div class="click none"><span>No activity recorded</span><span>—</span></div>';
 var id=esc(c.customerNumber);
@@ -466,6 +469,7 @@ return '<div class="row'+(open?' open':'')+'" data-cn="'+id+'">'
 +'<div class="row-main"><div class="row-name">'+esc(c.name||'Unnamed')+badges+'</div><div class="row-sub">'+esc(c.adminAlias?('"'+c.adminAlias+'"  ·  '):'')+esc(c.email||c.customerNumber)+'</div></div>'
 +'<div class="row-right"><div class="row-created">'+fdate(c.createdAt||c.joinDate)+'</div><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div></div>'
 +'<div class="details"><div class="details-in">'
++(c.multiDeviceFlagged?('<div class="danger" style="margin:14px 0 4px;background:linear-gradient(180deg,#fff,#fffbeb);border-color:#fde68a">'+'<div><div class="danger-t" style="color:#92400e">'+'<svg viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>'+'Used on '+(c.deviceCount||2)+' devices</div>'+'<div class="danger-s" style="color:#92400e">'+((c.devices||[]).map(function(d){return esc(d.model||'Device')+' · '+esc(d.ipAddress||'no IP')}).join('<br>'))+'</div></div>'+'<button class="btn" onclick="resetDevices(\\''+id+'\\')">Clear</button></div>'):'')
 +'<div class="sec-h">Contact</div>'
 +'<div class="kv"><span class="k">Email</span><span class="v">'+esc(c.email||'—')+'</span></div>'
 +'<div class="kv"><span class="k">Phone</span><span class="v">'+esc(c.phone||'—')+'</span></div>'
@@ -623,6 +627,15 @@ btn.textContent='Done — create another';btn.disabled=false;
 toast('Customer created','ok');await refresh(true);renderStats();
 }else{toast(d.message||'Could not create','err');btn.disabled=false;btn.textContent='Create & generate link'}
 }catch(e){toast('Could not create','err');btn.disabled=false;btn.textContent='Create & generate link'}
+}
+
+async function resetDevices(id){
+try{
+var r=await fetch('/api/admin/customers/'+encodeURIComponent(id)+'/reset-devices',{method:'POST'});
+var d=await r.json();
+if(d&&d.success){toast('Device history cleared','ok');await refresh(true);renderAll()}
+else toast('Could not clear device history','err');
+}catch(e){toast('Could not clear device history','err')}
 }
 
 async function logout(){try{await fetch('/api/admin/logout',{method:'POST'})}catch(e){}window.location.href='/admin-oversight'}

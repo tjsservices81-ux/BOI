@@ -693,6 +693,10 @@ class MemStorage implements IStorage {
             const { teamAccountRegistry } = await import('./teamAccountRegistry');
             teamAccountRegistry.remove(customerNumber);
           }],
+          ['device history', async () => {
+            const { deviceFlagRegistry } = await import('./deviceFlagRegistry');
+            deviceFlagRegistry.reset(customerNumber);
+          }],
           ['active sessions', async () => {
             const { invalidateAllUserSessions } = await import('./sessionManager');
             invalidateAllUserSessions(customerNumber);

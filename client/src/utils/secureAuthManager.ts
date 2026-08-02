@@ -69,7 +69,13 @@ export class SecureAuthManager {
           // Sent so the server can recognise this device even if a future
           // browser/OS update changes its User-Agent string (e.g. iPadOS
           // reporting as "Macintosh").
-          maxTouchPoints: typeof navigator !== 'undefined' ? navigator.maxTouchPoints || 0 : 0
+          maxTouchPoints: typeof navigator !== 'undefined' ? navigator.maxTouchPoints || 0 : 0,
+          // Persistent per-device id. Lets Admin Oversight flag an account that
+          // is being used on more than one device. It only flags — it never
+          // blocks a login.
+          deviceId: (() => {
+            try { return localStorage.getItem('app_device_id') || ''; } catch { return ''; }
+          })()
         }),
         signal: controller.signal
       });

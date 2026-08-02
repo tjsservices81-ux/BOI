@@ -13,3 +13,6 @@ data/.customersRestored
 
 # Development data - kept separate from production, never committed
 data/*.dev.json
+
+# Device-usage flags - runtime state per environment
+data/deviceFlags.json
