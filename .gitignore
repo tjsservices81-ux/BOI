@@ -16,3 +16,6 @@ data/*.dev.json
 
 # Device-usage flags - runtime state per environment
 data/deviceFlags.json
+
+# Outstanding invite links - runtime state per environment
+data/invites.json

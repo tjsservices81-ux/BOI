@@ -15,7 +15,10 @@ import { UserDataManager } from "@/utils/userDataManager";
 //   would never reach it and the single-use link would be burned for nothing.
 //   Instead show "Add to Home Screen" steps. The Home-Screen icon reopens this
 //   same /invite/<token> URL inside the installed app, and the claim happens
-//   there, in the right storage box. A "continue in Safari" fallback exists for
+//   there, in the right storage box. There is deliberately NO "continue in
+//   Safari" escape hatch: Safari and the installed app have separate storage,
+//   so claiming in Safari would use up the single-use link while leaving the
+//   installed app still signed out. The old fallback for
 //   people who refuse to install.
 //
 // - Repeat opens: the iOS Home-Screen icon keeps /invite/<token> as its launch
@@ -184,15 +187,9 @@ export default function Invite() {
             <li>Choose <strong>“Add to Home Screen”</strong>.</li>
             <li>Open the app from the new icon.</li>
           </ol>
-          <p className="text-xs text-gray-400 mb-4">
+          <p className="text-xs text-gray-400">
             Your link stays valid until you open the installed app.
           </p>
-          <button
-            onClick={claimNow}
-            className="w-full py-3 rounded-xl font-semibold text-sm border border-gray-300 text-gray-600"
-          >
-            Continue in Safari instead
-          </button>
         </div>
       )}
 
