@@ -191,6 +191,10 @@ svg{display:block}
 .empty{text-align:center;padding:46px 20px;color:var(--mut);background:var(--card);border:1px dashed var(--line2);border-radius:16px}
 .empty-t{font-weight:650;color:var(--sub);margin-bottom:5px;font-size:14.5px}
 .empty-s{font-size:13px}
+.applink{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:14px;box-shadow:var(--sh)}
+.applink-l{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.applink-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.applink-url{flex:1;min-width:190px;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;color:var(--ink);word-break:break-all}
 .note{font-size:12.5px;color:var(--sub);background:var(--amber-bg);border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:12px 14px;margin-bottom:16px;line-height:1.55}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;background:#0f172a;color:#fff;padding:12px 18px;border-radius:11px;font-size:13.5px;font-weight:550;z-index:99;box-shadow:0 8px 24px rgba(15,23,42,.25);max-width:90vw;text-align:center}
 .toast.err{background:var(--red)}
@@ -225,6 +229,14 @@ svg{display:block}
 </div>
 
 <div class="wrap">
+  <div class="applink" id="appLinkCard" style="display:none">
+    <div class="applink-l">App link — send this to the person</div>
+    <div class="applink-row">
+      <div class="applink-url" id="appLinkUrl"></div>
+      <button class="btn" id="appLinkBtn" onclick="copyAppLink()">Copy</button>
+    </div>
+  </div>
+
   <div class="note">
     <strong>To make an account:</strong> on the app's login screen tap <strong>Bank of Ireland 5 times</strong>, then set the name to <strong>${cfg.customerName}</strong>. The login code appears here. Real customers never show on this page.
   </div>
@@ -246,7 +258,7 @@ svg{display:block}
 <script>
 var LIMIT = ${cfg.limit};
 var API = '/api/${cfg.slug}';
-var state = { customers: [] };
+var state = { customers: [], appLink: '' };
 
 function esc(s){
   return String(s == null ? '' : s)
@@ -272,6 +284,7 @@ function load(){
     .then(function(r){ return r.json(); })
     .then(function(d){
       state.customers = (d && d.customers) || [];
+      if (d && d.appLink) { state.appLink = d.appLink; renderAppLink(); }
       render();
     })
     .catch(function(){
@@ -279,6 +292,22 @@ function load(){
         '<div class="empty"><div class="empty-t">Could not load</div>' +
         '<div class="empty-s">Check your connection and tap Refresh.</div></div>';
     });
+}
+
+function renderAppLink(){
+  if (!state.appLink) return;
+  document.getElementById('appLinkUrl').textContent = state.appLink;
+  document.getElementById('appLinkCard').style.display = 'block';
+}
+
+function copyAppLink(){
+  copy(state.appLink);
+  var btn = document.getElementById('appLinkBtn');
+  if (btn){
+    var old = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(function(){ btn.textContent = old; }, 1600);
+  }
 }
 
 function render(){

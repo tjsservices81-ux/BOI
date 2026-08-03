@@ -3678,9 +3678,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             otc: { code: o.code, timeRemaining: o.timeRemaining },
           }));
 
+        // The link the person needs in order to open the app at all. Handed to
+        // the team admins here so they can copy it straight from this page.
+        const proto = (_req.headers['x-forwarded-proto'] as string) || (_req as any).protocol || 'https';
+        const accessCode = process.env.APP_ACCESS_CODE || 'BOI777777';
+        const appLink = `${proto}://${_req.get('host')}/?access=${accessCode}`;
+
         res.json({
           success: true,
           limit: cfg.limit,
+          appLink,
           customers: pending.concat(payload as any),
         });
       } catch (error) {
