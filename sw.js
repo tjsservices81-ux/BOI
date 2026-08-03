@@ -2,13 +2,13 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  *
- * VERSION: 5.1.0 - Admin oversight page bypasses the SW entirely (fixed URL,
- * no hashed filename) so its redesign can never be masked by a stale cache;
- * bumping the version also purges every old cache on activate.
+ * VERSION: 5.2.0 - Offline navigation serves the cached app shell instead of
+ * the offline page, so the app still opens (and transfers still work) with no
+ * connection. Admin pages continue to bypass the SW entirely.
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '5.1.0';
+const SW_VERSION = '5.2.0';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
@@ -354,19 +354,25 @@ async function staleWhileRevalidateStrategy(request) {
 async function getFallbackResponse(request) {
   const url = new URL(request.url);
   
-  // For HTML requests, return offline page
+  // For HTML requests, serve the CACHED APP first. This is a single-page app,
+  // so the cached shell can render any route offline and the user can still do
+  // everything that works on-device - including making a transfer, which is
+  // completed locally and synced when the connection returns. Only if no cached
+  // app exists at all do we show the offline page; showing it first meant a
+  // reload with no signal locked the user out of the app entirely.
   if (request.headers.get('accept')?.includes('text/html')) {
+    const cachedApp =
+      (await caches.match(request)) ||
+      (await caches.match('/')) ||
+      (await caches.match('/index.html')) ||
+      (await caches.match('/client/index.html'));
+    if (cachedApp) {
+      return cachedApp;
+    }
+
     const offlineResponse = await caches.match('/offline.html');
     if (offlineResponse) {
       return offlineResponse;
-    }
-    
-    // Ultimate fallback for main page
-    if (url.pathname === '/') {
-      const indexResponse = await caches.match('/client/index.html');
-      if (indexResponse) {
-        return indexResponse;
-      }
     }
   }
   

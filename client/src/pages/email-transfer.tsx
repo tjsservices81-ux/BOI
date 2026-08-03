@@ -185,9 +185,16 @@ export default function EmailTransfer() {
                 window.dispatchEvent(new CustomEvent('balanceUpdate'));
                 
                 setShowReference(true);
+              } else {
+                // Not enough money, or the account couldn't be found. Say so —
+                // otherwise the processing screen stays up for ever.
+                setStep('form');
+                alert('This transfer could not be completed. Please check the amount and your balance, then try again.');
               }
             } catch (error) {
               console.error('Email Transfer processing failed:', error);
+              setStep('form');
+              alert('This transfer could not be completed. Please try again.');
             }
           })();
           
