@@ -3738,25 +3738,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
-    // Fresh login code for one of this page's existing accounts.
-    app.post(`/api/${cfg.slug}/customers/:customerNumber/otc`, async (req, res) => {
-      try {
-        const { customerNumber } = req.params;
-        const customer = await getTeamCustomerOr404(cfg, customerNumber, res);
-        if (!customer) return;
-
-        const otc = await otcService.processNewAccount({
-          customerNumber,
-          name: customer.name,
-          email: customer.email || `${customerNumber}@training.local`,
-          phone: customer.phone || '',
-        });
-        res.json({ success: true, otc });
-      } catch (error) {
-        console.error(`${cfg.slug} OTC failed:`, error);
-        res.status(500).json({ success: false, message: "Failed to generate a code" });
-      }
-    });
   });
 
   // Which environment and database this page is reading. Lets an admin tell at

@@ -339,8 +339,8 @@ function render(){
         '<div class="otc-exp">Expires in ' + esc(c.otc.timeRemaining) + '</div></div>';
     } else {
       otcHtml = '<div class="otc"><div class="otc-l">Login code</div>' +
-        '<div class="otc-row"><div class="otc-none">No active code right now.</div>' +
-        '<button class="btn" onclick="genOtc(\\'' + esc(c.customerNumber) + '\\')">Generate code</button></div></div>';
+        '<div class="otc-row"><div class="otc-none">No active code. Codes come from the ' +
+        'app: tap Bank of Ireland 5 times and use the name \u201c${cfg.customerName}\u201d.</div></div></div>';
     }
 
     // A pending row is a code from the 5-tap signup: the account doesn't exist
@@ -414,14 +414,6 @@ function doDelete(num){
       btn.disabled = false; btn.textContent = 'Delete';
       toast('Could not delete', true);
     });
-}
-
-function genOtc(num){
-  fetch(API + '/customers/' + encodeURIComponent(num) + '/otc', { method: 'POST' })
-    .then(function(r){ return r.json(); }).then(function(d){
-      if (d && d.success){ toast('Code generated'); load(); }
-      else toast((d && d.message) || 'Could not generate a code', true);
-    }).catch(function(){ toast('Could not generate a code', true); });
 }
 
 function logout(){
