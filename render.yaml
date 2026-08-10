@@ -1,36 +1,46 @@
 # Render deployment blueprint.
 #
-# Render reads this when the repo is connected as a Blueprint, so the build and
-# start commands, the persistent disk and the environment variables don't have
-# to be re-entered by hand.
+# New → Blueprint → pick this repo. Render then creates everything below in one
+# go: the Postgres database, the web service, the persistent disk, and the wiring
+# between them. DATABASE_URL and SESSION_SECRET are filled in automatically —
+# nothing to copy and paste.
 #
-# Secrets are deliberately NOT in this file. After the first deploy set these in
-# the Render dashboard (Environment → Add Environment Variable):
+# The only prompt is for the optional secrets (sync: false), and those can be
+# left blank:
 #
-#   DATABASE_URL      the Postgres connection string. REQUIRED — the app refuses
-#                     to start without it. Pasting the connection string the app
-#                     already uses brings every existing customer across; a new
-#                     Render PostgreSQL instance starts empty and needs
-#                     "npm run db:push" run against it once to create the tables.
-#   SESSION_SECRET    any long random string
-#   APP_ACCESS_CODE   optional; defaults to BOI777777
-#   ANTHROPIC_API_KEY optional; enables the AI-backed live chat
-#   TWILIO_*          optional; enables SMS
+#   APP_ACCESS_CODE   the code that opens the app; defaults to BOI777777
+#   ANTHROPIC_API_KEY enables the AI-backed live chat; without it chat uses the
+#                     scripted replies
+#   SENDGRID_API_KEY  with SENDGRID_FROM_EMAIL, enables email
+#   TWILIO_*          enables SMS
 #
-# The disk matters: Render wipes the filesystem on every deploy, so without it
-# invites, team registrations and the data snapshot would reset each time the
-# app is redeployed. DATA_DIR points the app at the mounted disk.
+# Two things here are load-bearing and easy to lose in an edit:
+#
+#   • The disk. Render wipes the filesystem on every deploy, so without it the
+#     invites, team-page registrations and access codes reset each redeploy —
+#     which looks like the app randomly forgetting things.
+#   • --include=dev on the build. vite and esbuild are devDependencies, and npm
+#     omits those when NODE_ENV=production, which is set below and applies
+#     during the build too. Without the flag the build fails on "vite: not
+#     found".
+
+databases:
+  - name: boi-db
+    databaseName: boi
+    user: boi
+    plan: basic-256mb
 
 services:
   - type: web
     name: boi-app
     runtime: node
     plan: starter
-    # --include=dev is required: vite and esbuild are devDependencies, and npm
-    # omits those when NODE_ENV=production — which is set below and applies
-    # during the build too. Without the flag the build fails with "vite: not
-    # found".
     buildCommand: npm ci --include=dev && npm run build
+    # Creates the tables before the new version goes live. Safe to run on every
+    # deploy: it only applies differences, so after the first time it is a no-op.
+    # --force keeps it non-interactive; without it drizzle prompts and the
+    # deploy hangs waiting for an answer nobody can give.
+    preDeployCommand: npm run db:push -- --force
     startCommand: npm run start
     healthCheckPath: /api/health
     autoDeploy: true
@@ -39,15 +49,23 @@ services:
       mountPath: /var/data
       sizeGB: 1
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: boi-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
         value: "22"
       - key: DATA_DIR
         value: /var/data
-      - key: DATABASE_URL
-        sync: false
-      - key: SESSION_SECRET
-        sync: false
       - key: APP_ACCESS_CODE
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_FROM_EMAIL
         sync: false
