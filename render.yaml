@@ -1,0 +1,45 @@
+# Render deployment blueprint.
+#
+# Render reads this when the repo is connected as a Blueprint, so the build and
+# start commands, the persistent disk and the environment variables don't have
+# to be re-entered by hand.
+#
+# Secrets are deliberately NOT in this file. After the first deploy set these in
+# the Render dashboard (Environment → Add Environment Variable):
+#
+#   DATABASE_URL      the Postgres connection string
+#   SESSION_SECRET    any long random string
+#   APP_ACCESS_CODE   optional; defaults to BOI777777
+#   ANTHROPIC_API_KEY optional; enables the AI-backed live chat
+#   TWILIO_*          optional; enables SMS
+#
+# The disk matters: Render wipes the filesystem on every deploy, so without it
+# invites, team registrations and the data snapshot would reset each time the
+# app is redeployed. DATA_DIR points the app at the mounted disk.
+
+services:
+  - type: web
+    name: boi-app
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: boi-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATA_DIR
+        value: /var/data
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: APP_ACCESS_CODE
+        sync: false

@@ -1127,7 +1127,7 @@ class MemStorage implements IStorage {
     const { db } = await import('./db');
     const { eq } = await import('drizzle-orm');
 
-    const result = await db.transaction(async (tx) => {
+    const result = await db.transaction(async (tx: any) => {
       const [existingTransaction] = await tx.select().from(transactions).where(eq(transactions.id, transactionId));
       if (!existingTransaction) {
         return { success: false as const };

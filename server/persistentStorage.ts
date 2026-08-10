@@ -39,25 +39,30 @@ export class PersistentDataManager {
     // production snapshot.
     this.dataPath = dataFilePath('storage.json');
     this.ensureDataDirectory();
-    this.seedDevFromProductionOnce();
+    this.seedFromRepositorySnapshotOnce();
   }
 
   /**
-   * First time development runs, copy the production snapshot so there's
-   * something to work with. From then on the two files are entirely separate —
-   * changes on either side never cross over.
+   * Copy the snapshot committed at data/storage.json the first time this
+   * environment runs, so it starts with something rather than nothing. From
+   * then on the two files are entirely separate — changes never cross over.
+   *
+   * This covers two cases:
+   *   • development, which writes data/storage.dev.json
+   *   • a host with DATA_DIR pointing at a persistent disk, whose first boot
+   *     would otherwise begin with an empty store
    */
-  private seedDevFromProductionOnce(): void {
-    if (isProduction()) return;
+  private seedFromRepositorySnapshotOnce(): void {
     try {
       if (fs.existsSync(this.dataPath)) return;
-      const prodPath = path.join(process.cwd(), 'data', 'storage.json');
-      if (!fs.existsSync(prodPath)) return;
-      fs.copyFileSync(prodPath, this.dataPath);
-      console.log('🌱 Seeded development data from the production snapshot (one time only).');
-      console.log('   From here on, development and production data are separate.');
+      const repoPath = path.join(process.cwd(), 'data', 'storage.json');
+      if (path.resolve(repoPath) === path.resolve(this.dataPath)) return;
+      if (!fs.existsSync(repoPath)) return;
+      fs.copyFileSync(repoPath, this.dataPath);
+      console.log(`🌱 Seeded ${isProduction() ? 'production' : 'development'} data from the committed snapshot (one time only).`);
+      console.log('   From here on this environment keeps its own data.');
     } catch (error) {
-      console.warn('Could not seed development data:', error);
+      console.warn('Could not seed data from the committed snapshot:', error);
     }
   }
 

@@ -13,6 +13,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { logEnvironmentBanner, databaseUrl } from "./environment";
 import { panicModeMiddleware } from "./panicMode";
+import { ensureDefaultAccessCode } from "./keyValueStore";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 
@@ -125,6 +126,10 @@ app.use((req, res, next) => {
   // Make it unmistakable which environment's data is in use.
   logEnvironmentBanner();
 
+  // The access code gates the whole app, so it has to exist before the first
+  // request arrives on a host that has never run this app before.
+  await ensureDefaultAccessCode();
+
   // Register API routes first
   const server = await registerRoutes(app);
 
@@ -165,14 +170,15 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  // Hosts such as Render assign the port through the environment; Replit uses
+  // 5000. Binding the wrong one means the platform never sees the app come up.
+  const port = Number(process.env.PORT) || 5000;
   server.listen({
     port,
     host: "0.0.0.0",
-    reusePort: true,
+    // Only helpful on Replit, and unsupported on some platforms — so it is not
+    // requested in production, where it could stop the server binding at all.
+    ...(process.env.NODE_ENV === 'production' ? {} : { reusePort: true }),
   }, () => {
     log(`serving on port ${port}`);
   });

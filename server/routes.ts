@@ -25,7 +25,7 @@ import { sendTransferConfirmation, sendBankStatement, type TransferConfirmationD
 import { generateTransferConfirmationPDF } from "./pdfService";
 import { StatementService } from "./statementService";
 import { generateAIChatReply, isAIChatEnabled } from "./aiChatService";
-import Database from "@replit/database";
+import { keyValueStore } from "./keyValueStore";
 
 // ============================================================================
 // TRANSFER RELIABILITY SYSTEM - Ensures transfers always complete
@@ -136,8 +136,11 @@ declare module 'express-session' {
   }
 }
 
-// Initialize Replit Database for access codes
-const db = new Database();
+// Access codes and revocation flags. Backed by the Replit Database when running
+// on Replit, and by a local JSON file anywhere else (Render, a container) — the
+// Replit client throws on construction when REPLIT_DB_URL is missing, which used
+// to crash the server on boot.
+const db = keyValueStore;
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data

@@ -24,11 +24,23 @@ export function environmentName(): string {
 }
 
 /**
+ * Where the JSON data files live.
+ *
+ * Defaults to ./data next to the app. Hosts whose filesystem is wiped on every
+ * deploy (Render, most containers) can point DATA_DIR at a mounted persistent
+ * disk instead — e.g. DATA_DIR=/var/data — and invites, team registrations and
+ * the storage snapshot then survive a redeploy.
+ */
+export function dataDir(): string {
+  return process.env.DATA_DIR || path.join(process.cwd(), 'data');
+}
+
+/**
  * Path to a data file for the CURRENT environment. Development files get a
  * ".dev" suffix so the two environments can never read or write each other's.
  */
 export function dataFilePath(baseName: string): string {
-  const dir = path.join(process.cwd(), 'data');
+  const dir = dataDir();
   if (isProduction()) return path.join(dir, baseName);
   const dot = baseName.lastIndexOf('.');
   const devName = dot === -1
