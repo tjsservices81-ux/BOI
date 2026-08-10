@@ -7,7 +7,11 @@
 # Secrets are deliberately NOT in this file. After the first deploy set these in
 # the Render dashboard (Environment → Add Environment Variable):
 #
-#   DATABASE_URL      the Postgres connection string
+#   DATABASE_URL      the Postgres connection string. REQUIRED — the app refuses
+#                     to start without it. Pasting the connection string the app
+#                     already uses brings every existing customer across; a new
+#                     Render PostgreSQL instance starts empty and needs
+#                     "npm run db:push" run against it once to create the tables.
 #   SESSION_SECRET    any long random string
 #   APP_ACCESS_CODE   optional; defaults to BOI777777
 #   ANTHROPIC_API_KEY optional; enables the AI-backed live chat

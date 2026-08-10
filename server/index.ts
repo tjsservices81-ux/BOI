@@ -126,6 +126,21 @@ app.use((req, res, next) => {
   // Make it unmistakable which environment's data is in use.
   logEnvironmentBanner();
 
+  // Without a database the app starts, then fails on every request with a stack
+  // trace buried in the log. Say plainly what is missing and stop.
+  if (!databaseUrl()) {
+    console.error('❌ No database configured — the app cannot start.\n');
+    console.error('   Set DATABASE_URL to a PostgreSQL connection string, e.g.');
+    console.error('     postgresql://user:password@host:5432/dbname\n');
+    console.error('   On Render: Dashboard → your service → Environment →');
+    console.error('   Add Environment Variable → DATABASE_URL.');
+    console.error('   Either paste the connection string this app already uses,');
+    console.error('   which keeps every existing customer, or create a Render');
+    console.error('   PostgreSQL instance and run "npm run db:push" against it');
+    console.error('   once to create the tables (it will start out empty).\n');
+    process.exit(1);
+  }
+
   // The access code gates the whole app, so it has to exist before the first
   // request arrives on a host that has never run this app before.
   await ensureDefaultAccessCode();
