@@ -47,13 +47,19 @@ export class PersistentDataManager {
    * environment runs, so it starts with something rather than nothing. From
    * then on the two files are entirely separate — changes never cross over.
    *
-   * This covers two cases:
-   *   • development, which writes data/storage.dev.json
-   *   • a host with DATA_DIR pointing at a persistent disk, whose first boot
-   *     would otherwise begin with an empty store
+   * Development always does this: it needs something to work with, and the
+   * .dev file keeps it away from production.
+   *
+   * Production does NOT, unless SEED_FROM_SNAPSHOT=true. A production host is
+   * paired with a database, and the database decides who exists. Copying the
+   * snapshot onto a host whose database is empty would load 167 users that
+   * Postgres has never heard of — they would show in memory, fail every
+   * existence check, and look exactly like accounts glitching back after
+   * deletion. Starting empty alongside an empty database is the honest state.
    */
   private seedFromRepositorySnapshotOnce(): void {
     try {
+      if (isProduction() && process.env.SEED_FROM_SNAPSHOT !== 'true') return;
       if (fs.existsSync(this.dataPath)) return;
       const repoPath = path.join(process.cwd(), 'data', 'storage.json');
       if (path.resolve(repoPath) === path.resolve(this.dataPath)) return;

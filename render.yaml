@@ -26,7 +26,11 @@ services:
     name: boi-app
     runtime: node
     plan: starter
-    buildCommand: npm ci && npm run build
+    # --include=dev is required: vite and esbuild are devDependencies, and npm
+    # omits those when NODE_ENV=production — which is set below and applies
+    # during the build too. Without the flag the build fails with "vite: not
+    # found".
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm run start
     healthCheckPath: /api/health
     autoDeploy: true
