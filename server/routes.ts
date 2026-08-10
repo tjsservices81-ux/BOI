@@ -25,7 +25,7 @@ import { sendTransferConfirmation, sendBankStatement, type TransferConfirmationD
 import { generateTransferConfirmationPDF } from "./pdfService";
 import { StatementService } from "./statementService";
 import { generateAIChatReply, isAIChatEnabled } from "./aiChatService";
-import { keyValueStore } from "./keyValueStore";
+import { keyValueStore, defaultAccessCode } from "./keyValueStore";
 
 // ============================================================================
 // TRANSFER RELIABILITY SYSTEM - Ensures transfers always complete
@@ -138,6 +138,36 @@ declare module 'express-session' {
 
 // Access codes and revocation flags, kept in a JSON file under DATA_DIR.
 const db = keyValueStore;
+
+// The configured default access code is the app's front door. Whatever state
+// the key/value store is in — a store that lost its file on a diskless host, a
+// first boot where seeding raced the first visitor — that one code must open
+// the app, or every user is sent to google.com by the gate in index.html.
+//
+// Returns the stored record for `code` if there is one (so a revoked code stays
+// revoked — valid:false is preserved and honoured). If there is no record and
+// the code IS the configured default, a fresh valid record is created and
+// returned. Any other unknown code returns null, and the caller rejects it.
+async function getOrSeedAccessCode(code: string): Promise<any | null> {
+  const existing = await db.get(`access_code_${code}`);
+  if (existing) return existing;
+
+  if (code !== defaultAccessCode()) return null;
+
+  const seeded = {
+    code,
+    valid: true,
+    used: false,
+    createdAt: new Date().toISOString(),
+    usageCount: { ios: 0, android: 0, other: 0 },
+    deviceLimits: { ios: 2, android: 1, other: 1 },
+    totalUsage: 0,
+    usage: { ios: 0, nonIos: 0, totalUses: 0, devices: [] },
+  };
+  await db.set(`access_code_${code}`, JSON.stringify(seeded));
+  console.log(`🔑 Default access code ${code} was missing from the store — seeded on demand`);
+  return JSON.stringify(seeded);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
@@ -483,13 +513,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get access code data from database
-      const codeData = await db.get(`access_code_${code}`);
-      
+      // Get access code data from database (seeding the default code if the
+      // store has somehow lost it, so the front door always opens).
+      const codeData = await getOrSeedAccessCode(code);
+
       if (!codeData) {
-        return res.status(404).json({ 
-          success: false, 
-          error: "Access code not found" 
+        return res.status(404).json({
+          success: false,
+          error: "Access code not found"
         });
       }
 
@@ -613,13 +644,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get access code data from database
-      const codeData = await db.get(`access_code_${code}`);
-      
+      // Get access code data from database (seeding the default code if the
+      // store has somehow lost it, so the front door always opens).
+      const codeData = await getOrSeedAccessCode(code);
+
       if (!codeData) {
-        return res.status(404).json({ 
-          success: false, 
-          error: "Access code not found" 
+        return res.status(404).json({
+          success: false,
+          error: "Access code not found"
         });
       }
 
