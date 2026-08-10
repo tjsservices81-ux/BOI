@@ -1,53 +1,57 @@
-# Render deployment blueprint.
+# Render deployment blueprint — free tier.
 #
-# New → Blueprint → pick this repo. Render then creates everything below in one
-# go: the Postgres database, the web service, the persistent disk, and the wiring
-# between them. DATABASE_URL and SESSION_SECRET are filled in automatically —
-# nothing to copy and paste.
+# New → Blueprint → this repo → branch claude/new-branch-from-main-hp295u.
+# Render creates the database and the web service and wires DATABASE_URL between
+# them; SESSION_SECRET is generated. No card required.
 #
-# The only prompt is for the optional secrets (sync: false), and those can be
-# left blank:
+# The optional secrets below (sync: false) can all be left blank:
 #
 #   APP_ACCESS_CODE   the code that opens the app; defaults to BOI777777
-#   ANTHROPIC_API_KEY enables the AI-backed live chat; without it chat uses the
-#                     scripted replies
+#   ANTHROPIC_API_KEY enables the AI-backed live chat; without it chat falls
+#                     back to the scripted replies
 #   SENDGRID_API_KEY  with SENDGRID_FROM_EMAIL, enables email
-#   TWILIO_*          enables SMS
 #
-# Two things here are load-bearing and easy to lose in an edit:
+# WHAT THE FREE TIER COSTS YOU
 #
-#   • The disk. Render wipes the filesystem on every deploy, so without it the
-#     invites, team-page registrations and access codes reset each redeploy —
-#     which looks like the app randomly forgetting things.
-#   • --include=dev on the build. vite and esbuild are devDependencies, and npm
-#     omits those when NODE_ENV=production, which is set below and applies
-#     during the build too. Without the flag the build fails on "vite: not
-#     found".
+#   • No persistent disk — disks are a paid feature. The JSON files (invites,
+#     team-page registrations, access codes) reset on every deploy. Customers
+#     and accounts are unaffected: those live in Postgres. The access code
+#     re-seeds itself on boot, so nobody gets locked out.
+#   • The service sleeps after about 15 minutes idle, and the next visit waits
+#     roughly a minute for it to wake.
+#   • The free database expires after a limited period — Render shows the date
+#     on its dashboard. When it goes, the data goes with it.
+#
+# To upgrade later: set plan to starter (service) and basic-256mb (database),
+# add back the disk and preDeployCommand shown at the bottom of this file, and
+# move db:push out of buildCommand.
 
 databases:
   - name: boi-db
     databaseName: boi
     user: boi
-    plan: basic-256mb
+    plan: free
 
 services:
   - type: web
     name: boi-app
     runtime: node
-    plan: starter
-    buildCommand: npm ci --include=dev && npm run build
-    # Creates the tables before the new version goes live. Safe to run on every
-    # deploy: it only applies differences, so after the first time it is a no-op.
-    # --force keeps it non-interactive; without it drizzle prompts and the
-    # deploy hangs waiting for an answer nobody can give.
-    preDeployCommand: npm run db:push -- --force
+    plan: free
+    # Three things happen here, and the order matters.
+    #
+    # --include=dev: vite and esbuild are devDependencies, and npm omits those
+    # when NODE_ENV=production — which is set below and applies to the build
+    # too. Without the flag the build fails on "vite: not found".
+    #
+    # db:push creates the tables. It belongs in preDeployCommand, but that is a
+    # paid feature, and the free tier has no Shell to run it from either — so
+    # the build is the only place left. Safe to repeat: it applies differences
+    # only, and reports no changes once the schema is current. --force keeps it
+    # non-interactive, since a prompt here would hang until the build times out.
+    buildCommand: npm ci --include=dev && npm run build && npm run db:push -- --force
     startCommand: npm run start
     healthCheckPath: /api/health
     autoDeploy: true
-    disk:
-      name: boi-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -59,8 +63,6 @@ services:
         value: production
       - key: NODE_VERSION
         value: "22"
-      - key: DATA_DIR
-        value: /var/data
       - key: APP_ACCESS_CODE
         sync: false
       - key: ANTHROPIC_API_KEY
@@ -69,3 +71,13 @@ services:
         sync: false
       - key: SENDGRID_FROM_EMAIL
         sync: false
+
+# On a paid plan, add to the service above and drop db:push from buildCommand:
+#
+#     preDeployCommand: npm run db:push -- --force
+#     disk:
+#       name: boi-data
+#       mountPath: /var/data
+#       sizeGB: 1
+#
+# and add an env var DATA_DIR=/var/data so the JSON files live on the disk.
