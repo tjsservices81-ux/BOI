@@ -575,16 +575,21 @@
             return;
           }
 
-          // Verify access code with backend
-          const response = await fetch('/api/check-access', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ code: accessCode })
-          });
-
-          const result = await response.json();
+          // Verify the code with the server.
+          //
+          // Two outcomes are not the same thing, and treating them alike is why
+          // a working code could bounce someone to Google:
+          //
+          //   • The server answered and said no — wrong code, revoked, used up.
+          //     That is final, and they get sent away.
+          //   • The server could not be reached, or replied with something that
+          //     isn't JSON. That says nothing about the code. A sleeping host
+          //     waking up takes the better part of a minute and fails exactly
+          //     this way, as does a deploy that is still building.
+          //
+          // So only a real answer closes the door. Anything else keeps the
+          // loading screen up and tries again.
+          const result = await verifyAccessCode(accessCode);
 
           if (result.success) {
             // Access granted - save to localStorage and clean URL
@@ -596,23 +601,57 @@
             // Start periodic access validation
             startAccessValidation();
           } else {
-            // Access denied - show appropriate message
+            // The server gave a definite no.
             const message = result.message || "Access code invalid or expired";
             showAccessDenied(message);
           }
         } catch (error) {
           console.error('Access verification failed:', error);
-          // If verification fails due to connection issues, prioritize existing access
           const hasAccess = localStorage.getItem('accessGranted');
           if (hasAccess === 'true') {
-            console.log('Connection error but user has existing access - allowing entry');
             hideLoadingScreen();
-            // Still start validation to check later when connection is restored
             startAccessValidation();
           } else {
-            // Only deny access if they have no existing access AND connection fails
             showAccessDenied("Connection error - please try again");
           }
+        }
+      }
+
+      /**
+       * Ask the server about an access code, waiting out a host that is still
+       * waking up or still deploying. Resolves only once the server actually
+       * answers; keeps retrying, slower each time, while it cannot be reached.
+       */
+      async function verifyAccessCode(accessCode) {
+        let delayMs = 1000;
+
+        for (let attempt = 0; ; attempt++) {
+          try {
+            const response = await fetch('/api/check-access', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ code: accessCode })
+            });
+
+            // 5xx is the host itself struggling, not a verdict on the code.
+            if (response.status < 500) {
+              // A non-JSON body means a proxy or error page answered instead of
+              // the app, which is also not a verdict.
+              const text = await response.text();
+              try {
+                return JSON.parse(text);
+              } catch (parseError) {
+                console.warn('Access check got a non-JSON reply, retrying');
+              }
+            }
+          } catch (networkError) {
+            console.warn('Access check could not reach the server, retrying');
+          }
+
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          // Back off to a 10s poll: a cold start is usually under a minute, but
+          // a deploy in progress can take several.
+          delayMs = Math.min(delayMs * 1.5, 10000);
         }
       }
 
