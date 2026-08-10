@@ -362,6 +362,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         effectiveCustomerNumber = req.body.customerNumber.trim();
       }
 
+      // Note which device this heartbeat came from. Every open app sends a
+      // heartbeat every 15s carrying its own persistent app_device_id, so two
+      // phones signed into one account each report a different id and the
+      // account is flagged — without ending anyone's session. Purely a signal
+      // for Admin Oversight.
+      if (effectiveCustomerNumber) {
+        try {
+          const deviceId = typeof req.body?.deviceId === 'string' ? req.body.deviceId.trim() : undefined;
+          const ua = req.headers['user-agent'] || '';
+          let model = 'Browser';
+          if (/iPhone/i.test(ua)) model = 'iPhone';
+          else if (/iPad/i.test(ua)) model = 'iPad';
+          else if (/Android/i.test(ua)) model = 'Android Device';
+          const result = deviceFlagRegistry.recordLogin(effectiveCustomerNumber, {
+            deviceId,
+            model,
+            ipAddress: req.ip || (req.connection as any)?.remoteAddress || '',
+            userAgent: ua,
+          });
+          if (result.newlyFlagged) {
+            console.log(`🚩 MULTI-DEVICE: ${effectiveCustomerNumber} now used on ${result.deviceCount} devices`);
+          }
+        } catch (e: any) {
+          console.warn('Heartbeat device flag error:', e?.message || e);
+        }
+      }
+
       if (effectiveCustomerNumber) {
         // Only logout if we're 100% certain they're deleted, not if the
         // database has a transient issue (checkCustomerExists fails safe = true).
@@ -1310,6 +1337,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       inviteService.consume(token, deviceModel);
+
+      // Record this phone against the account. Claiming on a second device is
+      // the clearest "used on two devices" signal, so flag it here immediately
+      // rather than waiting for the first heartbeat. Detection only — the claim
+      // still succeeds and nobody is logged out.
+      try {
+        const claimDeviceId = typeof req.body?.deviceId === 'string' ? req.body.deviceId.trim() : undefined;
+        const result = deviceFlagRegistry.recordLogin(user.customerNumber, {
+          deviceId: claimDeviceId,
+          model: deviceModel,
+          ipAddress,
+          userAgent,
+        });
+        if (result.newlyFlagged) {
+          console.log(`🚩 MULTI-DEVICE (invite claim): ${user.customerNumber} now used on ${result.deviceCount} devices`);
+        }
+      } catch (e: any) {
+        console.warn('Invite claim device flag error:', e?.message || e);
+      }
 
       (req as any).session.userId = user.id;
       (req as any).session.customerNumber = user.customerNumber;

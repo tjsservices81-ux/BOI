@@ -53,7 +53,11 @@ export default function Invite() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ token, maxTouchPoints: navigator.maxTouchPoints || 0 }),
+        body: JSON.stringify({
+          token,
+          maxTouchPoints: navigator.maxTouchPoints || 0,
+          deviceId: (() => { try { return localStorage.getItem("app_device_id") || ""; } catch { return ""; } })(),
+        }),
       });
       const data = await res.json().catch(() => ({}));
 

@@ -38,6 +38,11 @@ function startSessionHeartbeat() {
     // when there's no server-side session identity (device / invite logins).
     const currentCustomerNumber = UserDataManager.getCurrentUser();
 
+    // This device's persistent id, so the server can flag one account being
+    // used on two phones (detection only — it never logs anyone out).
+    let deviceId: string | null = null;
+    try { deviceId = localStorage.getItem('app_device_id'); } catch {}
+
     // Send heartbeat to server to refresh session
     fetch('/api/auth/heartbeat', {
       method: 'POST',
@@ -46,7 +51,7 @@ function startSessionHeartbeat() {
         'Content-Type': 'application/json',
         ...(accessCode && { 'X-Access-Code': accessCode })
       },
-      body: JSON.stringify({ accessCode, customerNumber: currentCustomerNumber })
+      body: JSON.stringify({ accessCode, customerNumber: currentCustomerNumber, deviceId })
     }).then(response => {
       if (response.status === 410) {
         // 410 Gone = Account PERMANENTLY DELETED - wipe all data for this user
