@@ -19,3 +19,9 @@ data/deviceFlags.json
 
 # Outstanding invite links - runtime state per environment
 data/invites.json
+
+# Everything under data/ is runtime state belonging to one deployment, and
+# some of it is customer data. It is never committed: the database is the
+# source of truth, and this repository is public.
+data/
+.env

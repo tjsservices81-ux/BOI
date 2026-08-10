@@ -1,6 +1,6 @@
 /**
  * Email service for sending transfer confirmations and notifications
- * Uses SendGrid integration via Replit connector
+ * Uses SendGrid, configured through environment variables.
  */
 import sgMail from '@sendgrid/mail';
 import fs from 'fs';
@@ -19,58 +19,22 @@ export interface TransferConfirmationDetails {
 }
 
 /**
- * Get SendGrid credentials from Replit connector
- * WARNING: Never cache this client - access tokens expire
+ * SendGrid credentials, from the environment.
+ *
+ * Set SENDGRID_API_KEY (or SG_API_KEY) and SENDGRID_FROM_EMAIL on the host.
+ * With either missing, email is simply skipped and the caller logs what it
+ * would have sent — nothing else in the app fails because of it.
  */
 async function getCredentials(): Promise<{apiKey: string, email: string} | null> {
-  try {
-    const envApiKey = process.env.SG_API_KEY || process.env.SENDGRID_API_KEY;
-    const envFromEmail = process.env.SENDGRID_FROM_EMAIL;
-    if (envApiKey && envFromEmail) {
-      return {
-        apiKey: envApiKey,
-        email: envFromEmail
-      };
-    }
+  const apiKey = process.env.SENDGRID_API_KEY || process.env.SG_API_KEY;
+  const email = process.env.SENDGRID_FROM_EMAIL || process.env.FROM_EMAIL;
 
-    const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
-    const xReplitToken = process.env.REPL_IDENTITY 
-      ? 'repl ' + process.env.REPL_IDENTITY 
-      : process.env.WEB_REPL_RENEWAL 
-      ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-      : null;
-
-    if (!xReplitToken || !hostname) {
-      console.log('⚠️ SendGrid credentials not available');
-      return null;
-    }
-
-    const response = await fetch(
-      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=sendgrid',
-      {
-        headers: {
-          'Accept': 'application/json',
-          'X_REPLIT_TOKEN': xReplitToken
-        }
-      }
-    );
-    
-    const data = await response.json();
-    const connectionSettings = data.items?.[0];
-
-    if (!connectionSettings || (!connectionSettings.settings.api_key || !connectionSettings.settings.from_email)) {
-      console.log('⚠️ SendGrid not connected or missing credentials');
-      return null;
-    }
-    
-    return {
-      apiKey: connectionSettings.settings.api_key, 
-      email: connectionSettings.settings.from_email
-    };
-  } catch (error) {
-    console.error('Failed to get SendGrid credentials:', error);
+  if (!apiKey || !email) {
+    console.log('⚠️ SendGrid not configured — set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL to enable email');
     return null;
   }
+
+  return { apiKey, email };
 }
 
 /**

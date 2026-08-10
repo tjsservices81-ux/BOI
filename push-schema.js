@@ -9,8 +9,7 @@ const dbUrl = process.env.DATABASE_URL;
 
 if (!dbUrl) {
   console.error('❌ DATABASE_URL not found in environment');
-  console.error('   Replit automatically provides this secret.');
-  console.error('   Make sure your database is provisioned in Replit settings.');
+  console.error('   Set it in the host environment, or in a local .env file.');
   process.exit(1);
 }
 

@@ -1,6 +1,8 @@
-// SECURITY: Twilio credentials MUST be loaded from environment variables only
-// DO NOT hard-code secrets here - set them in Replit Secrets
-// Required secrets: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
+// SECURITY: credentials MUST be loaded from environment variables only.
+// DO NOT hard-code secrets here — set them on the host (on Render:
+// Dashboard → the service → Environment), or in a local .env, which is
+// gitignored. Anything written into a tracked file is public the moment it
+// is pushed, and stays in the history after it is removed.
 
 import dotenv from 'dotenv';
 import path from 'path';
@@ -185,14 +187,15 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Hosts such as Render assign the port through the environment; Replit uses
-  // 5000. Binding the wrong one means the platform never sees the app come up.
+  // The host assigns the port through the environment; 5000 is the local
+  // default. Binding the wrong one means the platform never sees the app
+  // come up, and the deploy fails with no obvious reason.
   const port = Number(process.env.PORT) || 5000;
   server.listen({
     port,
     host: "0.0.0.0",
-    // Only helpful on Replit, and unsupported on some platforms — so it is not
-    // requested in production, where it could stop the server binding at all.
+    // Unsupported on some platforms, so it is not requested in production
+    // where it could stop the server binding at all.
     ...(process.env.NODE_ENV === 'production' ? {} : { reusePort: true }),
   }, () => {
     log(`serving on port ${port}`);

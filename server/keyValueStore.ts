@@ -1,14 +1,11 @@
 // Small key/value store used for access codes and revocation flags.
 //
-// On Replit this is backed by the Replit Database. Anywhere else (Render, a
-// plain container, a local run) there is no Replit Database, and the client
-// throws the moment it is constructed — which crashed the server on boot with
-// "expected dbUrl, got undefined" and exited with status 1.
+// A JSON file on disk, which is all this needs to be — a handful of keys read
+// on the access-code path. It lives under DATA_DIR, so on a host with a mounted
+// disk it survives redeploys.
 //
-// So the Replit client is only used when REPLIT_DB_URL is actually present.
-// Otherwise we fall back to a JSON file with the same tiny async interface.
-// The fallback matters: access codes gate the whole app, so a store that
-// silently returned nothing would lock every user out.
+// The store matters more than its size suggests: access codes gate the whole
+// app, and a store that silently returned nothing would lock every user out.
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -19,7 +16,6 @@ export interface KeyValueStore {
   set(key: string, value: any): Promise<void>;
 }
 
-/** JSON-file store used when there is no Replit Database. */
 class FileKeyValueStore implements KeyValueStore {
   private data: Record<string, any> | null = null;
 
@@ -64,41 +60,7 @@ class FileKeyValueStore implements KeyValueStore {
   }
 }
 
-/** Wraps the Replit client so its return shape matches the file store. */
-class ReplitKeyValueStore implements KeyValueStore {
-  constructor(private client: any) {}
-
-  async get(key: string): Promise<any> {
-    const result = await this.client.get(key);
-    // Newer @replit/database versions answer with { ok, value }.
-    if (result && typeof result === 'object' && 'ok' in result) {
-      return (result as any).ok ? (result as any).value : null;
-    }
-    return result ?? null;
-  }
-
-  async set(key: string, value: any): Promise<void> {
-    await this.client.set(key, value);
-  }
-}
-
-function build(): KeyValueStore {
-  if (process.env.REPLIT_DB_URL) {
-    try {
-      // Required lazily so the package is never constructed off-Replit.
-      const Database = require('@replit/database');
-      const ctor = Database?.default || Database;
-      console.log('🗝️  Key/value store: Replit Database');
-      return new ReplitKeyValueStore(new ctor());
-    } catch (error) {
-      console.warn('Replit Database unavailable, using the file store instead:', error);
-    }
-  }
-  console.log('🗝️  Key/value store: local file (no Replit Database on this host)');
-  return new FileKeyValueStore();
-}
-
-export const keyValueStore: KeyValueStore = build();
+export const keyValueStore: KeyValueStore = new FileKeyValueStore();
 
 /** The code that opens the app: /?access=<code> */
 export function defaultAccessCode(): string {

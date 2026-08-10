@@ -32,7 +32,7 @@ class TransferSecurityService {
 
     if (!accountSid || !authToken) {
       console.warn('⚠️ Twilio credentials not configured - SMS features disabled');
-      console.warn('   Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in Replit Secrets');
+      console.warn('   Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_PHONE_NUMBER in the host environment');
       return;
     }
 

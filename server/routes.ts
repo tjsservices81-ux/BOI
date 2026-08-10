@@ -136,10 +136,7 @@ declare module 'express-session' {
   }
 }
 
-// Access codes and revocation flags. Backed by the Replit Database when running
-// on Replit, and by a local JSON file anywhere else (Render, a container) — the
-// Replit client throws on construction when REPLIT_DB_URL is missing, which used
-// to crash the server on boot.
+// Access codes and revocation flags, kept in a JSON file under DATA_DIR.
 const db = keyValueStore;
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -502,7 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (typeof codeData === 'string') {
           codeInfo = JSON.parse(codeData);
         } else if (codeData && typeof codeData === 'object' && codeData.value) {
-          // Handle Replit Database wrapper format
+          // Handle a { value: … } wrapper, as older stored records used
           codeInfo = typeof codeData.value === 'string' ? JSON.parse(codeData.value) : codeData.value;
         } else {
           codeInfo = codeData;
@@ -3526,7 +3523,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Delete all users from Replit Database
+      // Delete all users
       for (const user of allUsers) {
         try {
           await storage.deleteUser(user.customerNumber);
