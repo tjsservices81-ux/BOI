@@ -37,8 +37,18 @@ app.use(session({
     // development sessions to the production database (or fail outright when
     // only DEV_DATABASE_URL is set).
     conString: databaseUrl(),
-    tableName: 'user_sessions',
-    createTableIfMissing: true,
+    // The "sessions" table in shared/schema.ts, created by db:push — its
+    // columns are exactly what connect-pg-simple expects (sid, sess, expire).
+    //
+    // This used to point at "user_sessions" with createTableIfMissing, which
+    // could never work once the schema was actually applied: connect-pg-simple
+    // creates its index as IDX_session_expire, and the schema already defines
+    // an index of that name on "sessions". Index names are unique per schema,
+    // so every request that touched a session died with
+    //   relation "IDX_session_expire" already exists
+    // and the app looked like it was failing to load rather than failing here.
+    tableName: 'sessions',
+    createTableIfMissing: false,
     ttl: 365 * 24 * 60 * 60 * 1000, // 1 year TTL for permanent sessions
     disableTouch: false, // Allow session refresh
     pruneSessionInterval: false, // Never auto-prune sessions
@@ -170,12 +180,18 @@ app.use((req, res, next) => {
   // Serve static assets last to avoid conflicts with API routes
   app.use(express.static('.'));
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
+    // Log it rather than rethrowing. Express catches a throw from here, so it
+    // never reached a log anyone would read — the only trace was the message
+    // sent to the browser, which made server-side failures hard to diagnose
+    // from the outside.
+    console.error(`Request failed: ${req.method} ${req.path} → ${status}: ${message}`);
+    if (err?.stack) console.error(err.stack);
+
+    if (!res.headersSent) res.status(status).json({ message });
   });
 
   // importantly only setup vite in development and after
