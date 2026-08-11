@@ -1149,10 +1149,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/customers/create-with-link", async (req, res) => {
     try {
       const { name, adminAlias, appReplacement } = req.body || {};
-      const profileName = String(name || '').trim();
-      if (!profileName) {
-        return res.status(400).json({ success: false, message: "A name is required" });
-      }
+      // The admin sets the private alias, not the profile name — every new
+      // account starts as "New Customer" and can be renamed later.
+      const profileName = String(name || '').trim() || 'New Customer';
 
       let created: { customerNumber: string; id: number } | null = null;
       for (let attempt = 0; attempt < 5 && !created; attempt++) {

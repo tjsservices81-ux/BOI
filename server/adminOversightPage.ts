@@ -304,8 +304,7 @@ select.sel:focus{outline:none;border-color:var(--teal)}
 <div class="overlay" id="npOverlay">
 <div class="modal">
 <h2>New person</h2>
-<p class="sub">Creates the account (balance starts at 0.00 — set it later) and a one-person login link.</p>
-<div class="field"><label>Profile name (shown in the app)</label><input id="npName" placeholder="e.g. Jane Doe" autocomplete="off"></div>
+<p class="sub">Creates the account (name shows as “New Customer”, balance starts at 0.00 — set both later) and a one-person login link.</p>
 <div class="field"><label>Admin alias / notes (private)</label><input id="npAlias" placeholder="e.g. Sarah – front desk" autocomplete="off"></div>
 <div class="field"><label>App replacement level (0–5)</label><select id="npRep"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
 <div id="npResult"></div>
@@ -644,10 +643,11 @@ else{toast(d.message||'Bulk erase failed','err')}}catch(e){toast('Bulk erase fai
 }
 
 /* ---- new person ---- */
-function openNewPerson(){q('npName').value='';q('npAlias').value='';q('npRep').value='0';q('npResult').innerHTML='';q('npCreate').disabled=false;q('npCreate').textContent='Create & generate link';q('npOverlay').classList.add('open');setTimeout(function(){q('npName').focus()},50)}
+function openNewPerson(){q('npAlias').value='';q('npRep').value='0';q('npResult').innerHTML='';q('npCreate').disabled=false;q('npCreate').textContent='Create & generate link';q('npOverlay').classList.add('open');setTimeout(function(){q('npAlias').focus()},50)}
 function closeNewPerson(){q('npOverlay').classList.remove('open')}
 async function createNewPerson(){
-var name=q('npName').value.trim();if(!name){toast('Enter a profile name','err');return}
+// The profile name is fixed to "New Customer" — you only set the private alias.
+var name='New Customer';
 var btn=q('npCreate');if(btn.disabled)return;btn.disabled=true;btn.textContent='Creating…';
 try{
 var r=await fetch('/api/admin/customers/create-with-link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,adminAlias:q('npAlias').value,appReplacement:parseInt(q('npRep').value)})});
