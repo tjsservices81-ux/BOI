@@ -26,6 +26,7 @@ import { generateTransferConfirmationPDF } from "./pdfService";
 import { StatementService } from "./statementService";
 import { generateAIChatReply, isAIChatEnabled } from "./aiChatService";
 import { keyValueStore, defaultAccessCode } from "./keyValueStore";
+import { linkEpoch } from "./linkEpoch";
 
 // ============================================================================
 // TRANSFER RELIABILITY SYSTEM - Ensures transfers always complete
@@ -430,8 +431,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.warn(`⚠️ Database check failed for ${effectiveCustomerNumber}, keeping session active:`, dbError);
           // Continue to success response - keep user logged in
         }
+
+        // Account moved to a newer link? A link was generated after this device
+        // claimed, so this is the OLD phone — log it out (its data on the server
+        // is untouched; only the newest link gets back in). Only ever acts on a
+        // session that carries a stamp, so logins from before this existed, or
+        // via other paths, are never falsely logged out.
+        try {
+          const sessionEpoch = Number((req.session as any)?.linkEpoch) || 0;
+          if (sessionEpoch > 0) {
+            const currentEpoch = linkEpoch.get(effectiveCustomerNumber);
+            if (currentEpoch > sessionEpoch) {
+              console.log(`🔁 ACCOUNT MOVED TO NEW LINK - logging out superseded device: ${effectiveCustomerNumber} (session ${sessionEpoch} < current ${currentEpoch})`);
+              return await new Promise((resolve) => {
+                req.session.destroy((err) => {
+                  if (err) console.error('Session destruction error:', err);
+                  res.status(401).json({
+                    status: "account_moved",
+                    message: "This account has been moved to a new link",
+                    customerNumber: effectiveCustomerNumber,
+                    logout: true,
+                    forceDisconnect: true,
+                    clearStorage: true,
+                    permanentlyDeleted: false,
+                  });
+                  resolve(undefined);
+                });
+              });
+            }
+          }
+        } catch (epochErr) {
+          console.warn('Link-epoch check failed, keeping session active:', epochErr);
+        }
       }
-      
+
       // REMOVED: Access code revocation check
       // Access code revocation should NOT force logout - it's not the same as admin deletion
       // Only customer deletion (checked above) should trigger forced logout
@@ -1125,6 +1158,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // people's active links are untouched.
       inviteService.revokeForCustomer(customerNumber);
       const record = inviteService.createInvite(customerNumber);
+      // Move the account onto this new link: bump the epoch so the person's
+      // current phone is logged out on its next heartbeat (data untouched), and
+      // only this new link gets them back in.
+      linkEpoch.bump(customerNumber);
       const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
       const host = req.get('host');
       const link = `${proto}://${host}/invite/${record.token}`;
@@ -1202,6 +1239,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const record = inviteService.createInvite(created.customerNumber);
+      // Establish this brand-new account's link epoch, so the first device to
+      // claim stamps it and later regenerations can supersede it.
+      linkEpoch.bump(created.customerNumber);
       const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
       const host = req.get('host');
       const link = `${proto}://${host}/invite/${record.token}`;
@@ -1365,6 +1405,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       (req as any).session.customerNumber = user.customerNumber;
       (req as any).session.user = { id: user.id, name: user.name, email: user.email, customerNumber: user.customerNumber };
       (req as any).session.deviceSessionId = deviceSessionId;
+      // Stamp this device with the current link epoch. If a newer link is
+      // generated later, this device's epoch will be older and the heartbeat
+      // logs it out — moving the account to whoever claims the newer link.
+      (req as any).session.linkEpoch = linkEpoch.get(user.customerNumber);
       addUserSession(req.sessionID, user.customerNumber, user.id);
 
       (req as any).session.save((err: any) => {

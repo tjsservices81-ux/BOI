@@ -685,6 +685,10 @@ class MemStorage implements IStorage {
             const { inviteService } = await import('./inviteService');
             inviteService.revokeForCustomer(customerNumber);
           }],
+          ['link epoch', async () => {
+            const { linkEpoch } = await import('./linkEpoch');
+            linkEpoch.clear(customerNumber);
+          }],
           ['one-time codes', async () => {
             const { otcService } = await import('./otcService');
             otcService.clearOTC(customerNumber);
