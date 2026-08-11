@@ -1119,6 +1119,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateCustomer(customerNumber, updates);
       }
 
+      // Kill every previous link for this person the same way deleting them
+      // does, so the old link stops working the moment a new one is generated
+      // and only the newest one is ever live. This is per-customer, so other
+      // people's active links are untouched.
+      inviteService.revokeForCustomer(customerNumber);
       const record = inviteService.createInvite(customerNumber);
       const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
       const host = req.get('host');

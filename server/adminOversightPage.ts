@@ -610,10 +610,9 @@ if(r.ok){toast('Moved to Deleted','ok');S.expanded[cn]=false;await refresh(false
 }
 async function restore(cn){
 try{var r=await fetch('/api/customers/'+encodeURIComponent(cn)+'/restore',{method:'POST'});var d=await r.json();
-if(r.ok){toast('Customer restored','ok');await refresh(false);
-// Their old link died when they were deleted, so mint a fresh one right away
-// — same account, all their data, ready to send so they can log back on.
-genLink(cn)}
+// Just restore. Their old link stays dead; when you're ready, use the
+// "Generate login link" button on their card to make a fresh one.
+if(r.ok){toast('Customer restored','ok');await refresh(false)}
 else{toast(d.message||'Restore failed','err')}}catch(e){toast('Restore failed','err')}
 }
 /* ---- login link (existing customer) ---- */
