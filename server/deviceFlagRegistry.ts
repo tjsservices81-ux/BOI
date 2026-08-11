@@ -78,34 +78,57 @@ class DeviceFlagRegistry {
     this.load();
     if (!customerNumber) return { deviceCount: 0, newlyFlagged: false };
 
-    // Prefer the client's persistent device id; fall back to a coarse
-    // fingerprint so a missing id still distinguishes obvious second devices.
-    const key = (device.deviceId && device.deviceId.trim())
-      || `ua:${(device.model || 'unknown')}|${(device.userAgent || '').slice(0, 60)}`;
-
     const now = new Date().toISOString();
     const rec: DeviceRecord = this.records.get(customerNumber) || { devices: [] };
-    const existing = rec.devices.find((d) => d.key === key);
+    const wasFlagged = !!rec.flaggedAt;
+
+    const model = device.model || 'Unknown device';
+    const ip = (device.ipAddress || '').trim();
+    const rawId = (device.deviceId && device.deviceId.trim()) || '';
+
+    // A device's real identity is its persistent id. When we have one, match on
+    // it. Two records that share the same model AND IP are treated as the same
+    // physical device regardless of id — this is what stops one phone being
+    // counted twice, which happened when its stored id changed (an app reinstall,
+    // iOS Safari vs the installed PWA keeping separate storage) or was briefly
+    // absent and a coarse fallback was recorded instead.
+    let existing =
+      (rawId ? rec.devices.find((d) => d.key === rawId) : undefined) ||
+      rec.devices.find((d) => d.model === model && d.ipAddress === ip);
 
     if (existing) {
       existing.lastSeen = now;
-      if (device.ipAddress) existing.ipAddress = device.ipAddress;
-      this.records.set(customerNumber, rec);
-      this.save();
-      return { deviceCount: rec.devices.length, newlyFlagged: false };
+      if (rawId) existing.key = rawId; // upgrade a fallback entry to the real id
+      if (ip) existing.ipAddress = ip;
+    } else {
+      rec.devices.push({
+        key: rawId || `${model}|${ip}`,
+        model,
+        ipAddress: ip,
+        firstSeen: now,
+        lastSeen: now,
+      });
     }
 
-    rec.devices.push({
-      key,
-      model: device.model || 'Unknown device',
-      ipAddress: device.ipAddress || '',
-      firstSeen: now,
-      lastSeen: now,
-    });
+    // Collapse to one entry per (model + IP). Clears out legacy coarse-fallback
+    // duplicates already stored from before this rule existed, so an account
+    // wrongly showing "2 devices" for one phone heals itself on the next beat.
+    const byPlace = new Map<string, KnownDevice>();
+    for (const d of rec.devices) {
+      const place = `${d.model}|${d.ipAddress}`;
+      const seen = byPlace.get(place);
+      if (!seen) { byPlace.set(place, d); continue; }
+      if (new Date(d.firstSeen) < new Date(seen.firstSeen)) seen.firstSeen = d.firstSeen;
+      if (new Date(d.lastSeen) > new Date(seen.lastSeen)) seen.lastSeen = d.lastSeen;
+      if (rawId && d.key === rawId) seen.key = rawId;
+    }
+    rec.devices = Array.from(byPlace.values());
 
-    const wasFlagged = !!rec.flaggedAt;
     const nowFlagged = rec.devices.length > 1;
     if (nowFlagged && !wasFlagged) rec.flaggedAt = now;
+    // If a collapse brought a wrongly-flagged account back to a single device,
+    // drop the stale flag so it stops showing as flagged.
+    if (!nowFlagged && wasFlagged) delete rec.flaggedAt;
 
     this.records.set(customerNumber, rec);
     this.save();

@@ -329,6 +329,17 @@ select.sel:focus{outline:none;border-color:var(--teal)}
 </div>
 </div>
 
+<div class="overlay" id="linkOverlay">
+<div class="modal">
+<h2 id="lkTitle">Login link</h2>
+<p class="sub" id="lkSub">Send this to the person on their phone. It opens their account with all their data. Works once, then it's dead.</p>
+<div id="lkResult"></div>
+<div class="modal-actions">
+<button class="btn btn-primary" onclick="closeLink()">Done</button>
+</div>
+</div>
+</div>
+
 <script>
 var S={customers:[],links:[],otcs:[],env:null,error:'',warn:'',loaded:false,tab:'customers',search:'',status:'all',sort:'newest',expanded:{},busy:{},hash:'',polling:true};
 
@@ -351,7 +362,7 @@ function deleted(c){return c.filter(function(x){return x.isDeleted})}
 function toast(msg,type){var w=q('toasts');var t=document.createElement('div');t.className='toast'+(type==='ok'?' ok':type==='err'?' err':'');var ic=type==='ok'?'<path d="M20 6L9 17l-5-5"/>':type==='err'?'<path d="M18 6L6 18M6 6l12 12"/>':'<circle cx="12" cy="12" r="9"/>';t.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">'+ic+'</svg><span>'+esc(msg)+'</span>';w.appendChild(t);setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(6px)';t.style.transition='all .3s';setTimeout(function(){t.remove()},300)},3200)}
 
 /* ---- data ---- */
-function anyModalOpen(){return q('npOverlay').classList.contains('open')||q('confirmOverlay').classList.contains('open')}
+function anyModalOpen(){return q('npOverlay').classList.contains('open')||q('confirmOverlay').classList.contains('open')||q('linkOverlay').classList.contains('open')}
 /* Fetch one endpoint and always report WHY it failed, instead of collapsing
    every possible problem into a single useless "could not load". */
 async function getJSON(url){
@@ -482,7 +493,7 @@ return '<div class="row'+(open?' open':'')+'" data-cn="'+id+'">'
 +'<div class="field"><label>Alias / notes</label><div class="field-row"><input id="al-'+id+'" value="'+esc(c.adminAlias||'')+'" placeholder="Internal note"><button class="save" onclick="saveAdmin(\\''+id+'\\')">Save</button></div></div>'
 +'<div class="field"><label>Admin phone</label><div class="field-row"><input id="ph-'+id+'" value="'+esc(c.adminPhone||'')+'" placeholder="Phone"><button class="save" onclick="saveAdmin(\\''+id+'\\')">Save</button></div></div>'
 +'<div class="field"><label>App replacement level (0–5)</label><div class="field-row"><select id="rp-'+id+'">'+[0,1,2,3,4,5].map(function(n){return '<option value="'+n+'"'+((c.appReplacement||0)===n?' selected':'')+'>'+n+'</option>'}).join('')+'</select><button class="save" onclick="saveAdmin(\\''+id+'\\')">Save</button></div></div>'
-+'<div class="actions-row"><button class="btn btn-ghost-danger" onclick="askDelete(\\''+id+'\\')"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Delete customer</button></div>'
++'<div class="actions-row"><button class="btn" onclick="genLink(\\''+id+'\\',this)"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg>Generate login link</button><button class="btn btn-ghost-danger" onclick="askDelete(\\''+id+'\\')"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Delete customer</button></div>'
 +'</div></div></div>';
 }
 
@@ -598,7 +609,28 @@ try{var r=await fetch('/api/customers/'+encodeURIComponent(cn),{method:'DELETE',
 if(r.ok){toast('Moved to Deleted','ok');S.expanded[cn]=false;await refresh(false)}else{toast(d.message||'Delete failed','err')}}catch(e){toast('Delete failed','err')}
 }
 async function restore(cn){
-try{var r=await fetch('/api/customers/'+encodeURIComponent(cn)+'/restore',{method:'POST'});var d=await r.json();if(r.ok){toast('Customer restored','ok');await refresh(false)}else{toast(d.message||'Restore failed','err')}}catch(e){toast('Restore failed','err')}
+try{var r=await fetch('/api/customers/'+encodeURIComponent(cn)+'/restore',{method:'POST'});var d=await r.json();
+if(r.ok){toast('Customer restored','ok');await refresh(false);
+// Their old link died when they were deleted, so mint a fresh one right away
+// — same account, all their data, ready to send so they can log back on.
+genLink(cn)}
+else{toast(d.message||'Restore failed','err')}}catch(e){toast('Restore failed','err')}
+}
+/* ---- login link (existing customer) ---- */
+function closeLink(){q('linkOverlay').classList.remove('open')}
+function showLink(name,link,expiresAt){
+q('lkResult').innerHTML='<div class="acct" style="margin-bottom:2px"><div style="font-size:12.5px;color:var(--green);font-weight:600;margin-bottom:8px">✓ Link for '+esc(name||'this customer')+'</div><div class="link-url" style="white-space:normal;word-break:break-all;color:var(--ink);margin-bottom:10px">'+esc(link)+'</div><button class="btn btn-primary" style="width:100%;justify-content:center" onclick="copyText(\\''+esc(link)+'\\',this)"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>Copy link</button>'+(expiresAt?('<div class="exp" style="margin-top:8px">Works once · expires '+fdate(expiresAt)+'</div>'):'')+'</div>';
+q('linkOverlay').classList.add('open');
+}
+async function genLink(cn,btn){
+if(btn){var ob=btn.innerHTML;btn.innerHTML='Generating…';btn.disabled=true}
+try{
+var r=await fetch('/api/admin/invite/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customerNumber:cn})});
+var d=await r.json();
+if(r.ok&&d.link){showLink(nameOf(cn),d.link,d.expiresAt);await refresh(true);toast('Fresh link ready','ok')}
+else{toast(d.message||'Could not generate link','err')}
+}catch(e){toast('Could not generate link','err')}
+if(btn){btn.innerHTML=ob;btn.disabled=false}
 }
 function askErase(cn){openConfirm('Permanently erase '+nameOf(cn)+'?','This deletes all their data for good. It cannot be undone.','Erase forever','DELETE',function(){eraseDo(cn)})}
 async function eraseDo(cn){

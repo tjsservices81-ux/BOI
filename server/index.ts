@@ -21,6 +21,12 @@ import connectPgSimple from "connect-pg-simple";
 
 const app = express();
 
+// Behind Render's (and most hosts') load balancer, so req.ip must come from
+// X-Forwarded-For rather than the immediate connection — otherwise every
+// visitor looks like the proxy (127.0.0.1) and the device-flag check can't tell
+// two phones apart.
+app.set('trust proxy', true);
+
 // Apply panic mode check only - IP whitelist disabled
 app.use(panicModeMiddleware);
 
