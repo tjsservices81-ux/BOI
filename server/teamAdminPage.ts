@@ -191,10 +191,8 @@ svg{display:block}
 .empty{text-align:center;padding:46px 20px;color:var(--mut);background:var(--card);border:1px dashed var(--line2);border-radius:16px}
 .empty-t{font-weight:650;color:var(--sub);margin-bottom:5px;font-size:14.5px}
 .empty-s{font-size:13px}
-.applink{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:14px;box-shadow:var(--sh)}
-.applink-l{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.applink-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.applink-url{flex:1;min-width:190px;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;color:var(--ink);word-break:break-all}
+.lk-url{font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--ink);word-break:break-all;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:6px}
+.lk-moved{font-size:13.5px;color:var(--sub);margin-bottom:14px;line-height:1.55}
 .note{font-size:12.5px;color:var(--sub);background:var(--amber-bg);border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:12px 14px;margin-bottom:16px;line-height:1.55}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;background:#0f172a;color:#fff;padding:12px 18px;border-radius:11px;font-size:13.5px;font-weight:550;z-index:99;box-shadow:0 8px 24px rgba(15,23,42,.25);max-width:90vw;text-align:center}
 .toast.err{background:var(--red)}
@@ -229,14 +227,6 @@ svg{display:block}
 </div>
 
 <div class="wrap">
-  <div class="applink" id="appLinkCard" style="display:none">
-    <div class="applink-l">App link — send this to the person</div>
-    <div class="applink-row">
-      <div class="applink-url" id="appLinkUrl"></div>
-      <button class="btn" id="appLinkBtn" onclick="copyAppLink()">Copy</button>
-    </div>
-  </div>
-
   <div class="note">
     <strong>To make an account:</strong> on the app's login screen tap <strong>Bank of Ireland 5 times</strong>, then set the name to <strong>${cfg.customerName}</strong>. The login code appears here. Real customers never show on this page.
   </div>
@@ -258,7 +248,7 @@ svg{display:block}
 <script>
 var LIMIT = ${cfg.limit};
 var API = '/api/${cfg.slug}';
-var state = { customers: [], appLink: '' };
+var state = { customers: [] };
 
 function esc(s){
   return String(s == null ? '' : s)
@@ -284,7 +274,6 @@ function load(){
     .then(function(r){ return r.json(); })
     .then(function(d){
       state.customers = (d && d.customers) || [];
-      if (d && d.appLink) { state.appLink = d.appLink; renderAppLink(); }
       render();
     })
     .catch(function(){
@@ -292,22 +281,6 @@ function load(){
         '<div class="empty"><div class="empty-t">Could not load</div>' +
         '<div class="empty-s">Check your connection and tap Refresh.</div></div>';
     });
-}
-
-function renderAppLink(){
-  if (!state.appLink) return;
-  document.getElementById('appLinkUrl').textContent = state.appLink;
-  document.getElementById('appLinkCard').style.display = 'block';
-}
-
-function copyAppLink(){
-  copy(state.appLink);
-  var btn = document.getElementById('appLinkBtn');
-  if (btn){
-    var old = btn.textContent;
-    btn.textContent = 'Copied';
-    setTimeout(function(){ btn.textContent = old; }, 1600);
-  }
 }
 
 function render(){
@@ -331,16 +304,32 @@ function render(){
   var html = '';
   for (var i = 0; i < state.customers.length; i++){
     var c = state.customers[i];
-    var otcHtml;
-    if (c.otc){
-      otcHtml = '<div class="otc live"><div class="otc-l">Login code</div>' +
-        '<div class="otc-row"><div class="otc-code">' + esc(c.otc.code) + '</div>' +
-        '<button class="btn" onclick="copy(\\'' + esc(c.otc.code) + '\\')">Copy</button></div>' +
-        '<div class="otc-exp">Expires in ' + esc(c.otc.timeRemaining) + '</div></div>';
+    var mid;
+    if (c.pending){
+      // Still finishing signup: they need the 5-tap login code to appear in the
+      // app, so keep showing it here.
+      if (c.otc){
+        mid = '<div class="otc live"><div class="otc-l">Login code</div>' +
+          '<div class="otc-row"><div class="otc-code">' + esc(c.otc.code) + '</div>' +
+          '<button class="btn" onclick="copy(\\'' + esc(c.otc.code) + '\\')">Copy</button></div>' +
+          '<div class="otc-exp">Expires in ' + esc(c.otc.timeRemaining) + '</div></div>';
+      } else {
+        mid = '<div class="otc"><div class="otc-l">Login code</div>' +
+          '<div class="otc-row"><div class="otc-none">No active code. In the app, tap ' +
+          'Bank of Ireland 5 times and use the name \u201c${cfg.customerName}\u201d.</div></div></div>';
+      }
     } else {
-      otcHtml = '<div class="otc"><div class="otc-l">Login code</div>' +
-        '<div class="otc-row"><div class="otc-none">No active code. Codes come from the ' +
-        'app: tap Bank of Ireland 5 times and use the name \u201c${cfg.customerName}\u201d.</div></div></div>';
+      // Active account: the login LINK replaces the code. Generating a fresh one
+      // moves the account onto it — the old link stops working and their current
+      // phone is logged out, but all their data stays.
+      var gen = Number(c.generatedCount || 0);
+      var genLabel = gen === 0
+        ? 'No link generated yet'
+        : ('Link generated ' + gen + (gen === 1 ? ' time' : ' times') +
+           (gen > 1 ? ' \u00b7 older links logged out' : ''));
+      mid = '<div class="otc"><div class="otc-l">Login link</div>' +
+        '<div class="otc-row"><div class="otc-none" id="lk-' + esc(c.customerNumber) + '">Generate a link to move this account to a new phone. The old link stops working straight away.</div></div>' +
+        '<div class="otc-exp" id="gc-' + esc(c.customerNumber) + '">' + esc(genLabel) + '</div></div>';
     }
 
     // A pending row is a code from the 5-tap signup: the account doesn't exist
@@ -356,6 +345,7 @@ function render(){
     var actions = c.pending
       ? ''
       : '<div class="actions">' +
+        '<button class="btn" id="genBtn-' + esc(c.customerNumber) + '" onclick="genLink(\\'' + esc(c.customerNumber) + '\\')">Generate login link</button>' +
         '<button class="btn btn-danger" onclick="confirmDelete(\\'' + esc(c.customerNumber) + '\\')">Delete account</button>' +
         '</div>';
 
@@ -367,7 +357,7 @@ function render(){
       '<div class="acct-sub mono">' + esc(c.customerNumber) + '</div>' +
       meta +
       '</div></div>' +
-      otcHtml + actions + '</div>';
+      mid + actions + '</div>';
   }
   list.innerHTML = html;
 }
@@ -413,6 +403,46 @@ function doDelete(num){
     }).catch(function(){
       btn.disabled = false; btn.textContent = 'Delete';
       toast('Could not delete', true);
+    });
+}
+
+function genLink(num){
+  var btn = document.getElementById('genBtn-' + num);
+  if (btn){ btn.disabled = true; btn.textContent = 'Generating…'; }
+  fetch(API + '/customers/' + encodeURIComponent(num) + '/link', { method: 'POST' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (btn){ btn.disabled = false; btn.textContent = 'Generate login link'; }
+      if (d && d.success && d.link){
+        var n = Number(d.generatedCount || 1);
+        var moved = n > 1
+          ? '<p class="lk-moved">Old link logged out. This is link #' + n + ' for this account — only this one works now.</p>'
+          : '<p class="lk-moved">Send this to the person. It opens their account with all their data. Works once, then it stops.</p>';
+        // A modal pauses the 10s auto-refresh, so the link stays put until they
+        // close it.
+        document.getElementById('modalHost').innerHTML =
+          '<div class="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box">' +
+          '<div class="modal-head"><h2>Login link</h2>' +
+          '<button class="modal-x" onclick="closeModal()">&times;</button></div>' +
+          '<div class="modal-body">' + moved +
+          '<div class="lk-url">' + esc(d.link) + '</div>' +
+          '<div class="modal-actions">' +
+          '<button class="btn btn-primary" onclick="copy(\\'' + esc(d.link) + '\\')">Copy link</button>' +
+          '<button class="btn" onclick="closeModal()">Done</button>' +
+          '</div></div></div></div>';
+        // Reflect the new count on the card underneath.
+        var gc = document.getElementById('gc-' + num);
+        if (gc){
+          gc.textContent = 'Link generated ' + n + (n === 1 ? ' time' : ' times') +
+            (n > 1 ? ' · older links logged out' : '');
+        }
+      } else {
+        toast((d && d.message) || 'Could not generate link', true);
+      }
+    })
+    .catch(function(){
+      if (btn){ btn.disabled = false; btn.textContent = 'Generate login link'; }
+      toast('Could not generate link', true);
     });
 }
 

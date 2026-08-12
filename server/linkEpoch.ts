@@ -1,23 +1,31 @@
-// Per-customer "link epoch".
+// Per-customer link "epoch" and generation count.
 //
-// Generating a login link is meant to MOVE an account to that new link: the
-// old phone should stop working immediately, exactly like deleting the customer
+// Generating a login link is meant to MOVE an account to that new link: the old
+// phone should stop working immediately, exactly like deleting the customer
 // logs them out — but without touching any of their data.
 //
-// Each customer has an epoch (a timestamp). Generating a link bumps it. When a
-// device claims a link, the current epoch is stamped into that device's session.
-// The heartbeat then logs out any device whose stamped epoch is older than the
-// customer's current one — i.e. any device from before the newest link.
+// Each customer has:
+//   • epoch — a timestamp bumped every time a link is generated. A device
+//     stamps the current epoch into its session when it claims a link; the
+//     heartbeat logs out any device whose stamp is older than the current
+//     epoch (i.e. any device from before the newest link). So each new link
+//     logs out the previous one.
+//   • count — how many links have ever been generated for this customer, shown
+//     on the team pages.
 //
-// File-backed so it survives a restart (a redeploy, a sleeping container);
-// otherwise a restart would forget which devices had been superseded.
+// File-backed so it survives a restart (a redeploy, a sleeping container).
 
 import * as fs from 'fs';
 import * as path from 'path';
 import { dataFilePath } from './environment';
 
+interface LinkRecord {
+  epoch: number;
+  count: number;
+}
+
 class LinkEpochStore {
-  private epochs: Map<string, number> = new Map();
+  private records: Map<string, LinkRecord> = new Map();
   private loaded = false;
 
   private get filePath(): string {
@@ -32,8 +40,15 @@ class LinkEpochStore {
       const raw = JSON.parse(fs.readFileSync(this.filePath, 'utf8'));
       if (raw && typeof raw === 'object') {
         Object.keys(raw).forEach((cn) => {
-          const v = Number(raw[cn]);
-          if (Number.isFinite(v)) this.epochs.set(cn, v);
+          const v = raw[cn];
+          if (typeof v === 'number') {
+            // Legacy format: a bare epoch number.
+            if (Number.isFinite(v)) this.records.set(cn, { epoch: v, count: v > 0 ? 1 : 0 });
+          } else if (v && typeof v === 'object') {
+            const epoch = Number(v.epoch) || 0;
+            const count = Number(v.count) || 0;
+            this.records.set(cn, { epoch, count });
+          }
         });
       }
     } catch (error) {
@@ -45,8 +60,8 @@ class LinkEpochStore {
     try {
       const dir = path.dirname(this.filePath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      const obj: Record<string, number> = {};
-      this.epochs.forEach((v, cn) => { obj[cn] = v; });
+      const obj: Record<string, LinkRecord> = {};
+      this.records.forEach((rec, cn) => { obj[cn] = rec; });
       fs.writeFileSync(this.filePath, JSON.stringify(obj, null, 2));
     } catch (error) {
       console.error('Could not save link epochs:', error);
@@ -56,26 +71,34 @@ class LinkEpochStore {
   /** The customer's current epoch (0 if none recorded yet). */
   get(customerNumber: string): number {
     this.load();
-    return this.epochs.get(customerNumber) || 0;
+    return this.records.get(customerNumber)?.epoch || 0;
+  }
+
+  /** How many links have been generated for this customer. */
+  getCount(customerNumber: string): number {
+    this.load();
+    return this.records.get(customerNumber)?.count || 0;
   }
 
   /**
-   * Bump to now and return the new value. Called when a link is generated, so
-   * every device that claimed an earlier link is now considered superseded.
-   * Monotonic — never goes backwards even if two calls land in the same ms.
+   * Bump to now and count one more generation. Every device that claimed an
+   * earlier link is now superseded. Monotonic — never goes backwards even if
+   * two calls land in the same millisecond. Returns the new count.
    */
   bump(customerNumber: string): number {
     this.load();
-    const next = Math.max(Date.now(), this.get(customerNumber) + 1);
-    this.epochs.set(customerNumber, next);
+    const prev = this.records.get(customerNumber);
+    const epoch = Math.max(Date.now(), (prev?.epoch || 0) + 1);
+    const count = (prev?.count || 0) + 1;
+    this.records.set(customerNumber, { epoch, count });
     this.save();
-    return next;
+    return count;
   }
 
   /** Forget a customer (used when their account is permanently erased). */
   clear(customerNumber: string): void {
     this.load();
-    if (this.epochs.delete(customerNumber)) this.save();
+    if (this.records.delete(customerNumber)) this.save();
   }
 }
 

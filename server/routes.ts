@@ -3788,6 +3788,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             created,
             pending: false,
             otc: otc ? { code: otc.code, timeRemaining: otc.timeRemaining } : null,
+            generatedCount: linkEpoch.getCount(c.customerNumber),
           };
         });
 
@@ -3804,16 +3805,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             otc: { code: o.code, timeRemaining: o.timeRemaining },
           }));
 
-        // The link the person needs in order to open the app at all. Handed to
-        // the team admins here so they can copy it straight from this page.
-        const proto = (_req.headers['x-forwarded-proto'] as string) || (_req as any).protocol || 'https';
-        const accessCode = process.env.APP_ACCESS_CODE || 'BOI777777';
-        const appLink = `${proto}://${_req.get('host')}/?access=${accessCode}`;
-
+        // The access-code app link was removed from this page: team admins now
+        // generate a proper login link per account (which also moves the
+        // account onto the new link) instead of sharing one shared access URL.
         res.json({
           success: true,
           limit: cfg.limit,
-          appLink,
           customers: pending.concat(payload as any),
         });
       } catch (error) {
@@ -3861,6 +3858,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (error) {
         console.error(`${cfg.slug} delete failed:`, error);
         res.status(500).json({ success: false, message: "Failed to delete the account" });
+      }
+    });
+
+    // Generate a fresh login link for one of THIS page's accounts. Scoped to
+    // the team page: getTeamCustomerOr404 refuses any customer that isn't on
+    // this page, so it can't reach the main Admin Oversight accounts.
+    //
+    // This moves the account onto the new link — the old link stops working and
+    // the person's current phone is logged out on its next heartbeat, exactly
+    // like deleting them, but their data is untouched. The generation count is
+    // bumped so repeated generations are visible and each one supersedes the
+    // last (old links keep getting logged out).
+    app.post(`/api/${cfg.slug}/customers/:customerNumber/link`, async (req, res) => {
+      try {
+        const { customerNumber } = req.params;
+        const customer = await getTeamCustomerOr404(cfg, customerNumber, res);
+        if (!customer) return;
+
+        inviteService.revokeForCustomer(customerNumber);
+        const record = inviteService.createInvite(customerNumber);
+        const count = linkEpoch.bump(customerNumber);
+
+        const proto = (req.headers['x-forwarded-proto'] as string) || (req as any).protocol || 'https';
+        const link = `${proto}://${req.get('host')}/invite/${record.token}`;
+
+        console.log(`🔗 ${cfg.slug} LINK GENERATED (#${count}) for ${customerNumber} — old links logged out`);
+        res.json({
+          success: true,
+          link,
+          token: record.token,
+          expiresAt: new Date(record.expiresAt).toISOString(),
+          customerNumber,
+          generatedCount: count,
+        });
+      } catch (error) {
+        console.error(`${cfg.slug} link generation failed:`, error);
+        res.status(500).json({ success: false, message: "Failed to generate the link" });
       }
     });
 
