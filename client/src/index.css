@@ -1138,51 +1138,26 @@ img {
   }
 }
 
-/* Splash screen specific styling */
+/* Splash screen specific styling. The splash BACKGROUND stays blue, but it no
+   longer paints its own blue status-bar strip — the white html::before strip
+   above covers the safe area on every screen, splash included. */
 .splash-fullscreen {
-  /* Pure blue status bar for the splash screen only */
-  --splash-theme-color: #000DFF;
-  --status-bar-color: #000DFF;
+  background-color: #000DFF;
 }
 
-/* iOS Safari status bar integration for splash */
+/* iOS Safari: keep the splash background blue (no status-bar strip). */
 @supports (-webkit-appearance: none) {
   .splash-fullscreen {
     background-color: #000DFF !important;
   }
-  
-  .splash-fullscreen::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: env(safe-area-inset-top, 44px);
-    background-color: #000DFF;
-    z-index: 9999;
-    pointer-events: none;
-  }
 }
 
-/* iOS PWA status bar color override */
+/* iOS PWA: keep the splash background blue (no status-bar strip). */
 @media (display-mode: standalone) {
   .splash-fullscreen {
-    /* Splash keeps its own blue, including behind the safe area. */
     background-color: #000DFF !important;
   }
-  
-  .splash-fullscreen::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: env(safe-area-inset-top, 0);
-    background-color: #000DFF;
-    z-index: 9999;
-    pointer-events: none;
-  }
-  
+
   .splash-fullscreen .full-height {
     background-color: #000DFF;
   }
@@ -2133,22 +2108,23 @@ input {
   }
 }
 
-/* Ensure no white gaps at top on iOS */
+/* Base background behind everything. White so the top area (status bar / any
+   safe-area gap) is never teal — matches the now-white status bar. The splash
+   still paints its own blue over this while it is on screen. */
 html, body {
-  background-color: #126987;
+  background-color: #ffffff;
 }
 
 #root {
-  background-color: #126987;
+  background-color: #ffffff;
 }
 
 /* ---------------------------------------------------------------------------
-   Permanent status-bar strip.
-   A fixed teal band across the top safe area on EVERY screen, so the status bar
-   colour can never flicker or disappear during navigation, splash transitions
-   or PWA launch — whatever the page underneath happens to be doing. On devices
-   with no safe-area inset this collapses to zero height and the browser's
-   theme-color takes over, which is the same teal.
+   Status-bar strip — plain white on EVERY screen.
+   A fixed white band across the top safe area, so the status bar is never a
+   colour on any screen (no teal, no blue) and can't flicker during navigation,
+   splash transitions or PWA launch. It only paints the safe-area strip at the
+   very top — nothing else on the page is affected.
 --------------------------------------------------------------------------- */
 html::before {
   content: '';
@@ -2157,10 +2133,7 @@ html::before {
   left: 0;
   right: 0;
   height: env(safe-area-inset-top, 0px);
-  /* Teal everywhere. The splash sets --status-bar-color to its blue while it is
-     on screen and clears it again on the way out, so the blue is confined to
-     the splash and every other screen is strictly teal. */
-  background-color: var(--status-bar-color, #126987);
+  background-color: #ffffff;
   z-index: 2147483647;
   pointer-events: none;
 }

@@ -346,12 +346,11 @@ function AppRoutes() {
 
 
 
-  // Theme restoration helper - always keep theme-color as the app colour
-  // The splash screen background is already blue via CSS, theme-color must stay
-  // #126987 so the iOS 26 Liquid Glass status bar never gets stuck on blue
+  // Keep the status bar a plain white everywhere — no coloured status bar on
+  // any screen. Set on every route/focus so nothing can reintroduce a tint.
   const restoreThemeForCurrentScreen = () => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', '#ffffff');
   };
 
 
@@ -369,9 +368,15 @@ function AppRoutes() {
         setSplashTransitioning(false);
       }, 100);
       
-      // Restore theme-color after splash
+      // Keep the status bar white after the splash.
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
+      if (themeColorMeta) themeColorMeta.setAttribute('content', '#ffffff');
+
+      // The splash forced the page background blue on first paint (index.html);
+      // clear it now so the base goes back to white and no blue shows behind
+      // the app or at the top.
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
     };
 
     window.addEventListener('splashComplete', handleSplashComplete);

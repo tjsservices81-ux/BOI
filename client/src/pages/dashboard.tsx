@@ -130,7 +130,19 @@ export default function Dashboard() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Local state for account balances that can be updated by transfers
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  // Initialise from the per-user cache synchronously, so returning to the
+  // dashboard renders the account cards on the FIRST paint. Previously accounts
+  // started empty and only filled in a later effect, so the cards popped in and
+  // shoved the monthly in/out panel down — the "jump". Loading from cache up
+  // front keeps everything, including the monthly panel, in its final place from
+  // the start (the server fetch still refreshes the values right after).
+  const [accounts, setAccounts] = useState<Account[]>(() => {
+    try {
+      const stored = UserDataManager.getUserData('bankAccounts', []);
+      if (stored && stored.length > 0) return sortAccountsForDisplay(stored);
+    } catch {}
+    return [];
+  });
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency, setUserCurrency] = useState<Currency>(() => getUserCurrency());
   
