@@ -21,7 +21,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#126987" />
     
     <!-- Critical font preloading for instant rendering -->
     <link rel="preload" href="/OpenSans-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
@@ -135,7 +135,7 @@
     
     <title>Bank of Ireland</title>
   </head>
-  <body style="background-color: #ffffff;" data-initial-bg="true">
+  <body style="background-color: #126987;" data-initial-bg="true">
     <div id="loading-screen" style="
       position:fixed;
       top:0;
@@ -206,14 +206,14 @@
     </style>
     
     <script>
-      // Keep the page background WHITE so the top status-bar strip is white on
+      // Keep the page background TEAL so the top status-bar strip is teal on
       // every screen, including the splash. The splash's blue visual comes from
       // the #loading-screen div (and the React splash), which sit ON TOP of this
-      // white base — so the splash still looks blue, but the status bar does not.
+      // teal base — so the splash still looks blue, but the status bar is teal.
       // iOS derives the status-bar colour from the html/body background, so this
-      // is what actually keeps it white.
-      document.body.style.backgroundColor = '#ffffff';
-      document.documentElement.style.backgroundColor = '#ffffff';
+      // is what actually sets it.
+      document.body.style.backgroundColor = '#126987';
+      document.documentElement.style.backgroundColor = '#126987';
 
       // Security measures to prevent sharing and copying
       document.addEventListener('DOMContentLoaded', function() {

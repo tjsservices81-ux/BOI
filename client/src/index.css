@@ -1145,18 +1145,18 @@ img {
    from the splash CONTENT (the .full-height / .splash-container div and its
    inline style), which covers the screen below the status bar. */
 .splash-fullscreen {
-  background-color: #ffffff;
+  background-color: #126987;
 }
 
 @supports (-webkit-appearance: none) {
   .splash-fullscreen {
-    background-color: #ffffff !important;
+    background-color: #126987 !important;
   }
 }
 
 @media (display-mode: standalone) {
   .splash-fullscreen {
-    background-color: #ffffff !important;
+    background-color: #126987 !important;
   }
 
   /* The splash CONTENT stays blue (this is the visible splash, not the body). */
@@ -2113,11 +2113,11 @@ input {
    safe-area gap) is never teal — matches the now-white status bar. The splash
    still paints its own blue over this while it is on screen. */
 html, body {
-  background-color: #ffffff;
+  background-color: #126987;
 }
 
 #root {
-  background-color: #ffffff;
+  background-color: #126987;
 }
 
 /* ---------------------------------------------------------------------------
@@ -2134,7 +2134,7 @@ html::before {
   left: 0;
   right: 0;
   height: env(safe-area-inset-top, 0px);
-  background-color: #ffffff;
+  background-color: #126987;
   z-index: 2147483647;
   pointer-events: none;
 }

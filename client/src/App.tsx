@@ -346,11 +346,11 @@ function AppRoutes() {
 
 
 
-  // Keep the status bar a plain white everywhere — no coloured status bar on
-  // any screen. Set on every route/focus so nothing can reintroduce a tint.
+  // Keep the status bar teal everywhere. Set on every route/focus so nothing
+  // can reintroduce a different tint.
   const restoreThemeForCurrentScreen = () => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) themeColorMeta.setAttribute('content', '#ffffff');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
   };
 
 
@@ -368,13 +368,12 @@ function AppRoutes() {
         setSplashTransitioning(false);
       }, 100);
       
-      // Keep the status bar white after the splash.
+      // Keep the status bar teal after the splash.
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) themeColorMeta.setAttribute('content', '#ffffff');
+      if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
 
-      // The splash forced the page background blue on first paint (index.html);
-      // clear it now so the base goes back to white and no blue shows behind
-      // the app or at the top.
+      // Clear the splash's inline background so the base falls back to the teal
+      // CSS — no leftover blue behind the app or at the top.
       document.body.style.backgroundColor = '';
       document.documentElement.style.backgroundColor = '';
     };
