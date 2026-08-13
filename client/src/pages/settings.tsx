@@ -37,6 +37,60 @@ export default function Settings() {
     }, 150);
   };
 
+  // Status line shown under the "Turn on notifications" button.
+  const [notifStatus, setNotifStatus] = useState('');
+
+  // Tell the server this user's notification preference, matching the existing
+  // set-notifications-flag flow.
+  const syncNotifFlag = (on: boolean) => {
+    try {
+      const userId = localStorage.getItem('currentUser');
+      if (userId) {
+        fetch('/api/set-notifications-flag', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, notifications_enabled: on }),
+        }).catch(() => {});
+      }
+    } catch { /* best effort */ }
+  };
+
+  // The button the customer taps. Brings up the phone's own Allow / Don't Allow
+  // prompt when it can, and explains clearly what to do in every other case
+  // (already on, blocked, unsupported).
+  const promptNotifications = async () => {
+    if (!('Notification' in window)) {
+      setNotifStatus("This device doesn't support notifications.");
+      return;
+    }
+    const perm = Notification.permission;
+    if (perm === 'granted') {
+      setNotifStatus('Notifications are already on.');
+      setNotificationsEnabled(true);
+      syncNotifFlag(true);
+      return;
+    }
+    if (perm === 'denied') {
+      // The browser will NOT show the prompt again once blocked — the only way
+      // back is the phone's Settings.
+      setNotifStatus('Notifications are blocked. Turn them on in your phone Settings → this app → Notifications, then reopen the app.');
+      return;
+    }
+    // 'default' → this actually brings up the phone's Allow / Don't Allow prompt.
+    try {
+      const result = await Notification.requestPermission();
+      if (result === 'granted') {
+        setNotifStatus('Notifications turned on.');
+        setNotificationsEnabled(true);
+        syncNotifFlag(true);
+      } else {
+        setNotifStatus("You chose Don't Allow. You can turn them on later in your phone Settings.");
+      }
+    } catch {
+      setNotifStatus("Couldn't open the prompt. Make sure the app is added to your Home Screen and opened from there.");
+    }
+  };
+
   const handleNotificationToggle = async (enabled: boolean) => {
     if (!enabled) {
       // Turning notifications off
@@ -150,6 +204,24 @@ export default function Settings() {
                       data-testid="toggle-notifications"
                     />
                   </div>
+                </div>
+
+                {/* Turn on notifications — brings up the phone's Allow / Don't Allow prompt */}
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <button
+                    onClick={promptNotifications}
+                    className="w-full flex items-center justify-center space-x-2 bg-[#126987] hover:bg-[#0d4e63] text-white rounded-xl py-3 active:scale-98 transition-all duration-150"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    data-testid="button-enable-notifications"
+                  >
+                    <Bell className="w-4 h-4" />
+                    <span className="font-semibold">Turn on notifications</span>
+                  </button>
+                  {notifStatus && (
+                    <p className="text-xs text-gray-600 mt-3 text-center leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {notifStatus}
+                    </p>
+                  )}
                 </div>
 
                 {/* Email Notifications */}
