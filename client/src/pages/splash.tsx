@@ -33,14 +33,11 @@ export default function Splash() {
         iosStatusMeta.content = 'default';
       }
       
-      // Force PWA status bar color update
-      if ('setAppBadge' in navigator) {
-        // PWA-specific color updates
-        document.body.style.backgroundColor = '#000DFF';
-        setTimeout(() => {
-          document.body.style.backgroundColor = '';
-        }, 100);
-      }
+      // Do NOT tint body/html — iOS derives the status-bar colour from them, so
+      // tinting them blue is exactly what put a blue bar at the top of the
+      // splash. The splash's blue visual comes from the splash <div> and the
+      // loading screen instead; the page background stays white so the status
+      // bar is white on the splash too.
     };
     
     // Update immediately and with delays for iOS PWA
@@ -55,13 +52,10 @@ export default function Splash() {
       // Mark splash as completed in localStorage for proper state tracking
       localStorage.setItem('splash_completed', 'true');
       
-      // Back to teal BEFORE navigating so the blue never carries past the splash.
-      // index.html paints body/html blue at load for the splash visual — those
-      // inline styles must be cleared here or the blue would persist app-wide.
-      // theme-color is left alone on purpose (see note above).
-      document.documentElement.style.setProperty('--status-bar-color', '#126987');
-      document.body.style.backgroundColor = '#126987';
-      document.documentElement.style.backgroundColor = '#126987';
+      // Leaving the splash: clear any inline background so body/html fall back
+      // to white (the status bar stays white). No teal, no blue.
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
       document.body.classList.remove('splash-fullscreen');
       
       // Dispatch event to notify App.tsx that splash is complete
@@ -76,9 +70,9 @@ export default function Splash() {
     return () => {
       clearTimeout(finalTimer);
       document.body.classList.remove('splash-fullscreen');
-      document.documentElement.style.setProperty('--status-bar-color', '#126987');
-      document.body.style.backgroundColor = '#126987';
-      document.documentElement.style.backgroundColor = '#126987';
+      // Clear inline backgrounds so the page returns to white — never teal.
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
     };
   }, [navigate]);
 

@@ -1138,32 +1138,33 @@ img {
   }
 }
 
-/* Splash screen specific styling. The splash BACKGROUND stays blue, but it no
-   longer paints its own blue status-bar strip — the white html::before strip
-   above covers the safe area on every screen, splash included. */
+/* Splash screen styling.
+   IMPORTANT: the `splash-fullscreen` class is put on the <body>, and iOS derives
+   the status-bar colour from the body/html background. So the BODY stays WHITE
+   here — that keeps the status bar white on the splash. The splash's blue comes
+   from the splash CONTENT (the .full-height / .splash-container div and its
+   inline style), which covers the screen below the status bar. */
 .splash-fullscreen {
-  background-color: #000DFF;
+  background-color: #ffffff;
 }
 
-/* iOS Safari: keep the splash background blue (no status-bar strip). */
 @supports (-webkit-appearance: none) {
   .splash-fullscreen {
-    background-color: #000DFF !important;
+    background-color: #ffffff !important;
   }
 }
 
-/* iOS PWA: keep the splash background blue (no status-bar strip). */
 @media (display-mode: standalone) {
   .splash-fullscreen {
-    background-color: #000DFF !important;
+    background-color: #ffffff !important;
   }
 
+  /* The splash CONTENT stays blue (this is the visible splash, not the body). */
   .splash-fullscreen .full-height {
     background-color: #000DFF;
   }
-  
+
   .splash-fullscreen .splash-container {
-    /* Keep original background image and blue fallback */
     background-color: #000DFF;
   }
 }

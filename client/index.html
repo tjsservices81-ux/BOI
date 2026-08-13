@@ -135,7 +135,7 @@
     
     <title>Bank of Ireland</title>
   </head>
-  <body style="background-color: #126987 !important;" data-initial-bg="true">
+  <body style="background-color: #ffffff;" data-initial-bg="true">
     <div id="loading-screen" style="
       position:fixed;
       top:0;
@@ -206,11 +206,14 @@
     </style>
     
     <script>
-      // Keep body background blue during load for the splash screen visual
-      // but do NOT change theme-color — on iOS 26 Liquid Glass the status bar
-      // reads theme-color and gets stuck on the blue if we change it here
-      document.body.style.backgroundColor = '#000DFF';
-      document.documentElement.style.backgroundColor = '#000DFF';
+      // Keep the page background WHITE so the top status-bar strip is white on
+      // every screen, including the splash. The splash's blue visual comes from
+      // the #loading-screen div (and the React splash), which sit ON TOP of this
+      // white base — so the splash still looks blue, but the status bar does not.
+      // iOS derives the status-bar colour from the html/body background, so this
+      // is what actually keeps it white.
+      document.body.style.backgroundColor = '#ffffff';
+      document.documentElement.style.backgroundColor = '#ffffff';
 
       // Security measures to prevent sharing and copying
       document.addEventListener('DOMContentLoaded', function() {
