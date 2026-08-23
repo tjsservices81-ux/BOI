@@ -34,6 +34,9 @@ export default function Payments() {
     }
   );
 
+  // CLABE transfers are restricted to accounts whose name is "admin".
+  const isAdminAccount = (UserDataManager.getUserProfile()?.name || '').trim().toLowerCase() === 'admin';
+
   const allPaymentOptions = [
     {
       id: 'iban',
@@ -60,7 +63,7 @@ export default function Payments() {
       icon: <Building2 className="w-6 h-6 text-[#126987]" />,
       description: 'Transfer to Mexico using an 18-digit CLABE',
       popular: false,
-      visible: transferSettings.showClabeTransfer !== false
+      visible: isAdminAccount && transferSettings.showClabeTransfer !== false
     },
     {
       id: 'internal',
@@ -556,7 +559,7 @@ export default function Payments() {
                     >
                       <option value="SEPA Transfer">SEPA Transfer</option>
                       <option value="UK Transfer">UK Transfer</option>
-                      <option value="CLABE Transfer">CLABE Transfer</option>
+                      {isAdminAccount && <option value="CLABE Transfer">CLABE Transfer</option>}
                     </select>
                   </div>
 
@@ -593,7 +596,7 @@ export default function Payments() {
                   )}
 
                   {/* CLABE Fields */}
-                  {newPayeeData.transferType === 'CLABE Transfer' && (
+                  {isAdminAccount && newPayeeData.transferType === 'CLABE Transfer' && (
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>

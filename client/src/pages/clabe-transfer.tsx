@@ -32,6 +32,15 @@ export default function ClabeTransfer() {
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   const [isAccountDeleted, setIsAccountDeleted] = useState<boolean>(false);
 
+  // CLABE transfers are restricted to accounts whose name is "admin". Anyone
+  // else who reaches this route directly is sent back to Payments.
+  useEffect(() => {
+    const name = (UserDataManager.getUserProfile()?.name || '').trim().toLowerCase();
+    if (name !== 'admin') {
+      navigate('/payments');
+    }
+  }, [navigate]);
+
   // Check if account is deleted (soft or permanent) on mount
   useEffect(() => {
     const checkAccountStatus = async () => {
