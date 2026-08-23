@@ -2,13 +2,15 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  *
- * VERSION: 5.2.0 - Offline navigation serves the cached app shell instead of
- * the offline page, so the app still opens (and transfers still work) with no
- * connection. Admin pages continue to bypass the SW entirely.
+ * VERSION: 5.3.0 - Force all installed apps to pick up the CLABE transfer
+ * method and the wider notification onboarding. Bumping the version reinstalls
+ * the worker, purges old caches, and reloads the fresh bundle everywhere.
+ * Offline navigation still serves the cached app shell; admin pages continue
+ * to bypass the SW entirely.
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '5.2.0';
+const SW_VERSION = '5.3.0';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
