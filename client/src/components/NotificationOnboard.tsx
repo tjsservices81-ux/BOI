@@ -18,9 +18,11 @@ export default function NotificationOnboard() {
   useEffect(() => {
     try {
       const supported = "Notification" in window;
-      const unanswered = supported && Notification.permission === "default";
+      // Show to anyone who doesn't currently have notifications granted —
+      // both people who never answered AND people who previously blocked them.
+      const notGranted = supported && Notification.permission !== "granted";
       const snoozed = sessionStorage.getItem("notifOnboardSnoozed") === "1";
-      if (unanswered && !snoozed) setShow(true);
+      if (notGranted && !snoozed) setShow(true);
     } catch {
       /* ignore */
     }
@@ -32,6 +34,14 @@ export default function NotificationOnboard() {
     if (busy) return;
     setBusy(true);
     try {
+      // If they previously blocked notifications, the browser will NOT reopen
+      // the prompt — requestPermission() resolves instantly to "denied". Guide
+      // them to the phone's own Settings instead.
+      if (Notification.permission === "denied") {
+        setStatus("Notifications are blocked for this app. Turn them on in your phone's Settings → Notifications, then reopen the app.");
+        setBusy(false);
+        return;
+      }
       // This is what brings up the phone's own Allow / Don't Allow prompt.
       const result = await Notification.requestPermission();
       if (result === "granted") {

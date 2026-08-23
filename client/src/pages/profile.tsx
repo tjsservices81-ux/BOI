@@ -54,7 +54,8 @@ export default function Profile() {
       showSepaTransfer: true,
       showUkTransfer: true,
       showInternalTransfer: true,
-      showEmailTransfer: false
+      showEmailTransfer: false,
+      showClabeTransfer: true
     };
   });
   const [showTransferConfirmation, setShowTransferConfirmation] = useState(() => {
@@ -2349,8 +2350,35 @@ export default function Profile() {
                       </div>
                     </button>
 
+                    {/* CLABE Transfer */}
+                    <button
+                      onClick={() => {
+                        const currentlyOn = transferSettings.showClabeTransfer !== false;
+                        const newSettings = { ...transferSettings, showClabeTransfer: !currentlyOn };
+                        setTransferSettings(newSettings);
+                        UserDataManager.setUserData('transferSettings', newSettings);
+                        UserDataManager.clearCache('transferSettings');
+                        window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
+                        showDeveloperMessage(`CLABE Transfer ${newSettings.showClabeTransfer ? 'enabled' : 'disabled'} successfully`);
+                      }}
+                      data-testid="toggle-clabe-transfer"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          CLABE Transfer
+                        </p>
+                        <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Mexican bank accounts (18-digit CLABE)
+                        </p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${transferSettings.showClabeTransfer !== false ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${transferSettings.showClabeTransfer !== false ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
+                    </button>
+
                     {/* Internal Transfer */}
-                    <button 
+                    <button
                       onClick={() => {
                         const newSettings = { ...transferSettings, showInternalTransfer: !transferSettings.showInternalTransfer };
                         setTransferSettings(newSettings);
