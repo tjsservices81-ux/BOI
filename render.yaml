@@ -1,6 +1,6 @@
 # Render deployment blueprint — paid, always-on, nothing resets.
 #
-# New → Blueprint → this repo → branch claude/new-branch-from-main-hp295u.
+# New → Blueprint → this repo → branch main (pinned below on the service).
 # Render creates the database and the web service, wires DATABASE_URL between
 # them, and generates SESSION_SECRET.
 #
@@ -35,6 +35,10 @@ services:
     name: boi-app
     runtime: node
     plan: starter
+    # Deploy from main. Every change is pushed here, so this must match the
+    # branch the Render service auto-deploys from (check it in the dashboard:
+    # boi-app → Settings → Build & Deploy → Branch).
+    branch: main
     # --include=dev: vite and esbuild are devDependencies, and npm omits those
     # when NODE_ENV=production (set below, and it applies during the build too).
     # Without the flag the build fails on "vite: not found".
