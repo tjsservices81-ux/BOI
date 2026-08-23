@@ -95,8 +95,15 @@ if ('serviceWorker' in navigator) {
         banner.style.animation = 'slideDown 0.3s ease-in reverse';
         setTimeout(() => banner.remove(), 300);
       }, 4000);
+
+      // A new version just activated. The page is still running the OLD bundle,
+      // so reload into the new one — otherwise the update stays invisible (this
+      // is exactly what strands an installed iOS PWA on stale code). The
+      // reloadScheduled guard makes this fire at most once per page life, so it
+      // can't loop.
+      scheduleGracefulReload('new service worker activated');
     }
-    
+
     if (event.data && event.data.type === 'SW_STALE_BUNDLE') {
       console.warn('⚠️ Stale bundle detected after update:', event.data.url);
       scheduleGracefulReload('stale bundle after update');
@@ -105,13 +112,10 @@ if ('serviceWorker' in navigator) {
 
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     console.log('🔄 Service worker controller changed - new version active');
-    if (document.hidden) {
-      const reloadOnVisible = () => {
-        document.removeEventListener('visibilitychange', reloadOnVisible);
-        window.location.reload();
-      };
-      document.addEventListener('visibilitychange', reloadOnVisible);
-    }
+    // A brand-new controller means new code is available. Reload to run it,
+    // whether the app is in the foreground or the background. Guarded so it
+    // reloads once; after the reload the controller is stable, so no loop.
+    scheduleGracefulReload('service worker controller changed');
   });
 }
 
