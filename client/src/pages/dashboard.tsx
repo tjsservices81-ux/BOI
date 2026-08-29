@@ -695,7 +695,7 @@ export default function Dashboard() {
       </div>
       
       {/* Header with scenic background */}
-      <div className="text-white relative flex-shrink-0 h-36 content-slide-under">
+      <div className="text-white relative flex-shrink-0 h-36 dash-enter" style={{ animationDelay: '0.04s' }}>
         {/* Full scenic background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -713,7 +713,7 @@ export default function Dashboard() {
       </div>
 
       {/* Send money section - fixed */}
-      <div className="bg-white flex-shrink-0 -mt-8 relative z-10 content-slide-under">
+      <div className="bg-white flex-shrink-0 -mt-8 relative z-10 dash-enter" style={{ animationDelay: '0.12s' }}>
         <button 
           className="w-full flex items-center justify-between px-4 py-2"
           onClick={() => setSendMoneyOpen(!sendMoneyOpen)}

@@ -809,6 +809,23 @@ input, select, textarea {
   animation: slideDownToPlace 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+/* Dashboard entrance: a soft fade + gentle rise, the way a polished real
+   banking app settles its content in. Subtle (16px), smooth ease-out. */
+.dash-enter {
+  animation: dashRiseIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes dashRiseIn {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Additional slide transition classes for routing */
 .slide-in-left {
   animation: slideInFromLeft 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -871,9 +888,11 @@ input, select, textarea {
 @keyframes fadeInStagger {
   0% {
     opacity: 0;
+    transform: translateY(12px);
   }
   100% {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
