@@ -336,16 +336,16 @@ export default function BankStatements() {
               ) : (
                 <div className="flex items-center justify-center">
                   <Download className="w-5 h-5 mr-2" />
-                  Generate & Email Statement
+                  Generate Statement
                 </div>
               )}
             </Button>
-            
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-center justify-center">
-                <Mail className="w-4 h-4 text-blue-600 mr-2" />
-                <p className="text-xs text-blue-800 text-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Statement will be downloaded and automatically emailed to your registered address
+                <Mail className="w-4 h-4 text-amber-600 mr-2" />
+                <p className="text-xs text-amber-800 text-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Statement will be downloaded. Emailing is temporarily unavailable — we're fixing it and it'll be back soon.
                 </p>
               </div>
             </div>

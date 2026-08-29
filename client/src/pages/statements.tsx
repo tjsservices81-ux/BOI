@@ -91,12 +91,12 @@ export default function Statements() {
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">Statement Preferences</h3>
             
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between opacity-60">
                 <div>
                   <p className="font-medium text-[var(--boi-gray)]">Email Statements</p>
-                  <p className="text-sm text-[var(--boi-light-gray)]">Get monthly statements via email</p>
+                  <p className="text-sm text-[var(--boi-light-gray)]">Temporarily unavailable — coming soon</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch checked={false} disabled />
               </div>
               
               <div className="flex items-center justify-between">

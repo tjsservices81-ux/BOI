@@ -2,15 +2,15 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  *
- * VERSION: 5.3.1 - Restrict the CLABE transfer method to accounts named
- * "admin". Bumping the version reinstalls the worker, purges old caches, and
- * (with the client's auto-reload on activation) pulls the fresh bundle
- * everywhere. Offline navigation still serves the cached app shell; admin
- * pages continue to bypass the SW entirely.
+ * VERSION: 5.3.2 - Temporarily disable email features (with a maintenance note
+ * in Settings) while email is being fixed. Bumping the version reinstalls the
+ * worker, purges old caches, and (with the client's auto-reload on activation)
+ * pulls the fresh bundle everywhere. Offline navigation still serves the cached
+ * app shell; admin pages continue to bypass the SW entirely.
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '5.3.1';
+const SW_VERSION = '5.3.2';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;

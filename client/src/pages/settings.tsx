@@ -16,19 +16,17 @@ export default function Settings() {
     return saved !== null ? JSON.parse(saved) : true;
   });
   
-  const [emailsEnabled, setEmailsEnabled] = useState(() => {
-    const saved = localStorage.getItem('emailsEnabled');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
+  // Email is turned off across the app while it's being fixed. Force the flag
+  // off so no confirmation/statement emails are attempted, regardless of any
+  // previously saved preference.
+  useEffect(() => {
+    localStorage.setItem('emailsEnabled', JSON.stringify(false));
+  }, []);
 
   // Save settings to localStorage when they change
   useEffect(() => {
     localStorage.setItem('notificationsEnabled', JSON.stringify(notificationsEnabled));
   }, [notificationsEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem('emailsEnabled', JSON.stringify(emailsEnabled));
-  }, [emailsEnabled]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -173,6 +171,23 @@ export default function Settings() {
             </h2>
           </div>
 
+          {/* Email maintenance note */}
+          <div className="px-6 mb-6">
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start space-x-3" data-testid="note-email-maintenance">
+              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Mail className="w-4 h-4 text-amber-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-amber-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Emails are temporarily unavailable
+                </p>
+                <p className="text-xs text-amber-700 mt-1 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  We're working on email confirmations and statements — this will be fixed soon. Everything else works as normal.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Settings Sections */}
           <div className="px-6 space-y-8">
             
@@ -224,11 +239,11 @@ export default function Settings() {
                   )}
                 </div>
 
-                {/* Email Notifications */}
-                <div className="bg-white rounded-xl p-4 shadow-sm">
+                {/* Email Notifications — disabled while email is being fixed */}
+                <div className="bg-white rounded-xl p-4 shadow-sm opacity-60">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gray-300 rounded-xl flex items-center justify-center">
                         <Mail className="w-5 h-5 text-white" />
                       </div>
                       <div>
@@ -236,13 +251,13 @@ export default function Settings() {
                           Email Updates
                         </h4>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Statements and confirmations
+                          Temporarily unavailable — coming soon
                         </p>
                       </div>
                     </div>
                     <Switch
-                      checked={emailsEnabled}
-                      onCheckedChange={setEmailsEnabled}
+                      checked={false}
+                      disabled
                       data-testid="toggle-emails"
                     />
                   </div>
