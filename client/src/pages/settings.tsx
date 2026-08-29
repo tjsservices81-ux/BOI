@@ -162,7 +162,7 @@ export default function Settings() {
 
       {/* Main Content */}
       <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden shadow-2xl page-slide-up">
-        <div className="h-full overflow-y-auto pb-32">
+        <div className="h-full overflow-y-auto pb-56">
           
           {/* Content Header */}
           <div className="text-center pt-6 pb-4 px-6">

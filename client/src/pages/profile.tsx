@@ -7,7 +7,6 @@ import { balanceAfterReversal } from "@shared/balanceMath";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserCurrency, formatCurrency, getCurrencySymbol, type Currency } from "@/utils/currencyUtils";
-import { APP_VERSION } from "@/version";
 import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
 export default function Profile() {
@@ -2019,13 +2018,6 @@ export default function Profile() {
                   <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
                 </button>
               </div>
-
-            {/* Version Footer */}
-            <div className="text-center mt-8 mb-4">
-              <p className="text-gray-400 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {APP_VERSION}
-              </p>
-            </div>
           </div>
         )}
       </div>
