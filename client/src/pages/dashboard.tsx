@@ -671,8 +671,9 @@ export default function Dashboard() {
       <SpendingVisualization />
       
       {/* Blue header bar — stays static, matching the Apply/Payments top strip.
-          Only the dashboard-unique content below slides in. */}
-      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 pt-8 flex-shrink-0" style={{ paddingTop: 'calc(32px + env(safe-area-inset-top, 0px))' }}>
+          Sits above the Welcome header (z-20) so that content reveals from
+          under it rather than painting over it. */}
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 pt-8 flex-shrink-0 relative z-20" style={{ paddingTop: 'calc(32px + env(safe-area-inset-top, 0px))' }}>
         <div className="flex items-center">
           <img 
             src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
@@ -694,8 +695,8 @@ export default function Dashboard() {
         </div>
       </div>
       
-      {/* Header with scenic background */}
-      <div className="text-white relative flex-shrink-0 h-36 dash-enter" style={{ animationDelay: '0.04s' }}>
+      {/* Header with scenic background — reveals from under the top bar */}
+      <div className="text-white relative z-0 flex-shrink-0 h-36 dash-under-enter">
         {/* Full scenic background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"

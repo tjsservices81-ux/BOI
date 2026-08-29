@@ -828,6 +828,25 @@ input, select, textarea {
   }
 }
 
+/* Welcome header: emerges downward from behind the top bar. Paired with the
+   header sitting above it (relative z-20), its top edge is hidden behind the
+   bar and it slides down into place — revealed from under the header, never
+   painted over it. */
+.dash-under-enter {
+  animation: dashUnderEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes dashUnderEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(-34px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Additional slide transition classes for routing */
 .slide-in-left {
   animation: slideInFromLeft 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
