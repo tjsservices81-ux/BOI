@@ -1,3 +1,4 @@
-// Bump this on every deploy so a visible build stamp on the login screen
-// makes it easy to confirm which version a device is actually running.
-export const APP_VERSION = "v6.0 · 20 Jul";
+// Single source of truth for the version shown to users. Kept fixed so every
+// place in the app displays the same number instead of a scatter of different
+// build stamps.
+export const APP_VERSION = "Version 5.0.0";

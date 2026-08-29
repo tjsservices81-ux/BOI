@@ -3,6 +3,7 @@ import { ChevronLeft, Bell, Mail, Shield, ChevronRight, MapPin, FileText, Downlo
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { getUserCurrency } from "../utils/currencyUtils";
+import { APP_VERSION } from "@/version";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 
 export default function Settings() {
@@ -469,7 +470,7 @@ export default function Settings() {
                           About
                         </h4>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Version 3.5.0
+                          {APP_VERSION}
                         </p>
                       </div>
                     </div>

@@ -2,18 +2,23 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  *
- * VERSION: 5.3.3 - Add a first-run welcome screen for new accounts that lists
- * the features that work and what's being fixed. Bumping the version reinstalls
- * the worker, purges old caches, and (with the client's auto-reload on
- * activation) pulls the fresh bundle everywhere. Offline navigation still
- * serves the cached app shell; admin pages continue to bypass the SW entirely.
+ * DISPLAY VERSION: 5.0.0 - The single version shown to users everywhere in the
+ * app. It stays fixed. To force clients to update on a deploy, bump CACHE_BUILD
+ * below (NOT SW_VERSION) — that changes this file, so the worker reinstalls,
+ * purges old caches, and (with the client's auto-reload on activation) pulls
+ * the fresh bundle everywhere, all without changing the number users see.
+ * Offline navigation still serves the cached app shell; admin pages continue to
+ * bypass the SW entirely.
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '5.3.3';
+const SW_VERSION = '5.0.0';
+// Internal cache-busting counter — invisible to users. Increment on a deploy
+// when you need every client to pick up the new bundle.
+const CACHE_BUILD = '2';
 const BUILD_TIMESTAMP = Date.now();
-const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
-const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
+const CACHE_NAME = `boi-mobile-v${SW_VERSION}-b${CACHE_BUILD}-${BUILD_TIMESTAMP}`;
+const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}-b${CACHE_BUILD}`;
 
 // Critical assets that must be cached for PWA to work
 const CRITICAL_ASSETS = [
