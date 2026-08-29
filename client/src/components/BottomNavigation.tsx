@@ -49,7 +49,7 @@ export default function BottomNavigation() {
     if (location === '/') return false;
     
     // Don't show on transfer pages
-    if (location.includes('/transfer') || location.includes('/iban-transfer') || location.includes('/uk-transfer') || location.includes('/clabe-transfer') || location.includes('/international-transfer') || location.includes('/email-transfer') || location.includes('/internal-transfer')) return false;
+    if (location.includes('/transfer') || location.includes('/iban-transfer') || location.includes('/uk-transfer') || location.includes('/international-transfer') ||location.includes('/email-transfer') || location.includes('/internal-transfer')) return false;
     
     // Show on all other authenticated pages
     return true;

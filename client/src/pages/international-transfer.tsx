@@ -12,7 +12,7 @@ import { formatCurrency, getUserCurrency, type Currency } from "../utils/currenc
 // the IBAN/SEPA transfer.
 type FieldDef = { key: string; label: string; digits: number; placeholder: string; bsb?: boolean };
 
-const COUNTRIES: Record<string, { name: string; flag: string; adminOnly?: boolean; fields: FieldDef[] }> = {
+const COUNTRIES: Record<string, { name: string; flag: string; fields: FieldDef[] }> = {
   US: {
     name: "United States",
     flag: "🇺🇸",
@@ -24,7 +24,6 @@ const COUNTRIES: Record<string, { name: string; flag: string; adminOnly?: boolea
   MX: {
     name: "Mexico",
     flag: "🇲🇽",
-    adminOnly: true,
     fields: [
       { key: "clabe", label: "CLABE (18 digits)", digits: 18, placeholder: "012345678901234567" },
     ],
@@ -81,11 +80,6 @@ export default function InternationalTransfer() {
   const [fields, setFields] = useState<Record<string, string>>(emptyFields());
 
   const [submitted, setSubmitted] = useState<any | null>(null);
-
-  // Mexico (CLABE) stays admin-only, so it only appears in the country list for
-  // accounts named "admin". Everyone else sees the other destinations.
-  const isAdmin = (UserDataManager.getUserProfile()?.name || "").trim().toLowerCase() === "admin";
-  const visibleCountries = Object.entries(COUNTRIES).filter(([, c]) => isAdmin || !c.adminOnly);
 
   useEffect(() => {
     const checkAccountStatus = async () => {
@@ -498,7 +492,7 @@ export default function InternationalTransfer() {
                 style={{ fontFamily: "OpenSans, sans-serif" }}
                 data-testid="select-country"
               >
-                {visibleCountries.map(([code, c]) => (
+                {Object.entries(COUNTRIES).map(([code, c]) => (
                   <option key={code} value={code}>{c.flag} {c.name}</option>
                 ))}
               </select>

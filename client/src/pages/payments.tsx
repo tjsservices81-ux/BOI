@@ -30,7 +30,6 @@ export default function Payments() {
       showUkTransfer: true,
       showInternalTransfer: true,
       showEmailTransfer: false,
-      showClabeTransfer: true,
         showInternationalTransfer: true
     }
   );
@@ -109,7 +108,6 @@ export default function Payments() {
         showUkTransfer: true,
         showInternalTransfer: true,
         showEmailTransfer: false,
-        showClabeTransfer: true,
         showInternationalTransfer: true
       };
       setTransferSettings(settings);
@@ -160,9 +158,8 @@ export default function Payments() {
       navigate('/uk-transfer');
     } else if (payee.transferType === 'SEPA Transfer') {
       navigate('/iban-transfer');
-    } else if (payee.transferType === 'CLABE Transfer') {
-      navigate('/clabe-transfer');
-    } else if (payee.transferType === 'International Transfer') {
+    } else if (payee.transferType === 'CLABE Transfer' || payee.transferType === 'International Transfer') {
+      // CLABE is now part of the International Transfer flow (Mexico).
       navigate('/international-transfer');
     }
     setShowRecentPayees(false);
@@ -220,17 +217,6 @@ export default function Payments() {
       }
       
       accountInfo = `${sortCode} ${accountNumber}`;
-    } else if (newPayeeData.transferType === 'CLABE Transfer') {
-      const clabe = newPayeeData.clabe.trim();
-      if (!/^\d{18}$/.test(clabe)) {
-        alert('CLABE must be exactly 18 digits');
-        return;
-      }
-      if (!newPayeeData.bankName.trim()) {
-        alert('Please enter the bank name');
-        return;
-      }
-      accountInfo = clabe;
     }
 
     const payee = {
@@ -238,7 +224,6 @@ export default function Payments() {
       accountInfo: accountInfo,
       transferType: newPayeeData.transferType,
       bicCode: newPayeeData.bicCode.trim() || undefined,
-      bankName: newPayeeData.transferType === 'CLABE Transfer' ? newPayeeData.bankName.trim() : undefined,
       timestamp: getAppDate().toISOString()
     };
 
