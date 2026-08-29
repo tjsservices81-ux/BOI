@@ -2460,49 +2460,41 @@ export default function Profile() {
                       </div>
                     </button>
 
-                    {/* Recipient Email UK */}
-                    <button 
-                      onClick={() => {
-                        setRecipientEmailEnabled(!recipientEmailEnabled);
-                        showDeveloperMessage(`Recipient Email (UK) ${!recipientEmailEnabled ? 'enabled' : 'disabled'} successfully`);
-                      }}
+                    {/* Recipient Email UK — disabled while email is being fixed */}
+                    <div
                       data-testid="toggle-recipient-email-uk"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 border-2 border-teal-200 rounded-xl shadow-sm opacity-60"
                     >
                       <div className="flex-1 text-left">
                         <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Recipient Email (UK)
                         </p>
                         <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Send copy to UK transfer recipients
+                          Temporarily unavailable — coming soon
                         </p>
                       </div>
-                      <div className={`w-11 h-6 rounded-full transition-colors ${recipientEmailEnabled ? 'bg-green-500' : 'bg-gray-300'}`}>
-                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${recipientEmailEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                      <div className="w-11 h-6 rounded-full bg-gray-300">
+                        <div className="w-4 h-4 bg-white rounded-full shadow-md mt-1 translate-x-1" />
                       </div>
-                    </button>
+                    </div>
 
-                    {/* Recipient Email SEPA */}
-                    <button 
-                      onClick={() => {
-                        setIbanEmailEnabled(!ibanEmailEnabled);
-                        showDeveloperMessage(`Recipient Email (SEPA) ${!ibanEmailEnabled ? 'enabled' : 'disabled'} successfully`);
-                      }}
+                    {/* Recipient Email SEPA — disabled while email is being fixed */}
+                    <div
                       data-testid="toggle-recipient-email-sepa"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-teal-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 border-2 border-teal-200 rounded-xl shadow-sm opacity-60"
                     >
                       <div className="flex-1 text-left">
                         <p className="font-semibold text-teal-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Recipient Email (SEPA)
                         </p>
                         <p className="text-xs text-teal-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Send copy to SEPA transfer recipients
+                          Temporarily unavailable — coming soon
                         </p>
                       </div>
-                      <div className={`w-11 h-6 rounded-full transition-colors ${ibanEmailEnabled ? 'bg-green-500' : 'bg-gray-300'}`}>
-                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${ibanEmailEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                      <div className="w-11 h-6 rounded-full bg-gray-300">
+                        <div className="w-4 h-4 bg-white rounded-full shadow-md mt-1 translate-x-1" />
                       </div>
-                    </button>
+                    </div>
                   </div>
                 </div>
 

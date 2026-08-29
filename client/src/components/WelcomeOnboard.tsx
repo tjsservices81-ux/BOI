@@ -2,13 +2,18 @@ import { useState, useEffect } from "react";
 import {
   Check,
   Wrench,
-  LayoutDashboard,
+  Clock,
+  Coins,
   ArrowLeftRight,
+  Edit3,
+  Landmark,
+  Receipt,
+  CreditCard,
+  Eye,
+  RotateCcw,
   MessageCircle,
-  Settings as SettingsIcon,
-  Bell,
   FileText,
-  Fingerprint,
+  BadgeCheck,
   Mail,
 } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
@@ -17,26 +22,57 @@ import { UserDataManager } from "../utils/userDataManager";
  * First-run welcome screen.
  *
  * The first time a newly set-up account opens the app on this device, it gets a
- * full-screen rundown of what works — the customer panel, live chat, transfers,
- * notifications and so on — plus a short "being fixed" note (email right now).
- * It's shown once per account (a per-user flag), then never again. It sits above
- * the notification prompt, so a brand-new person sees this first and the
- * "turn on notifications" screen right after.
+ * full-screen rundown of the Customer Panel — every hidden feature it holds —
+ * plus the three things people ask about most: live chat, bank statements and
+ * transfer confirmations. It deliberately does NOT tour the general app. Shown
+ * once per account, then never again; it sits above the notification prompt.
  */
 
-const WORKING = [
-  { icon: LayoutDashboard, title: "Your accounts & balances", desc: "See every account, balance and transaction on your dashboard." },
-  { icon: ArrowLeftRight, title: "Payments & transfers", desc: "Send money by SEPA, UK bank transfer, or between your own accounts." },
-  { icon: MessageCircle, title: "Live chat support", desc: "Get help in the app whenever you need it." },
-  { icon: SettingsIcon, title: "Customer panel", desc: "Manage your profile, security and preferences in Settings." },
-  { icon: Bell, title: "Notifications", desc: "Alerts for money in and out, and important updates." },
-  { icon: FileText, title: "Statements", desc: "View and download your account statements as PDFs." },
-  { icon: Fingerprint, title: "Face ID / PIN login", desc: "Fast, secure sign-in every time you open the app." },
+// Everything the hidden Customer Panel can do (opened by tapping the profile
+// picture 5 times on the Profile screen).
+const PANEL = [
+  { icon: Clock, title: "Custom date & time", desc: "Set the date and time that shows on transfer documents, confirmation PDFs and live chat." },
+  { icon: Coins, title: "Currency", desc: "Switch the account between BOI (EUR €) and BOI UK (GBP £)." },
+  { icon: ArrowLeftRight, title: "Transfer options", desc: "Turn each transfer type on or off — SEPA, UK, CLABE, between accounts and email." },
+  { icon: Edit3, title: "Edit profile", desc: "Update the account's name, email, phone and address." },
+  { icon: Landmark, title: "Accounts", desc: "Add new accounts or remove ones you don't need." },
+  { icon: Receipt, title: "Transactions", desc: "Add your own, drop in sample transactions, or delete any." },
+  { icon: CreditCard, title: "Unblock card", desc: "Instantly unblock a blocked card." },
+  { icon: Eye, title: "Display options", desc: "Show or hide the BIC/IBAN button and the confirmation button on transactions." },
+  { icon: RotateCcw, title: "Reset", desc: "Put everything back to defaults in one tap." },
+];
+
+// The three extras the person specifically wants new accounts to know about.
+const EXTRAS = [
+  { icon: MessageCircle, title: "Live chat", desc: "Get help inside the app whenever you need it." },
+  { icon: FileText, title: "Bank statements", desc: "Generate and download your account statements as PDFs." },
+  { icon: BadgeCheck, title: "Transfer confirmation", desc: "Every transfer gives you a confirmation you can view and download." },
 ];
 
 const FIXING = [
   { icon: Mail, title: "Emails", desc: "Email confirmations and statements are temporarily off — we're fixing them and they'll be back soon." },
 ];
+
+function FeatureRow({ icon: Icon, title, desc, check }: { icon: any; title: string; desc: string; check?: boolean }) {
+  return (
+    <div className="bg-white/10 rounded-2xl p-4 flex items-start space-x-3">
+      <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-5 h-5 text-white" />
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center space-x-2">
+          <p className="font-semibold text-white text-[15px]" style={{ fontFamily: "OpenSans, sans-serif" }}>
+            {title}
+          </p>
+          {check && <Check className="w-4 h-4 text-green-300 flex-shrink-0" />}
+        </div>
+        <p className="text-white/70 text-xs mt-0.5 leading-relaxed" style={{ fontFamily: "OpenSans, sans-serif" }}>
+          {desc}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function WelcomeOnboard() {
   const [show, setShow] = useState(false);
@@ -76,30 +112,24 @@ export default function WelcomeOnboard() {
           <Check className="w-9 h-9 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "OpenSans, sans-serif" }}>
-          Welcome — here's what you can do
+          Welcome — here's your Customer Panel
         </h1>
         <p className="text-white/80 mb-6 leading-relaxed" style={{ fontFamily: "OpenSans, sans-serif" }}>
-          Your account is ready. Everything below is working right now.
+          Open it any time by tapping your profile picture 5 times on the Profile screen. Here's everything it can do.
         </p>
 
         <div className="space-y-3 mb-8">
-          {WORKING.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="bg-white/10 rounded-2xl p-4 flex items-start space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center space-x-2">
-                  <p className="font-semibold text-white text-[15px]" style={{ fontFamily: "OpenSans, sans-serif" }}>
-                    {title}
-                  </p>
-                  <Check className="w-4 h-4 text-green-300 flex-shrink-0" />
-                </div>
-                <p className="text-white/70 text-xs mt-0.5 leading-relaxed" style={{ fontFamily: "OpenSans, sans-serif" }}>
-                  {desc}
-                </p>
-              </div>
-            </div>
+          {PANEL.map((f) => (
+            <FeatureRow key={f.title} {...f} check />
+          ))}
+        </div>
+
+        <p className="text-white/90 font-semibold text-sm uppercase tracking-wide mb-3" style={{ fontFamily: "OpenSans, sans-serif" }}>
+          Also good to know
+        </p>
+        <div className="space-y-3 mb-8">
+          {EXTRAS.map((f) => (
+            <FeatureRow key={f.title} {...f} check />
           ))}
         </div>
 
