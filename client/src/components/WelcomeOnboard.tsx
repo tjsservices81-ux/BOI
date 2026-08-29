@@ -105,9 +105,9 @@ export default function WelcomeOnboard() {
   return (
     <div
       className="fixed inset-0 z-[2147483647] bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col"
-      style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
-      <div className="flex-1 overflow-y-auto px-7 pt-10 pb-4">
+      <div className="flex-1 overflow-y-auto px-7 pt-10 pb-6">
         <div className="w-16 h-16 rounded-2xl bg-white/15 flex items-center justify-center mb-5">
           <Check className="w-9 h-9 text-white" />
         </div>
@@ -158,10 +158,20 @@ export default function WelcomeOnboard() {
         </div>
       </div>
 
-      <div className="px-7 pt-3 pb-6 flex-shrink-0">
+      {/* Floating footer: gradient backdrop lifts it clear of the content, and
+          the extra bottom clearance keeps it above the phone's home indicator /
+          browser bar so it's always visible and tappable on every screen size. */}
+      <div
+        className="px-7 flex-shrink-0"
+        style={{
+          paddingTop: "20px",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 22px)",
+          background: "linear-gradient(to top, #0d4e63 62%, rgba(13,78,99,0))",
+        }}
+      >
         <button
           onClick={dismiss}
-          className="w-full bg-white text-[#126987] font-semibold rounded-2xl py-4 active:scale-98 transition-all duration-150"
+          className="w-full bg-white text-[#126987] font-bold rounded-2xl py-4 shadow-xl active:scale-98 transition-all duration-150"
           style={{ fontFamily: "OpenSans, sans-serif" }}
           data-testid="welcome-get-started"
         >
