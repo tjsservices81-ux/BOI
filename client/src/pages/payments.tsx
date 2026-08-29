@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, Globe2, MapPin, Clock, Users, X, Trash2, Building2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, Globe2, MapPin, Clock, Users, X, Trash2 } from "lucide-react";
 import { getAppDate } from "../utils/appTime";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserDataManager } from "../utils/userDataManager";
@@ -35,9 +35,6 @@ export default function Payments() {
     }
   );
 
-  // CLABE transfers are restricted to accounts whose name is "admin".
-  const isAdminAccount = (UserDataManager.getUserProfile()?.name || '').trim().toLowerCase() === 'admin';
-
   const allPaymentOptions = [
     {
       id: 'iban',
@@ -56,15 +53,6 @@ export default function Payments() {
       description: 'Transfer to UK bank accounts',
       popular: false,
       visible: transferSettings.showUkTransfer
-    },
-    {
-      id: 'clabe',
-      title: 'CLABE Transfer',
-      subtitle: 'Send to Mexican bank accounts',
-      icon: <Building2 className="w-6 h-6 text-[#126987]" />,
-      description: 'Transfer to Mexico using an 18-digit CLABE',
-      popular: false,
-      visible: isAdminAccount && transferSettings.showClabeTransfer !== false
     },
     {
       id: 'international',
@@ -313,7 +301,6 @@ export default function Payments() {
               onClick={() => {
                 if (option.id === 'iban') navigate('/iban-transfer');
                 else if (option.id === 'domestic') navigate('/uk-transfer');
-                else if (option.id === 'clabe') navigate('/clabe-transfer');
                 else if (option.id === 'international') navigate('/international-transfer');
                 else if (option.id === 'internal') navigate('/internal-transfer');
                 else if (option.id === 'email') navigate('/email-transfer');
@@ -573,7 +560,6 @@ export default function Payments() {
                     >
                       <option value="SEPA Transfer">SEPA Transfer</option>
                       <option value="UK Transfer">UK Transfer</option>
-                      {isAdminAccount && <option value="CLABE Transfer">CLABE Transfer</option>}
                     </select>
                   </div>
 
@@ -602,43 +588,6 @@ export default function Payments() {
                           value={newPayeeData.bicCode}
                           onChange={(e) => setNewPayeeData({ ...newPayeeData, bicCode: e.target.value })}
                           placeholder="AIBKIE2D"
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
-                          style={{ fontFamily: 'OpenSans, sans-serif' }}
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {/* CLABE Fields */}
-                  {isAdminAccount && newPayeeData.transferType === 'CLABE Transfer' && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          CLABE (18 digits)
-                        </label>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          value={newPayeeData.clabe}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 18);
-                            setNewPayeeData({ ...newPayeeData, clabe: value });
-                          }}
-                          placeholder="012345678901234567"
-                          maxLength={18}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
-                          style={{ fontFamily: 'OpenSans, sans-serif' }}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Bank Name
-                        </label>
-                        <input
-                          type="text"
-                          value={newPayeeData.bankName}
-                          onChange={(e) => setNewPayeeData({ ...newPayeeData, bankName: e.target.value })}
-                          placeholder="e.g. BBVA México"
                           className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                           style={{ fontFamily: 'OpenSans, sans-serif' }}
                         />

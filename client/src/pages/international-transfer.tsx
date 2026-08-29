@@ -12,7 +12,7 @@ import { formatCurrency, getUserCurrency, type Currency } from "../utils/currenc
 // the IBAN/SEPA transfer.
 type FieldDef = { key: string; label: string; digits: number; placeholder: string; bsb?: boolean };
 
-const COUNTRIES: Record<string, { name: string; flag: string; fields: FieldDef[] }> = {
+const COUNTRIES: Record<string, { name: string; flag: string; adminOnly?: boolean; fields: FieldDef[] }> = {
   US: {
     name: "United States",
     flag: "🇺🇸",
@@ -21,12 +21,12 @@ const COUNTRIES: Record<string, { name: string; flag: string; fields: FieldDef[]
       { key: "accountNumber", label: "Account Number", digits: 17, placeholder: "000123456789" },
     ],
   },
-  AU: {
-    name: "Australia",
-    flag: "🇦🇺",
+  MX: {
+    name: "Mexico",
+    flag: "🇲🇽",
+    adminOnly: true,
     fields: [
-      { key: "bsb", label: "BSB", digits: 6, placeholder: "062-000", bsb: true },
-      { key: "accountNumber", label: "Account Number", digits: 9, placeholder: "12345678" },
+      { key: "clabe", label: "CLABE (18 digits)", digits: 18, placeholder: "012345678901234567" },
     ],
   },
   CA: {
@@ -38,6 +38,14 @@ const COUNTRIES: Record<string, { name: string; flag: string; fields: FieldDef[]
       { key: "accountNumber", label: "Account Number", digits: 12, placeholder: "1234567" },
     ],
   },
+  AU: {
+    name: "Australia",
+    flag: "🇦🇺",
+    fields: [
+      { key: "bsb", label: "BSB", digits: 6, placeholder: "062-000", bsb: true },
+      { key: "accountNumber", label: "Account Number", digits: 9, placeholder: "12345678" },
+    ],
+  },
 };
 
 const emptyFields = () => ({
@@ -46,6 +54,7 @@ const emptyFields = () => ({
   bsb: "",
   institutionNumber: "",
   transitNumber: "",
+  clabe: "",
 });
 
 export default function InternationalTransfer() {
@@ -72,6 +81,11 @@ export default function InternationalTransfer() {
   const [fields, setFields] = useState<Record<string, string>>(emptyFields());
 
   const [submitted, setSubmitted] = useState<any | null>(null);
+
+  // Mexico (CLABE) stays admin-only, so it only appears in the country list for
+  // accounts named "admin". Everyone else sees the other destinations.
+  const isAdmin = (UserDataManager.getUserProfile()?.name || "").trim().toLowerCase() === "admin";
+  const visibleCountries = Object.entries(COUNTRIES).filter(([, c]) => isAdmin || !c.adminOnly);
 
   useEffect(() => {
     const checkAccountStatus = async () => {
@@ -221,6 +235,7 @@ export default function InternationalTransfer() {
                   bsb: submitted.details.bsb,
                   institutionNumber: submitted.details.institutionNumber,
                   transitNumber: submitted.details.transitNumber,
+                  clabe: submitted.details.clabe,
                 }
               );
               if (ok) {
@@ -483,7 +498,7 @@ export default function InternationalTransfer() {
                 style={{ fontFamily: "OpenSans, sans-serif" }}
                 data-testid="select-country"
               >
-                {Object.entries(COUNTRIES).map(([code, c]) => (
+                {visibleCountries.map(([code, c]) => (
                   <option key={code} value={code}>{c.flag} {c.name}</option>
                 ))}
               </select>
