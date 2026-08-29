@@ -677,8 +677,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           left: 0,
           right: 0,
           bottom: '88px', // Leave space for bottom navigation
-          height: 'calc(100vh - 88px)',
-          maxHeight: 'calc(100vh - 88px)'
+          height: 'calc(100dvh - 88px)',
+          maxHeight: 'calc(100dvh - 88px)'
         }}
       >
         {/* Header */}
