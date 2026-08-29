@@ -12,10 +12,12 @@ import { formatCurrency, getUserCurrency, type Currency } from "../utils/currenc
 // the IBAN/SEPA transfer.
 type FieldDef = { key: string; label: string; digits: number; placeholder: string; bsb?: boolean };
 
-const COUNTRIES: Record<string, { name: string; flag: string; fields: FieldDef[] }> = {
+const COUNTRIES: Record<string, { name: string; flag: string; currency: string; symbol: string; fields: FieldDef[] }> = {
   US: {
     name: "United States",
     flag: "🇺🇸",
+    currency: "USD",
+    symbol: "$",
     fields: [
       { key: "routingNumber", label: "Routing Number (ABA)", digits: 9, placeholder: "021000021" },
       { key: "accountNumber", label: "Account Number", digits: 17, placeholder: "000123456789" },
@@ -24,6 +26,8 @@ const COUNTRIES: Record<string, { name: string; flag: string; fields: FieldDef[]
   MX: {
     name: "Mexico",
     flag: "🇲🇽",
+    currency: "MXN",
+    symbol: "$",
     fields: [
       { key: "clabe", label: "CLABE (18 digits)", digits: 18, placeholder: "012345678901234567" },
     ],
@@ -31,6 +35,8 @@ const COUNTRIES: Record<string, { name: string; flag: string; fields: FieldDef[]
   CA: {
     name: "Canada",
     flag: "🇨🇦",
+    currency: "CAD",
+    symbol: "$",
     fields: [
       { key: "institutionNumber", label: "Institution Number", digits: 3, placeholder: "003" },
       { key: "transitNumber", label: "Transit Number", digits: 5, placeholder: "12345" },
@@ -40,11 +46,20 @@ const COUNTRIES: Record<string, { name: string; flag: string; fields: FieldDef[]
   AU: {
     name: "Australia",
     flag: "🇦🇺",
+    currency: "AUD",
+    symbol: "$",
     fields: [
       { key: "bsb", label: "BSB", digits: 6, placeholder: "062-000", bsb: true },
       { key: "accountNumber", label: "Account Number", digits: 9, placeholder: "12345678" },
     ],
   },
+};
+
+// Approximate fallback rates so the conversion always shows something, even
+// without a live API key. Refreshed from exchangerate-api when a key is set.
+const DEFAULT_RATES: Record<string, Record<string, number>> = {
+  EUR: { USD: 1.08, CAD: 1.47, AUD: 1.63, MXN: 18.5, GBP: 0.85 },
+  GBP: { USD: 1.27, CAD: 1.72, AUD: 1.91, MXN: 21.7, EUR: 1.18 },
 };
 
 const emptyFields = () => ({
@@ -65,6 +80,7 @@ export default function InternationalTransfer() {
   const [animationProgress, setAnimationProgress] = useState(0);
   const [processingStage, setProcessingStage] = useState("Verifying transfer details...");
   const [userCurrency, setUserCurrency] = useState<Currency>("EUR");
+  const [rates, setRates] = useState<Record<string, number>>(DEFAULT_RATES.EUR);
   const [isAccountDeleted, setIsAccountDeleted] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [error, setError] = useState("");
@@ -105,7 +121,27 @@ export default function InternationalTransfer() {
     const userAccounts = UserDataManager.getUserData("bankAccounts", []) || [];
     setAccounts(userAccounts);
     if (userAccounts.length > 0) setFromAccount((prev) => prev || userAccounts[0].id.toString());
-    setUserCurrency(getUserCurrency());
+    const cur = getUserCurrency();
+    setUserCurrency(cur);
+    setRates(DEFAULT_RATES[cur] || DEFAULT_RATES.EUR);
+    // Refresh with a live rate when an API key is configured; otherwise the
+    // sensible defaults above are used.
+    (async () => {
+      try {
+        const apiKey = import.meta.env.VITE_EXCHANGERATE_API_KEY;
+        if (!apiKey) return;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 4000);
+        const res = await fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/${cur}`, { signal: controller.signal });
+        clearTimeout(timer);
+        const data = await res.json();
+        if (data.result === "success" && data.conversion_rates) {
+          setRates((prev) => ({ ...prev, ...data.conversion_rates }));
+        }
+      } catch {
+        /* keep default rates */
+      }
+    })();
 
     const selectedFromAccountData = sessionStorage.getItem("selectedFromAccount");
     if (selectedFromAccountData) {
@@ -163,6 +199,8 @@ export default function InternationalTransfer() {
     setSubmitted({
       country,
       countryName: cfg.name,
+      currency: cfg.currency,
+      rate: rates[cfg.currency],
       recipientName: recipientName.trim(),
       bankName: bankName.trim(),
       swiftCode: swiftCode.trim(),
@@ -219,7 +257,7 @@ export default function InternationalTransfer() {
                 submitted.recipientName,
                 "INTERNATIONAL",
                 submitted.reference,
-                undefined,
+                submitted.rate,
                 {
                   country: submitted.countryName,
                   bankName: submitted.bankName,
@@ -230,6 +268,7 @@ export default function InternationalTransfer() {
                   institutionNumber: submitted.details.institutionNumber,
                   transitNumber: submitted.details.transitNumber,
                   clabe: submitted.details.clabe,
+                  convertedCurrency: submitted.currency,
                 }
               );
               if (ok) {
@@ -319,6 +358,9 @@ export default function InternationalTransfer() {
                   <div className="space-y-3">
                     <Row label="Reference" value={transferReference} />
                     <Row label="Amount" value={formatCurrency(submitted?.amount || "0", userCurrency)} />
+                    {submitted?.rate && submitted?.currency && (
+                      <Row label="Recipient gets" value={`≈ ${submitted.currency} ${(parseFloat(submitted.amount) * submitted.rate).toFixed(2)}`} />
+                    )}
                     <Row label="To" value={submitted?.recipientName} />
                     <Row label="Country" value={submitted?.countryName} />
                     <Row label="Bank" value={submitted?.bankName} />
@@ -413,7 +455,14 @@ export default function InternationalTransfer() {
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: "OpenSans, sans-serif" }}>Amount:</span>
-                <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: "OpenSans, sans-serif" }}>{formatCurrency(submitted.amount || "0", userCurrency)}</span>
+                <div className="text-right">
+                  <span className="font-semibold text-[#126987] text-xl block" style={{ fontFamily: "OpenSans, sans-serif" }}>{formatCurrency(submitted.amount || "0", userCurrency)}</span>
+                  {submitted.rate && submitted.currency && (
+                    <span className="text-xs text-gray-500" style={{ fontFamily: "OpenSans, sans-serif" }}>
+                      ≈ {submitted.currency} {(parseFloat(submitted.amount) * submitted.rate).toFixed(2)} · {userCurrency === "GBP" ? "£" : "€"}1 = {Number(submitted.rate).toFixed(4)}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-gray-600" style={{ fontFamily: "OpenSans, sans-serif" }}>Reference:</span>
@@ -547,8 +596,27 @@ export default function InternationalTransfer() {
               />
             </div>
 
-            {/* Amount */}
-            <Field label={`Amount (${userCurrency})`} value={amount} onChange={(v) => setAmount(v)} placeholder="0.00" />
+            {/* Amount with live conversion to the destination currency */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: "OpenSans, sans-serif" }}>Amount ({userCurrency})</label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: "OpenSans, sans-serif" }}
+              />
+              {amount && parseFloat(amount) > 0 && rates[cfg.currency] && (
+                <p className="text-sm text-gray-600 mt-2" style={{ fontFamily: "OpenSans, sans-serif" }}>
+                  ≈ {cfg.symbol}{(parseFloat(amount) * rates[cfg.currency]).toFixed(2)} {cfg.currency}
+                  <span className="block text-xs text-gray-400 mt-0.5">
+                    {userCurrency === "GBP" ? "£" : "€"}1 = {rates[cfg.currency].toFixed(4)} {cfg.currency} · indicative rate
+                  </span>
+                </p>
+              )}
+            </div>
 
             {/* Reference */}
             <Field label="Payment Reference" value={reference} onChange={setReference} placeholder="Payment description" />

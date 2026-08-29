@@ -1962,220 +1962,107 @@ export default function TransactionHistoryWorking() {
               </div>
 
               <div className="space-y-4">
-                {/* Email Transfer has special ordering: Recipient → Email → Transfer Type → Transaction ID → Date */}
-                {selectedTransaction.paymentMethod === 'EMAIL Transfer' ? (
-                  <>
-                    {selectedTransaction.recipientName && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Recipient:</span>
-                        <span className="font-semibold text-gray-900">
-                          {selectedTransaction.recipientName}
-                        </span>
-                      </div>
-                    )}
-
-                    {selectedTransaction.recipientEmail && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Recipient Email:</span>
-                        <span className="font-semibold text-gray-900 text-sm">
-                          {selectedTransaction.recipientEmail}
-                        </span>
-                      </div>
-                    )}
-
+                {(() => {
+                  const t: any = selectedTransaction;
+                  const method: string = t.paymentMethod || '';
+                  const baseSym = userCurrency === 'GBP' ? '£' : '€';
+                  const isTransfer = ['UK Transfer','IBAN Transfer','SEPA Transfer','EMAIL Transfer','International Transfer','CLABE Transfer'].includes(method) || !!(t.recipientName && (t.iban || t.recipientAccountNumber || t.recipientClabe || t.recipientRoutingNumber || t.recipientBsb || t.recipientInstitutionNumber || t.recipientTransitNumber));
+                  const row = (label: string, value: any, mono?: boolean) => (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Transfer Type:</span>
+                      <span className="text-gray-600">{label}</span>
+                      <span className={mono ? 'font-semibold text-gray-900 font-mono text-sm text-right break-all ml-4' : 'font-semibold text-gray-900 text-right ml-4'}>{value}</span>
+                    </div>
+                  );
+                  const typeRow = method ? (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">{method === 'Manual Entry' ? 'Payment Method:' : 'Transfer Type:'}</span>
                       <div className="flex items-center space-x-2">
-                        <Globe className="w-4 h-4 text-[#126987]" />
-                        <span className="font-semibold text-gray-900">
-                          {selectedTransaction.paymentMethod}
-                        </span>
+                        {method === 'UK Transfer' ? <MapPin className="w-4 h-4 text-[#126987]" /> : <Globe className="w-4 h-4 text-[#126987]" />}
+                        <span className="font-semibold text-gray-900">{method === 'Manual Entry' ? 'Direct Transaction' : method}</span>
                       </div>
                     </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Transaction ID:</span>
-                      <span className="font-mono text-sm text-gray-900">
-                        {String(selectedTransaction.id).padStart(14, '0')}
-                      </span>
-                    </div>
-
+                  ) : null;
+                  const dateRow = (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Date & Time:</span>
                       <div className="text-right">
-                        <p className="font-semibold text-gray-900">
-                          {new Date(selectedTransaction.timestamp).toLocaleDateString('en-IE', { 
-                            day: 'numeric', 
-                            month: 'long', 
-                            year: 'numeric' 
-                          })}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(selectedTransaction.timestamp).toLocaleTimeString('en-IE', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
+                        <p className="font-semibold text-gray-900">{new Date(t.timestamp).toLocaleDateString('en-IE', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                        <p className="text-sm text-gray-500">{new Date(t.timestamp).toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' })}</p>
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Description:</span>
-                      <span className="font-semibold text-gray-900 text-right">
-                        {selectedTransaction.description}
-                      </span>
-                    </div>
-
-                    {selectedTransaction.paymentMethod && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">
-                          {selectedTransaction.paymentMethod === 'Manual Entry' ? 'Payment Method:' : 'Transfer Type:'}
-                        </span>
-                        <div className="flex items-center space-x-2">
-                          {selectedTransaction.paymentMethod === 'UK Transfer' ? (
-                            <MapPin className="w-4 h-4 text-[#126987]" />
-                          ) : (
-                            <Globe className="w-4 h-4 text-[#126987]" />
-                          )}
-                          <span className="font-semibold text-gray-900">
-                            {selectedTransaction.paymentMethod === 'Manual Entry' ? 'Direct Transaction' : selectedTransaction.paymentMethod}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Date & Time:</span>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900">
-                          {new Date(selectedTransaction.timestamp).toLocaleDateString('en-IE', { 
-                            day: 'numeric', 
-                            month: 'long', 
-                            year: 'numeric' 
-                          })}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(selectedTransaction.timestamp).toLocaleTimeString('en-IE', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Transaction ID:</span>
-                      <span className="font-mono text-sm text-gray-900">
-                        {String(selectedTransaction.id).padStart(14, '0')}
-                      </span>
-                    </div>
-
+                  );
+                  const idRow = row('Transaction ID:', String(t.id).padStart(14, '0'), true);
+                  const categoryRow = (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Category:</span>
-                      <span className="font-semibold text-gray-900 capitalize">
-                        {selectedTransaction.category}
-                      </span>
+                      <span className="font-semibold text-gray-900 capitalize">{t.category}</span>
                     </div>
-                  </>
-                )}
+                  );
 
-                {(selectedTransaction.paymentMethod === 'UK Transfer' || selectedTransaction.paymentMethod === 'IBAN Transfer' || selectedTransaction.iban || selectedTransaction.recipientAccountNumber) && (
-                  <>
-                    {selectedTransaction.recipientName && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Recipient:</span>
-                        <span className="font-semibold text-gray-900">
-                          {selectedTransaction.recipientName}
-                        </span>
-                      </div>
-                    )}
+                  if (method === 'EMAIL Transfer') {
+                    return (
+                      <>
+                        {t.recipientName && row('Recipient:', t.recipientName)}
+                        {t.recipientEmail && row('Recipient Email:', t.recipientEmail)}
+                        {t.reference && row('Reference:', t.reference)}
+                        {typeRow}
+                        {idRow}
+                        {dateRow}
+                      </>
+                    );
+                  }
 
-                    {selectedTransaction.iban && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">IBAN:</span>
-                        <span className="font-semibold text-gray-900 font-mono text-sm">
-                          {selectedTransaction.iban}
-                        </span>
-                      </div>
-                    )}
+                  if (isTransfer) {
+                    return (
+                      <>
+                        {t.recipientName && row('Recipient:', t.recipientName)}
+                        {t.recipientBankName && row('Bank:', t.recipientBankName)}
+                        {t.recipientCountry && row('Country:', t.recipientCountry)}
+                        {t.iban && row('IBAN:', t.iban, true)}
+                        {method === 'UK Transfer' && t.recipientSortCode && row('Sort Code:', t.recipientSortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3'))}
+                        {t.recipientRoutingNumber && row('Routing Number (ABA):', t.recipientRoutingNumber, true)}
+                        {t.recipientBsb && row('BSB:', t.recipientBsb)}
+                        {t.recipientInstitutionNumber && row('Institution Number:', t.recipientInstitutionNumber)}
+                        {t.recipientTransitNumber && row('Transit Number:', t.recipientTransitNumber)}
+                        {t.recipientClabe && row('CLABE:', t.recipientClabe, true)}
+                        {t.recipientAccountNumber && row('Account Number:', t.recipientAccountNumber, true)}
+                        {(t.recipientSwiftCode || t.bicCode) && row(t.recipientSwiftCode ? 'SWIFT/BIC:' : 'BIC Code:', t.recipientSwiftCode || t.bicCode)}
 
-                    {selectedTransaction.bicCode && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">BIC Code:</span>
-                        <span className="font-semibold text-gray-900">
-                          {selectedTransaction.bicCode}
-                        </span>
-                      </div>
-                    )}
+                        {t.convertedAmount && t.convertedCurrency && (
+                          <>
+                            <div className="border-t border-gray-200 pt-4 mt-4">
+                              <h4 className="font-semibold text-gray-900 mb-3">Currency Conversion</h4>
+                            </div>
+                            {t.exchangeRate && row('Exchange Rate:', `${baseSym}1 = ${Number(t.exchangeRate).toFixed(4)} ${t.convertedCurrency}`)}
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Recipient Gets:</span>
+                              <div className="text-right ml-4">
+                                <span className="font-semibold text-green-700">{t.convertedCurrency} {t.convertedAmount}</span>
+                                <p className="text-xs text-gray-500">Indicative rate at time of transfer</p>
+                              </div>
+                            </div>
+                          </>
+                        )}
 
-                    {selectedTransaction.paymentMethod === 'SEPA Transfer' && selectedTransaction.reference && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Reference:</span>
-                        <span className="font-semibold text-gray-900">
-                          {selectedTransaction.reference}
-                        </span>
-                      </div>
-                    )}
+                        {t.reference && row('Reference:', t.reference)}
+                        {typeRow}
+                        {idRow}
+                        {dateRow}
+                        {categoryRow}
+                      </>
+                    );
+                  }
 
-                    {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.recipientSortCode && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Sort Code:</span>
-                        <span className="font-semibold text-gray-900">
-                          {selectedTransaction.recipientSortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3')}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.recipientAccountNumber && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Account Number:</span>
-                        <span className="font-semibold text-gray-900">
-                          {selectedTransaction.recipientAccountNumber}
-                        </span>
-                      </div>
-                    )}
-
-                    {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.reference && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Reference:</span>
-                        <span className="font-semibold text-gray-900">
-                          {selectedTransaction.reference}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.exchangeRate && userCurrency === 'EUR' && (
-                  <>
-                    <div className="border-t border-gray-200 pt-4 mt-4">
-                      <h4 className="font-semibold text-gray-900 mb-3">
-                        Currency Conversion
-                      </h4>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Exchange Rate:</span>
-                      <span className="font-semibold text-gray-900">
-                        €1 = £{selectedTransaction.exchangeRate.toFixed(4)}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">GBP Equivalent:</span>
-                      <div className="text-right">
-                        <span className="font-semibold text-green-700">
-                          £{selectedTransaction.convertedAmount}
-                        </span>
-                        <p className="text-xs text-gray-500">
-                          Live rate at time of transfer
-                        </p>
-                      </div>
-                    </div>
-                  </>
-                )}
+                  return (
+                    <>
+                      {t.description && row('Description:', t.description)}
+                      {typeRow}
+                      {dateRow}
+                      {idRow}
+                      {categoryRow}
+                    </>
+                  );
+                })()}
 
                 {selectedTransaction.paymentMethod === 'UK Transfer' && (
                   <div className="border-t border-gray-200 pt-4 mt-4">
@@ -2227,11 +2114,28 @@ export default function TransactionHistoryWorking() {
                   </div>
                 )}
 
-                {selectedTransaction.paymentMethod && 
+                {selectedTransaction.paymentMethod === 'International Transfer' && (
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-800">
+                        <strong>International Transfer:</strong> Payments{selectedTransaction.recipientCountry ? ` to ${selectedTransaction.recipientCountry}` : ''} usually arrive within 3–5 business days.
+                      </p>
+                    </div>
+
+                    <div className="bg-red-50 border border-red-300 rounded-lg p-3 mt-3">
+                      <p className="text-sm text-red-700">
+                        This payment cannot be cancelled
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedTransaction.paymentMethod &&
                  !selectedTransaction.isSample &&
-                 (selectedTransaction.paymentMethod === 'UK Transfer' || 
-                  selectedTransaction.paymentMethod === 'IBAN Transfer' || 
+                 (selectedTransaction.paymentMethod === 'UK Transfer' ||
+                  selectedTransaction.paymentMethod === 'IBAN Transfer' ||
                   selectedTransaction.paymentMethod === 'SEPA Transfer' ||
+                  selectedTransaction.paymentMethod === 'International Transfer' ||
                   selectedTransaction.paymentMethod === 'EMAIL Transfer') &&
                  showTransferConfirmation && (
                   <div className="border-t border-gray-200 pt-6 mt-6">

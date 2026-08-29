@@ -69,7 +69,7 @@ export const processSecureTransfer = async (
   transferType: 'UK' | 'IBAN' | 'EMAIL' | 'CLABE' | 'INTERNATIONAL',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; email?: string; clabe?: string; bankName?: string; routingNumber?: string; bsb?: string; institutionNumber?: string; transitNumber?: string; swiftCode?: string; country?: string }
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; email?: string; clabe?: string; bankName?: string; routingNumber?: string; bsb?: string; institutionNumber?: string; transitNumber?: string; swiftCode?: string; country?: string; convertedCurrency?: string }
 ): Promise<{ success: boolean; transferId?: string; error?: string; requiresConfirmation?: boolean }> => {
   console.log('Initiating secure transfer:', { fromAccountId, amount, recipientName, transferType, reference });
 
@@ -175,7 +175,7 @@ export const processTransfer = (
   transferType: 'UK' | 'IBAN' | 'EMAIL' | 'CLABE' | 'INTERNATIONAL',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string; email?: string; clabe?: string; bankName?: string; routingNumber?: string; bsb?: string; institutionNumber?: string; transitNumber?: string; swiftCode?: string; country?: string },
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string; email?: string; clabe?: string; bankName?: string; routingNumber?: string; bsb?: string; institutionNumber?: string; transitNumber?: string; swiftCode?: string; country?: string; convertedCurrency?: string },
   recipientEmail?: string
 ): boolean => {
   console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference, recipientEmail });
@@ -235,10 +235,10 @@ export const processTransfer = (
     reference,
     recipientName,
     timestamp: getAppDate().toISOString(),
-    ...(transferType === 'UK' && exchangeRate && {
+    ...((transferType === 'UK' || transferType === 'INTERNATIONAL') && exchangeRate && {
       exchangeRate,
       convertedAmount: (amount * exchangeRate).toFixed(2),
-      convertedCurrency: 'GBP'
+      convertedCurrency: transferType === 'UK' ? 'GBP' : (recipientDetails?.convertedCurrency || '')
     }),
     ...(recipientDetails && {
       recipientAccountNumber: recipientDetails.accountNumber,
@@ -462,7 +462,7 @@ export const processConfirmedTransfer = async (
   transferType: 'UK' | 'IBAN' | 'EMAIL' | 'CLABE' | 'INTERNATIONAL',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string; email?: string; clabe?: string; bankName?: string; routingNumber?: string; bsb?: string; institutionNumber?: string; transitNumber?: string; swiftCode?: string; country?: string },
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string; email?: string; clabe?: string; bankName?: string; routingNumber?: string; bsb?: string; institutionNumber?: string; transitNumber?: string; swiftCode?: string; country?: string; convertedCurrency?: string },
   recipientEmail?: string
 ): Promise<boolean> => {
   console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference, recipientEmail });
