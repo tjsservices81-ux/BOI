@@ -8,6 +8,7 @@ import { StateManager } from "../utils/stateManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 import NotificationOnboard from "@/components/NotificationOnboard";
+import WelcomeOnboard from "@/components/WelcomeOnboard";
 
 interface Account {
   id: number;
@@ -655,6 +656,12 @@ export default function Dashboard() {
 
   return (
     <div className="page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative">
+      {/* First-run: welcome a newly set-up account with what works and what's
+          being fixed. Sits above the notification prompt (higher z-index), so a
+          brand-new person sees this first, then the notifications ask. Shows
+          once per account. */}
+      <WelcomeOnboard />
+
       {/* First-run: ask a newly set-up account to turn notifications on.
           Shows only while notification permission is still unanswered, and
           disappears the moment notifications are turned on. */}
