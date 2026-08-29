@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2, Building2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, Globe2, MapPin, Clock, Users, X, Trash2, Building2 } from "lucide-react";
 import { getAppDate } from "../utils/appTime";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserDataManager } from "../utils/userDataManager";
@@ -30,7 +30,8 @@ export default function Payments() {
       showUkTransfer: true,
       showInternalTransfer: true,
       showEmailTransfer: false,
-      showClabeTransfer: true
+      showClabeTransfer: true,
+        showInternationalTransfer: true
     }
   );
 
@@ -64,6 +65,15 @@ export default function Payments() {
       description: 'Transfer to Mexico using an 18-digit CLABE',
       popular: false,
       visible: isAdminAccount && transferSettings.showClabeTransfer !== false
+    },
+    {
+      id: 'international',
+      title: 'International Transfer',
+      subtitle: 'Send worldwide — USA, Australia, Canada',
+      icon: <Globe2 className="w-6 h-6 text-[#126987]" />,
+      description: 'Pick the country and send with its local bank details',
+      popular: false,
+      visible: transferSettings.showInternationalTransfer !== false
     },
     {
       id: 'internal',
@@ -111,7 +121,8 @@ export default function Payments() {
         showUkTransfer: true,
         showInternalTransfer: true,
         showEmailTransfer: false,
-        showClabeTransfer: true
+        showClabeTransfer: true,
+        showInternationalTransfer: true
       };
       setTransferSettings(settings);
     };
@@ -163,6 +174,8 @@ export default function Payments() {
       navigate('/iban-transfer');
     } else if (payee.transferType === 'CLABE Transfer') {
       navigate('/clabe-transfer');
+    } else if (payee.transferType === 'International Transfer') {
+      navigate('/international-transfer');
     }
     setShowRecentPayees(false);
   };
@@ -301,6 +314,7 @@ export default function Payments() {
                 if (option.id === 'iban') navigate('/iban-transfer');
                 else if (option.id === 'domestic') navigate('/uk-transfer');
                 else if (option.id === 'clabe') navigate('/clabe-transfer');
+                else if (option.id === 'international') navigate('/international-transfer');
                 else if (option.id === 'internal') navigate('/internal-transfer');
                 else if (option.id === 'email') navigate('/email-transfer');
                 else setSelectedPaymentType(option.id);

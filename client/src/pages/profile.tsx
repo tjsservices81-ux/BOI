@@ -55,7 +55,8 @@ export default function Profile() {
       showUkTransfer: true,
       showInternalTransfer: true,
       showEmailTransfer: false,
-      showClabeTransfer: true
+      showClabeTransfer: true,
+        showInternationalTransfer: true
     };
   });
   const [showTransferConfirmation, setShowTransferConfirmation] = useState(() => {

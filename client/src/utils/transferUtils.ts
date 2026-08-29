@@ -66,10 +66,10 @@ export const processSecureTransfer = async (
   fromAccountId: string,
   amount: number,
   recipientName: string,
-  transferType: 'UK' | 'IBAN' | 'EMAIL' | 'CLABE',
+  transferType: 'UK' | 'IBAN' | 'EMAIL' | 'CLABE' | 'INTERNATIONAL',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; email?: string; clabe?: string; bankName?: string }
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; email?: string; clabe?: string; bankName?: string; routingNumber?: string; bsb?: string; institutionNumber?: string; transitNumber?: string; swiftCode?: string; country?: string }
 ): Promise<{ success: boolean; transferId?: string; error?: string; requiresConfirmation?: boolean }> => {
   console.log('Initiating secure transfer:', { fromAccountId, amount, recipientName, transferType, reference });
 
@@ -172,10 +172,10 @@ export const processTransfer = (
   fromAccountId: string,
   amount: number,
   recipientName: string,
-  transferType: 'UK' | 'IBAN' | 'EMAIL' | 'CLABE',
+  transferType: 'UK' | 'IBAN' | 'EMAIL' | 'CLABE' | 'INTERNATIONAL',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string; email?: string; clabe?: string; bankName?: string },
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string; email?: string; clabe?: string; bankName?: string; routingNumber?: string; bsb?: string; institutionNumber?: string; transitNumber?: string; swiftCode?: string; country?: string },
   recipientEmail?: string
 ): boolean => {
   console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference, recipientEmail });
@@ -228,10 +228,10 @@ export const processTransfer = (
     id: Date.now(),
     accountId: parseInt(fromAccountId),
     amount: `-${amount.toFixed(2)}`,
-    description: `${transferType === 'IBAN' ? 'SEPA' : transferType} Transfer to ${recipientName}`,
+    description: `${transferType === 'IBAN' ? 'SEPA' : transferType === 'INTERNATIONAL' ? 'International' : transferType} Transfer to ${recipientName}`,
     category: 'transfer',
     type: 'debit',
-    paymentMethod: `${transferType === 'IBAN' ? 'SEPA' : transferType} Transfer`,
+    paymentMethod: `${transferType === 'IBAN' ? 'SEPA' : transferType === 'INTERNATIONAL' ? 'International' : transferType} Transfer`,
     reference,
     recipientName,
     timestamp: getAppDate().toISOString(),
@@ -249,7 +249,13 @@ export const processTransfer = (
       recipientEmail: recipientDetails.email,
       clabe: recipientDetails.clabe,
       recipientClabe: recipientDetails.clabe,
-      recipientBankName: recipientDetails.bankName
+      recipientBankName: recipientDetails.bankName,
+      recipientRoutingNumber: recipientDetails.routingNumber,
+      recipientBsb: recipientDetails.bsb,
+      recipientInstitutionNumber: recipientDetails.institutionNumber,
+      recipientTransitNumber: recipientDetails.transitNumber,
+      recipientSwiftCode: recipientDetails.swiftCode,
+      recipientCountry: recipientDetails.country
     }),
     ...(recipientEmail && { recipientEmail })
   };
@@ -453,10 +459,10 @@ export const processConfirmedTransfer = async (
   fromAccountId: string,
   amount: number,
   recipientName: string,
-  transferType: 'UK' | 'IBAN' | 'EMAIL' | 'CLABE',
+  transferType: 'UK' | 'IBAN' | 'EMAIL' | 'CLABE' | 'INTERNATIONAL',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string; email?: string; clabe?: string; bankName?: string },
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string; email?: string; clabe?: string; bankName?: string; routingNumber?: string; bsb?: string; institutionNumber?: string; transitNumber?: string; swiftCode?: string; country?: string },
   recipientEmail?: string
 ): Promise<boolean> => {
   console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference, recipientEmail });
