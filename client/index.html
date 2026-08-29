@@ -397,6 +397,30 @@
             console.log('Service worker activated for offline support');
           }
         });
+
+        // Reliable auto-update: this inline script lives in index.html, which is
+        // always served fresh (no-cache), so it runs the latest logic even when
+        // the cached JS bundle is stale. When a new service worker takes over,
+        // reload once so the newest bundle is what actually runs.
+        var __swReloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (__swReloaded) return;
+          __swReloaded = true;
+          window.location.reload();
+        });
+
+        // Whenever the app is brought back to the foreground, check for a new
+        // service worker. If sw.js changed (a new deploy), it installs, the
+        // registration below tells it to skipWaiting, it activates, and the
+        // controllerchange handler above reloads into the fresh bundle. This is
+        // what unsticks an installed PWA that iOS resumed from an old snapshot.
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState === 'visible' && navigator.serviceWorker) {
+            navigator.serviceWorker.getRegistration().then(function (r) {
+              if (r) r.update();
+            }).catch(function () {});
+          }
+        });
       } else {
         // No service worker support, load app directly
         updateLoadingMessage('Loading banking app...');
