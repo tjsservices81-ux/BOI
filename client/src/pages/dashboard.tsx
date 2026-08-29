@@ -670,8 +670,9 @@ export default function Dashboard() {
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
-      {/* Blue header bar — slides down on entry like the other screens */}
-      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 pt-8 flex-shrink-0 page-slide-down" style={{ paddingTop: 'calc(32px + env(safe-area-inset-top, 0px))' }}>
+      {/* Blue header bar — stays static, matching the Apply/Payments top strip.
+          Only the dashboard-unique content below slides in. */}
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 pt-8 flex-shrink-0" style={{ paddingTop: 'calc(32px + env(safe-area-inset-top, 0px))' }}>
         <div className="flex items-center">
           <img 
             src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
