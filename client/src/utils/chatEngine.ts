@@ -59,7 +59,11 @@ function getLastTransfer(): LastTransfer | null {
 
   const tx = transfers[0];
   const userCurrency = getUserCurrency();
-  const currencySymbol = tx.convertedCurrency === "GBP" || userCurrency === "GBP" ? "£" : "€";
+  // The symbol must match the currency the money actually left in — i.e. the
+  // account currency. It must NOT follow convertedCurrency: a UK transfer
+  // always converts to GBP, but a EUR sender still sent euros, so confirming it
+  // in pounds was wrong. `amount` below is tx.amount, the account-currency debit.
+  const currencySymbol = userCurrency === "GBP" ? "£" : "€";
   const amount = Math.abs(parseFloat(String(tx.amount).replace("-", ""))).toFixed(2);
   const date = new Date(tx.timestamp).toLocaleDateString("en-IE", {
     day: "2-digit",

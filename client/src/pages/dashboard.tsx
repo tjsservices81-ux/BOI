@@ -670,8 +670,8 @@ export default function Dashboard() {
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
-      {/* Blue header bar */}
-      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 pt-8 flex-shrink-0" style={{ paddingTop: 'calc(32px + env(safe-area-inset-top, 0px))' }}>
+      {/* Blue header bar — slides down on entry like the other screens */}
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 pt-8 flex-shrink-0 page-slide-down" style={{ paddingTop: 'calc(32px + env(safe-area-inset-top, 0px))' }}>
         <div className="flex items-center">
           <img 
             src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
@@ -694,7 +694,7 @@ export default function Dashboard() {
       </div>
       
       {/* Header with scenic background */}
-      <div className="text-white relative flex-shrink-0 h-36">
+      <div className="text-white relative flex-shrink-0 h-36 content-slide-under">
         {/* Full scenic background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -712,7 +712,7 @@ export default function Dashboard() {
       </div>
 
       {/* Send money section - fixed */}
-      <div className="bg-white flex-shrink-0 -mt-8 relative z-10">
+      <div className="bg-white flex-shrink-0 -mt-8 relative z-10 content-slide-under">
         <button 
           className="w-full flex items-center justify-between px-4 py-2"
           onClick={() => setSendMoneyOpen(!sendMoneyOpen)}
