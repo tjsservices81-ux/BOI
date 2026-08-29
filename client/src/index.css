@@ -585,7 +585,9 @@ button:active {
 .android-no-highlight:active {
   outline: none !important;
   box-shadow: none !important;
-  background-color: inherit;
+  /* Do NOT force background-color here — inheriting the parent's background
+     made coloured buttons blend into the page and appear to vanish on touch.
+     The button keeps its own colour and just dims via button:active. */
 }
 
 /* Touch device optimizations - prevent visual glitches on account buttons */
@@ -1067,7 +1069,6 @@ input, textarea, select {
 .admin-panel button:focus,
 .admin-panel button:hover {
   opacity: 1 !important;
-  background-color: inherit !important;
   transform: scale(0.98) !important;
 }
 
@@ -1995,7 +1996,8 @@ body {
   [role="button"]:active {
     outline: none !important;
     box-shadow: none !important;
-    background-color: inherit !important;
+    /* Keep the element's own background on touch — forcing inherit here made
+       every coloured button vanish into the page while pressed. */
   }
   
   /* Android WebView specific fixes */
