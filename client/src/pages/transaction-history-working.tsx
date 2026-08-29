@@ -195,16 +195,12 @@ export default function TransactionHistoryWorking() {
       return;
     }
 
+    // Open the PDF in a new tab exactly like the bank statement does
+    // (handleOpenStatement). The old approach clicked a hidden <a download>,
+    // which kicked off a file download whose back-out flashed a glitch screen.
     const openPdfBlob = (blob: Blob) => {
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Transfer-Document-${selectedTransaction?.reference || Date.now()}.pdf`;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => window.URL.revokeObjectURL(url), 500);
+      window.open(url, '_blank');
     };
 
     try {
