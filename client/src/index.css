@@ -2053,7 +2053,13 @@ body {
 /* Tablet / iPad: the UI is designed as a phone app, so centre it in a
    phone-width column with side gutters instead of stretching every button and
    card across the whole screen. Phones (narrower than the breakpoint) are
-   unaffected. The fixed bottom navigation is centred to match the content. */
+   unaffected.
+
+   The `transform` on #root is deliberate: it makes #root the containing block
+   for ALL `position: fixed` descendants — the bottom nav, full-screen overlays
+   (welcome, notifications, chat) and every modal/bottom-sheet — so they all
+   stay inside the centred column instead of spanning the whole tablet width.
+   No per-component changes needed. */
 @media (min-width: 700px) {
   body {
     background-color: #0b2b35;
@@ -2063,13 +2069,7 @@ body {
     margin-left: auto;
     margin-right: auto;
     box-shadow: 0 0 80px rgba(0, 0, 0, 0.28);
-  }
-  .bottom-navigation {
-    left: 50% !important;
-    right: auto !important;
-    width: 100%;
-    max-width: 460px;
-    transform: translateX(-50%) translateZ(0);
+    transform: translateZ(0);
   }
 }
 
