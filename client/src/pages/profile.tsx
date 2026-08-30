@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, HardDrive, Clock } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, HardDrive, Clock, Download } from "lucide-react";
 import { setCustomAppDate, hasCustomAppDate, getCustomAppDateISO } from "@/utils/appTime";
 import { UserDataManager } from "@/utils/userDataManager";
 import { balanceAfterReversal } from "@shared/balanceMath";
@@ -388,6 +388,35 @@ export default function Profile() {
       setTapCount(0);
       setLastTapTime(0);
     }
+  };
+
+  // Manual app update. Deploys no longer reload the app on their own; the
+  // customer taps this to pull the latest version. It checks for a newly
+  // deployed service worker, activates it, clears the caches so the newest
+  // bundle is fetched fresh, then reloads.
+  const [isUpdatingApp, setIsUpdatingApp] = useState(false);
+  const downloadLatestUpdate = async () => {
+    if (isUpdatingApp) return;
+    setIsUpdatingApp(true);
+    try {
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) {
+          try { await reg.update(); } catch { /* offline / no change */ }
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        }
+      }
+    } catch { /* best effort */ }
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch { /* best effort */ }
+    // Reload to fetch the newest app shell and bundle.
+    window.location.reload();
   };
 
   const handleFaceIdToggle = async (enabled: boolean) => {
@@ -2841,8 +2870,28 @@ export default function Profile() {
                   </h3>
                 </div>
                   
+                {/* Download latest update — manual app update */}
+                <button
+                  onClick={downloadLatestUpdate}
+                  disabled={isUpdatingApp}
+                  data-testid="button-download-update"
+                  className="w-full flex items-center space-x-3 p-4 mb-3 bg-white/80 backdrop-blur-sm border-2 border-teal-300 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md disabled:opacity-60"
+                >
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-full flex items-center justify-center shadow-md">
+                    <Download className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-bold text-teal-900 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {isUpdatingApp ? 'Updating…' : 'Download latest update'}
+                    </p>
+                    <p className="text-sm text-teal-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Get the newest version of the app
+                    </p>
+                  </div>
+                </button>
+
                 {/* Reset to Defaults */}
-                <button 
+                <button
                   onClick={resetToDefaults}
                   data-testid="button-reset-defaults"
                   className="w-full flex items-center space-x-3 p-4 bg-white/80 backdrop-blur-sm border-2 border-red-300 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"

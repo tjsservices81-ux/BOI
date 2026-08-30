@@ -36,86 +36,19 @@ async function initializeApp() {
 }
 
 if ('serviceWorker' in navigator) {
-  let reloadScheduled = false;
-  
-  const scheduleGracefulReload = (reason: string) => {
-    if (reloadScheduled) return;
-    reloadScheduled = true;
-    console.log(`🔄 Scheduling graceful reload: ${reason}`);
-    
-    if (document.hidden) {
-      const reloadOnVisible = () => {
-        document.removeEventListener('visibilitychange', reloadOnVisible);
-        console.log('🔄 App visible again - reloading for update');
-        window.location.reload();
-      };
-      document.addEventListener('visibilitychange', reloadOnVisible);
-    } else {
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-    }
-  };
-
+  // Updates are MANUAL — the customer taps "Download latest update" in the
+  // Customer Panel. We intentionally do NOT auto-reload when a new service
+  // worker activates or takes control, so a deploy never reloads the app on its
+  // own. The only reload here is a one-time recovery if the running bundle is
+  // genuinely broken (can't load one of its own chunks).
   navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SW_ACTIVATED') {
-      console.log('🎉 App updated to Version 5.0.0!');
-      
-      const banner = document.createElement('div');
-      banner.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(135deg, #126987 0%, #0e5a75 100%);
-        color: white;
-        padding: 16px 24px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 999999;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        text-align: center;
-        animation: slideDown 0.3s ease-out;
-      `;
-      banner.innerHTML = `✅ App Updated to Version 5.0.0 - Latest Features Active!`;
-      
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes slideDown {
-          from { transform: translate(-50%, -100%); opacity: 0; }
-          to { transform: translate(-50%, 0); opacity: 1; }
-        }
-      `;
-      document.head.appendChild(style);
-      document.body.appendChild(banner);
-      
-      setTimeout(() => {
-        banner.style.animation = 'slideDown 0.3s ease-in reverse';
-        setTimeout(() => banner.remove(), 300);
-      }, 4000);
-
-      // A new version just activated. The page is still running the OLD bundle,
-      // so reload into the new one — otherwise the update stays invisible (this
-      // is exactly what strands an installed iOS PWA on stale code). The
-      // reloadScheduled guard makes this fire at most once per page life, so it
-      // can't loop.
-      scheduleGracefulReload('new service worker activated');
-    }
-
     if (event.data && event.data.type === 'SW_STALE_BUNDLE') {
-      console.warn('⚠️ Stale bundle detected after update:', event.data.url);
-      scheduleGracefulReload('stale bundle after update');
+      if (!sessionStorage.getItem('sw_stale_reloaded')) {
+        console.warn('⚠️ Bundle could not load a chunk — reloading once to recover:', event.data.url);
+        sessionStorage.setItem('sw_stale_reloaded', '1');
+        window.location.reload();
+      }
     }
-  });
-
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    console.log('🔄 Service worker controller changed - new version active');
-    // A brand-new controller means new code is available. Reload to run it,
-    // whether the app is in the foreground or the background. Guarded so it
-    // reloads once; after the reload the controller is stable, so no loop.
-    scheduleGracefulReload('service worker controller changed');
   });
 }
 

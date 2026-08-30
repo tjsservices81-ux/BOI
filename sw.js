@@ -15,7 +15,7 @@
 const SW_VERSION = '5.0.0';
 // Internal cache-busting counter — invisible to users. Increment on a deploy
 // when you need every client to pick up the new bundle.
-const CACHE_BUILD = '19';
+const CACHE_BUILD = '20';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-b${CACHE_BUILD}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}-b${CACHE_BUILD}`;
@@ -151,8 +151,11 @@ self.addEventListener('install', (event) => {
         return cache;
       })
     ]).then(() => {
-      console.log('✅ PWA Service Worker installed successfully');
-      return self.skipWaiting();
+      // Do NOT skipWaiting automatically. Updates are now manual: a newly
+      // deployed worker stays "waiting" and does nothing until the customer
+      // taps "Download latest update" (which posts SKIP_WAITING). This stops
+      // deploys from silently reloading the app mid-use.
+      console.log('✅ PWA Service Worker installed (waiting for manual update)');
     })
   );
 });

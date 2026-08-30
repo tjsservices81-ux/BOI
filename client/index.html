@@ -358,67 +358,25 @@
         }).then(async (registration) => {
           console.log('Service Worker registered:', registration.scope);
           
-          // Force immediate activation for better mobile experience
-          if (registration.waiting) {
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          }
-          
-          // Listen for updates and auto-activate
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('New service worker available');
-                  newWorker.postMessage({ type: 'SKIP_WAITING' });
-                }
-              });
-            }
-          });
-          
-          // Ensure service worker takes control immediately
-          if (!navigator.serviceWorker.controller) {
-            console.log('Claiming service worker control for mobile');
-            await registration.update();
-          }
-          
+          // Updates are MANUAL. A newly deployed worker is left "waiting" and
+          // is only activated when the customer taps "Download latest update"
+          // in the Customer Panel. We deliberately do NOT auto-skipWaiting,
+          // auto-reload on controllerchange, or check for updates on focus —
+          // deploys must never reload the app on their own.
+
           updateLoadingMessage('Loading banking app...');
           setTimeout(initializeApp, 500);
-          
+
         }).catch((error) => {
           console.error('Service worker registration failed:', error);
           updateLoadingMessage('Loading banking app...');
           setTimeout(initializeApp, 500);
         });
-        
+
         // Listen for service worker messages
         navigator.serviceWorker.addEventListener('message', (event) => {
           if (event.data && event.data.type === 'SW_ACTIVATED') {
             console.log('Service worker activated for offline support');
-          }
-        });
-
-        // Reliable auto-update: this inline script lives in index.html, which is
-        // always served fresh (no-cache), so it runs the latest logic even when
-        // the cached JS bundle is stale. When a new service worker takes over,
-        // reload once so the newest bundle is what actually runs.
-        var __swReloaded = false;
-        navigator.serviceWorker.addEventListener('controllerchange', function () {
-          if (__swReloaded) return;
-          __swReloaded = true;
-          window.location.reload();
-        });
-
-        // Whenever the app is brought back to the foreground, check for a new
-        // service worker. If sw.js changed (a new deploy), it installs, the
-        // registration below tells it to skipWaiting, it activates, and the
-        // controllerchange handler above reloads into the fresh bundle. This is
-        // what unsticks an installed PWA that iOS resumed from an old snapshot.
-        document.addEventListener('visibilitychange', function () {
-          if (document.visibilityState === 'visible' && navigator.serviceWorker) {
-            navigator.serviceWorker.getRegistration().then(function (r) {
-              if (r) r.update();
-            }).catch(function () {});
           }
         });
       } else {
