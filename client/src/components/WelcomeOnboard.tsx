@@ -90,6 +90,16 @@ export default function WelcomeOnboard() {
     }
   }, []);
 
+  // While this full-screen overlay is up, hide the bottom nav. The overlay is
+  // rendered inside a page-container (contain: paint) which traps its z-index in
+  // a stacking context, so it can't paint above the nav — the "Get started"
+  // button ended up behind it. Removing the nav avoids the overlap entirely.
+  useEffect(() => {
+    if (show) document.body.classList.add("welcome-overlay-open");
+    else document.body.classList.remove("welcome-overlay-open");
+    return () => document.body.classList.remove("welcome-overlay-open");
+  }, [show]);
+
   if (!show) return null;
 
   const dismiss = () => {

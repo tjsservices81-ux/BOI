@@ -28,6 +28,14 @@ export default function NotificationOnboard() {
     }
   }, []);
 
+  // Hide the bottom nav while this full-screen overlay is up (same stacking-
+  // context trap as the welcome screen — its buttons would sit behind the nav).
+  useEffect(() => {
+    if (show) document.body.classList.add("notif-overlay-open");
+    else document.body.classList.remove("notif-overlay-open");
+    return () => document.body.classList.remove("notif-overlay-open");
+  }, [show]);
+
   if (!show) return null;
 
   const turnOn = async () => {

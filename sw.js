@@ -15,7 +15,7 @@
 const SW_VERSION = '5.0.0';
 // Internal cache-busting counter — invisible to users. Increment on a deploy
 // when you need every client to pick up the new bundle.
-const CACHE_BUILD = '18';
+const CACHE_BUILD = '19';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-b${CACHE_BUILD}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}-b${CACHE_BUILD}`;

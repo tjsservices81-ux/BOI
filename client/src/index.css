@@ -962,6 +962,15 @@ button svg, button .lucide {
   transition: none;
 }
 
+/* Hide the bottom navigation while a full-screen onboarding overlay is showing,
+   so its buttons (e.g. "Get started") are never covered by the nav. Needed
+   because the overlays render inside a page-container stacking context and
+   can't paint above the nav via z-index alone. */
+body.welcome-overlay-open [data-bottom-nav],
+body.notif-overlay-open [data-bottom-nav] {
+  display: none !important;
+}
+
 /* Instant bottom navigation rendering */
 .bottom-nav-container {
   transform: translateZ(0);
