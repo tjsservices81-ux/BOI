@@ -395,6 +395,42 @@ export default function Profile() {
   // deployed service worker, activates it, clears the caches so the newest
   // bundle is fetched fresh, then reloads.
   const [isUpdatingApp, setIsUpdatingApp] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+
+  // Detect (without reloading) when a newer version has been deployed and is
+  // waiting, so the "Download latest update" button can show a hint. Checks on
+  // mount and whenever the app returns to the foreground.
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+    let cancelled = false;
+
+    const watch = (reg: ServiceWorkerRegistration) => {
+      if (reg.waiting) setUpdateAvailable(true);
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            setUpdateAvailable(true);
+          }
+        });
+      });
+    };
+
+    const check = () => {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (!reg || cancelled) return;
+        watch(reg);
+        reg.update().catch(() => {}); // ask the server if there's a newer worker (detect only)
+      }).catch(() => {});
+    };
+
+    check();
+    const onVisible = () => { if (document.visibilityState === 'visible') check(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { cancelled = true; document.removeEventListener('visibilitychange', onVisible); };
+  }, []);
+
   const downloadLatestUpdate = async () => {
     if (isUpdatingApp) return;
     setIsUpdatingApp(true);
@@ -2870,24 +2906,40 @@ export default function Profile() {
                   </h3>
                 </div>
                   
-                {/* Download latest update — manual app update */}
+                {/* Download latest update — manual app update. Shows a hint when
+                    a newer version has actually been deployed and is waiting. */}
                 <button
                   onClick={downloadLatestUpdate}
                   disabled={isUpdatingApp}
                   data-testid="button-download-update"
-                  className="w-full flex items-center space-x-3 p-4 mb-3 bg-white/80 backdrop-blur-sm border-2 border-teal-300 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md disabled:opacity-60"
+                  className={`relative w-full flex items-center space-x-3 p-4 mb-3 backdrop-blur-sm border-2 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md disabled:opacity-60 ${updateAvailable ? 'bg-teal-50 border-[#126987]' : 'bg-white/80 border-teal-300'}`}
                 >
-                  <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-full flex items-center justify-center shadow-md">
+                  <div className="relative w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-full flex items-center justify-center shadow-md">
                     <Download className="w-5 h-5 text-white" />
+                    {updateAvailable && !isUpdatingApp && (
+                      <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-orange-500 border-2 border-white"></span>
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1 text-left">
                     <p className="font-bold text-teal-900 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       {isUpdatingApp ? 'Updating…' : 'Download latest update'}
                     </p>
-                    <p className="text-sm text-teal-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Get the newest version of the app
+                    <p className={`text-sm ${updateAvailable && !isUpdatingApp ? 'text-orange-600 font-semibold' : 'text-teal-700'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {isUpdatingApp
+                        ? 'Fetching the newest version…'
+                        : updateAvailable
+                          ? 'Update available — tap to install'
+                          : "You're on the latest version"}
                     </p>
                   </div>
+                  {updateAvailable && !isUpdatingApp && (
+                    <span className="text-[10px] font-bold text-white bg-orange-500 rounded-full px-2 py-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      NEW
+                    </span>
+                  )}
                 </button>
 
                 {/* Reset to Defaults */}
