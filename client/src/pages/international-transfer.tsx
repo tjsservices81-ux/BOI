@@ -168,7 +168,11 @@ export default function InternationalTransfer() {
   }, []);
 
   const setField = (key: string, raw: string, def: FieldDef) => {
-    let value = raw.replace(/\D/g, "").slice(0, def.digits);
+    // Digits only, but no fixed length is enforced — account numbers and the
+    // like vary by bank/country. BSB keeps its 6-digit XXX-XXX shape; everything
+    // else allows a generous length so nothing is cut off while typing.
+    const cap = def.bsb ? 6 : 34;
+    let value = raw.replace(/\D/g, "").slice(0, cap);
     if (def.bsb && value.length > 3) value = value.slice(0, 3) + "-" + value.slice(3);
     setFields((f) => ({ ...f, [key]: value }));
   };
@@ -179,7 +183,8 @@ export default function InternationalTransfer() {
     if (bankName.trim().length < 2) return "Enter the recipient's bank name.";
     for (const def of COUNTRIES[country].fields) {
       const digits = (fields[def.key] || "").replace(/\D/g, "");
-      if (digits.length !== def.digits) return `${def.label} must be ${def.digits} digits.`;
+      // No minimum length — just make sure the field has been filled in.
+      if (digits.length < 1) return `Enter the ${def.label.replace(/\s*\(.*\)\s*/, "").toLowerCase()}.`;
     }
     if (!amount || parseFloat(amount) <= 0) return "Enter a valid amount.";
     if (!reference.trim()) return "Enter a payment reference.";
