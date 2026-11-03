@@ -373,7 +373,7 @@ export default function InternationalTransfer() {
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: "OpenSans, sans-serif" }}>
-                        <strong>International Transfer:</strong> Payments to {submitted?.countryName} usually arrive within 3–5 business days.
+                        <strong>International Transfer:</strong> This payment should arrive within 24 hours thanks to our faster payments system, though it can occasionally take 1–2 business days to reach {submitted?.countryName}.
                       </p>
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
@@ -474,7 +474,7 @@ export default function InternationalTransfer() {
             <Info className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-blue-900" style={{ fontFamily: "OpenSans, sans-serif" }}>International Transfer</p>
-              <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: "OpenSans, sans-serif" }}>Payments to {submitted.countryName} usually arrive within 3–5 business days.</p>
+              <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: "OpenSans, sans-serif" }}>This payment should arrive within 24 hours thanks to our faster payments system, though it can occasionally take 1–2 business days to reach {submitted.countryName}.</p>
             </div>
           </div>
           <button onClick={executeTransfer} className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform" style={{ fontFamily: "OpenSans, sans-serif" }}>Confirm Transfer</button>

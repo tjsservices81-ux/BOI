@@ -49,8 +49,8 @@ export default function Help() {
     category: "Transfers & Payments",
     question: "How long do transfers take?",
     answer: userCurrency === 'GBP'
-      ? "UK transfers are typically instant or completed within hours. Irish transfers may take 1-3 business days depending on the receiving bank. International transfers can take 3-5 business days."
-      : "Irish transfers are typically instant or completed within hours. UK transfers may take 1-3 business days depending on the receiving bank. International transfers can take 3-5 business days."
+      ? "UK transfers are typically instant or completed within hours. Irish transfers may take 1-3 business days depending on the receiving bank. International transfers should arrive within 24 hours thanks to our faster payments system, though they can occasionally take 1-2 business days."
+      : "Irish transfers are typically instant or completed within hours. UK transfers may take 1-3 business days depending on the receiving bank. International transfers should arrive within 24 hours thanks to our faster payments system, though they can occasionally take 1-2 business days."
   },
   {
     category: "Transfers & Payments",

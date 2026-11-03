@@ -2114,7 +2114,7 @@ export default function TransactionHistoryWorking() {
                   <div className="border-t border-gray-200 pt-4 mt-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <p className="text-sm text-blue-800">
-                        <strong>International Transfer:</strong> Payments{selectedTransaction.recipientCountry ? ` to ${selectedTransaction.recipientCountry}` : ''} usually arrive within 3–5 business days.
+                        <strong>International Transfer:</strong> This payment should arrive within 24 hours thanks to our faster payments system, though it can occasionally take 1–2 business days to reach{selectedTransaction.recipientCountry ? ` ${selectedTransaction.recipientCountry}` : ' the recipient'}.
                       </p>
                     </div>
 
